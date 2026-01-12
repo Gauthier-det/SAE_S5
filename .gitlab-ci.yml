@@ -1,0 +1,53 @@
+stages:
+  - deploy
+  - fix
+
+deploy_production:
+  stage: deploy
+  tags:
+    - devc3 g13
+  script:
+    # Définition du proxy unicaen
+    - export HTTP_PROXY="http://proxy.unicaen.fr:3128"
+    - export HTTPS_PROXY="http://proxy.unicaen.fr:3128"
+    # Affichage de la révision
+    - echo "Déploiement de $(git rev-parse --short HEAD)"
+    # 1. On copie TOUT sans toucher aux propriétaires ni groupes
+    - rsync -av --delete --no-owner --no-group --no-times --exclude=vendor --exclude=node_modules ./laravel/ --exclude=.env --exclude=database/database.sqlite --exclude=storage/log /users/g13/laravel/
+    # 2.pre On mémorise l'état du GIT pour plus tard
+    - "prev=HEAD^^"
+    - "if git rev-parse --short HEAD@{1}; then prev=`git rev-parse --short HEAD@{1}`; else prev=`git rev-parse --short HEAD@{0}`; fi"
+    - "npm_changed=`git log --oneline --name-only $prev..HEAD@{0} -- laravel/package.json | wc -l`"
+    - "comp_changed=`git log --oneline --name-only $prev..HEAD@{0} -- laravel/composer.json | wc -l`"
+    - "env_changed=`git log --oneline --name-only $prev..HEAD@{0} -- laravel/.env.prod | wc -l`"
+    - echo "files changed on $(git rev-parse --short $prev)..$(git rev-parse --short HEAD@{0})"
+    - git log --oneline --name-only $prev..HEAD@{0}
+    # 2. On fait le déploiement Laravel en tant que git-runner
+    - cd /users/g13/laravel
+    - touch database/database.sqlite
+    - "if ! [ -d node_modules ]; then npm_changed=1; fi"
+    - "if ! [ -d vendor ]; then comp_changed=1; fi"
+    - "if [ $comp_changed -ne 0 ]; then composer install; npm_changed=1; fi"
+    - "if [ $npm_changed -ne 0 ]; then npm install; fi"
+    - npm run build
+    - "if [ $env_changed -ne 0 ]; then cp .env.prod .env; env_changed=1; fi"
+    - "if ! [ -f .env ]; then cp .env.prod .env; env_changed=1; fi"
+    - "if [ $env_changed -ne 0 ]; then php artisan key:generate; fi"
+    - php artisan migrate
+    - php artisan config:cache
+    # 3. On corrige les droits gitlab-runner:gitlab-runner -> g13:www-data
+    - sudo chown -R g13:www-data /users/g13/laravel
+  only:
+    - stable
+
+fix_deploy_failure:
+  stage: fix
+  tags:
+    - devc3 g13
+  when: on_failure
+  script:
+    - "prev=HEAD^^"
+    - "if git rev-parse --short HEAD@{1}; then prev=`git rev-parse --short HEAD@{1}`; else prev=`git rev-parse --short HEAD@{0}`; fi"
+    - git reset --hard $prev 
+    - echo "Restauration du git en l'état $(git rev-parse --short HEAD)"
+
