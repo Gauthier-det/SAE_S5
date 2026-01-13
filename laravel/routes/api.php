@@ -20,3 +20,5 @@ Route::get('/races', [RaceController::class, 'getAllRaces']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
 Route::post('/races', [RaceController::class, 'createRace']);
 Route::get('/races/raids/{raidId}', [RaceController::class, 'getRacesByRaid'])->whereNumber('raidId');
+Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
+Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
