@@ -16,9 +16,10 @@ class Authenticate
     public function handle(Request $request, Closure $next)//: Response
     {
 
-        if (Auth::check()) {
-            return $next($request);
-
+        if (! Auth::check()) {
+            return response()->json([
+                'message' => 'Auth Unauthenticated.',
+            ], 401);
         }
 
         return $next($request);

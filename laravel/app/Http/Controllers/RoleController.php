@@ -44,4 +44,38 @@ class RoleController extends Controller
 
         return response()->json(['data' => $role], 201);
     }
+
+    public function updateRole(Request $request, $id)
+    {
+        $role = Role::find($id);
+        if (! $role) {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'ROL_NAME' => 'sometimes|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $role->update($request->only([
+            'ROL_NAME',
+        ]));
+
+        return response()->json(['data' => $role], 200);
+    }
+
+    public function deleteRole($id)
+    {
+        $role = Role::find($id);
+        if (! $role) {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
+
+        $role->delete();
+
+        return response()->json(['message' => 'Role deleted successfully'], 200);
+    }
 }

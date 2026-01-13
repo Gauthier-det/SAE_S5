@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class RaidManager
+class Admin
 {
     /**
      * Handle an incoming request.
@@ -18,17 +18,17 @@ class RaidManager
 
         if (! Auth::check()) {
             return response()->json([
-                'message' => 'Unauthenticated.',
+                'message' => 'Admin Unauthenticated.',
             ], 401);
         }
 
         $user = Auth::user();
 
-        $hasSiteManagerRole = $user->roles()
-            ->where('ROL_NAME', 'Responsable de site')
+        $isAdmin = $user->roles()
+            ->where('ROL_NAME', 'Gestionnaire de site')
             ->exists();
 
-        if (! $hasSiteManagerRole) {
+        if (! $isAdmin) {
             return response()->json([
                 'message' => 'Forbidden',
             ], 403);
