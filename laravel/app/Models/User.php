@@ -10,9 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class User extends Model
 {
     protected $table = 'SAN_USERS';
-
     protected $primaryKey = 'USE_ID';
-
     public $timestamps = false;
 
     protected $fillable = [

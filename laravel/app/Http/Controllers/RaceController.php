@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Race;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -16,11 +17,12 @@ class RaceController extends Controller
     public function getRaceById($id)
     {
         $race = Race::find($id);
-        if ($race) {
-            return response()->json(['data' => $race]);
-        } else {
-            return response()->json(['message' => 'Race not found'], 404);
+        if (! $race) {
+            return response()->json([
+                'message' => 'Race not found',
+            ], 404);
         }
+        return response()->json(['data' => $race], 200);
     }
 
     public function createRace(Request $request)

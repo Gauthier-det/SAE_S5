@@ -8,11 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Raid extends Model
 {
     protected $table = 'SAN_RAIDS';
-
     protected $primaryKey = 'RAI_ID';
-
     public $timestamps = false;
-
+    
     protected $fillable = [
         'CLU_ID',
         'ADD_ID',

@@ -11,9 +11,9 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 // Raid routes
-Route::get('/raids', [RaidController::class, 'getRaids']);
+Route::get('/raids', [RaidController::class, 'getAllRaids']);
 Route::get('/raids/{id}', [RaidController::class, 'getRaidById'])->whereNumber('id');
-Route::post('/raids/create', [RaidController::class, 'createRaids']);
+Route::post('/raids', [RaidController::class, 'createRaid']);
 
 // Races routes
 Route::get('/races', [RaceController::class, 'getAllRaces']);

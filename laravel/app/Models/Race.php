@@ -37,4 +37,9 @@ class Race extends Model
     {
         return $this->hasMany(self::class);
     }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'USE_ID', 'USE_ID');
+    }
 }

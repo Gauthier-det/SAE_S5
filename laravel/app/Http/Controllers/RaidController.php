@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class RaidController extends Controller
 {
-    public function getRaids()
+    public function getAllRaids()
     {
         $raids = Raid::all();
         return response()->json(['data' => $raids]);
@@ -17,17 +17,15 @@ class RaidController extends Controller
     public function getRaidById($id)
     {
         $raid = Raid::find($id);
-
         if (! $raid) {
             return response()->json([
                 'message' => 'Raid not found',
             ], 404);
         }
-
-        return response()->json($raid, 200);
+        return response()->json(['data' => $raid], 200);
     }
 
-    public function createRaids(Request $request)
+    public function createRaid(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'CLU_ID'                 => 'required|integer|exists:SAN_CLUBS,CLU_ID',
@@ -64,6 +62,6 @@ class RaidController extends Controller
             'RAI_REGISTRATION_END',
         ]));
 
-        return response()->json($raid, 201);
+        return response()->json(['data' => $raid], 201);
     }
 }
