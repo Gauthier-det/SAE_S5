@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { User } from '../model/db/user';
+import type { User } from '../model/db/userDbModel';
 import type { Login } from '../model/domain/login';
 import { getUserWithToken } from '../api/user';
 import { apiLogin } from '../api/auth';

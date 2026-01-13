@@ -1,20 +1,21 @@
 import { Card, CardContent, CardMedia, Typography, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ImageIcon from '@mui/icons-material/Image';
-import type { Raid } from '../model/db/raidDbModel';
+import type { Race } from '../model/db/raceDbModel';
 
-interface RaidCardProps {
-    raid: Raid
+
+interface RaceCardProps {
+    race: Race;
     onDetailsClick?: (raidId: number) => void;
 }
 
-function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
+function RaceCard({ race, onDetailsClick }: RaceCardProps) {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(`/raids/${raid.id}`);
+        navigate(`/races/${race.id}`);
         if (onDetailsClick) {
-            onDetailsClick(raid.id);
+            onDetailsClick(race.id);
         }
     };
 
@@ -30,12 +31,12 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
                 }
             }}
         >
-            {raid.image_url ? (
+            {race.image_url ? (
                 <CardMedia
                     component="img"
                     height="160"
-                    image={raid.image_url}
-                    alt={raid.name}
+                    image={race.image_url}
+                    alt={race.name}
                     sx={{ objectFit: 'cover' }}
                 />
             ) : (
@@ -55,13 +56,15 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
             
             <CardContent sx={{ p: 2 }}>
                 <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    {raid.name}
+                    {race.name}
                 </Typography>
                 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Du {raid.start_date} au {raid.end_date}
+                    {race.date }
                     <br />
-                    {raid.events_count} épreuves disponibles
+                    {race.type}
+                    <br />
+                    {race.age_range} 
                 </Typography>
                 
                 <Button 
@@ -85,4 +88,4 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     );
 }
 
-export default RaidCard;
+export default RaceCard;

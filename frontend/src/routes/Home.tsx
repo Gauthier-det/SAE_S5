@@ -13,7 +13,7 @@ import {
 import frontHomeImage from '../assets/front-home-image.png';
 
 function Home() {
-    const navigate = useNavigate();
+    useNavigate();
 
     return (
         <Box>

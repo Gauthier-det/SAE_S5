@@ -1,4 +1,6 @@
-const mockRaidsData = [
+import type { Raid } from '../model/db/raidDbModel';
+
+const mockRaidsData: Raid[] = [
     { id: 1, name: "Raid du sanglier Fou", start_date: "15 juin 2026", end_date: "16 juin 2026", events_count: 3 },
     { id: 2, name: "Raid de la Forêt Noire", start_date: "22 juin 2026", end_date: "23 juin 2026", events_count: 5 },
     { id: 3, name: "Raid des Montagnes", start_date: "5 juillet 2026", end_date: "7 juillet 2026", events_count: 4 },
