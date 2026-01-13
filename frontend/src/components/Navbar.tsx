@@ -20,8 +20,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import sanglierImage from '../assets/sanglier-explorer.png';
 
 const pages = [
-    { name: 'DASHBOAR', path: '/dashboard'},
+    { name: 'DASHBOAR', path: '/dashboard' },
     { name: 'LES RAIDS', path: '/raids' },
+    { name: 'CREER UN RAID', path: '/create-raid' },
     { name: 'A PROPOS', path: '/about' },
 ];
 
