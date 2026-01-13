@@ -1,5 +1,5 @@
-import type { User } from "../model/db/user";
-import type { Login } from "../model/domain/login";
+import type { User } from "../model/db/userDbModel";
+import type { Login } from "../model/domain/loginModel";
 
 
 

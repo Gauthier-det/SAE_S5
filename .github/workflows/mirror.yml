@@ -1,0 +1,32 @@
+name: Mirror Main to GitLab Dev
+
+on:
+  push:
+    branches:
+      - main  # Se déclenche uniquement sur le push vers main
+
+jobs:
+  git-mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.GITLAB_SSH_PRIVATE_KEY }}
+          known_hosts: 'git.unicaen.fr'
+
+      - name: Push to GitLab
+        run: |
+          # Ajout du serveur Unicaen aux hôtes connus
+          ssh-keyscan git.unicaen.fr >> ~/.ssh/known_hosts
+          
+          # Configuration du remote GitLab
+          git remote add gitlab git@git.unicaen.fr:iut-gon-info/sae5-2025/groupe13.git
+          
+          # Pousse la branche locale 'main' vers la branche distante 'dev'
+          git push --force gitlab main:dev
