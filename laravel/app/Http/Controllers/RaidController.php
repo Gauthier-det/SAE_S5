@@ -65,9 +65,9 @@ class RaidController extends Controller
         return response()->json(['data' => $raid], 201);
     }
 
-    public function updateRaid(Request $request, $raidId)
+    public function updateRaid(Request $request, $id)
     {
-        $raid = Raid::find($raidId);
+        $raid = Raid::find($id);
         if (! $raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
@@ -95,9 +95,9 @@ class RaidController extends Controller
         return response()->json(['data' => $raid], 201);
     }
 
-    public function deleteRaid($raidId)
+    public function deleteRaid($id)
     {
-        $raid = Raid::find($raidId);
+        $raid = Raid::find($id);
         if (! $raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
