@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { CssBaseline, Box } from '@mui/material';
 import Navbar from './components/Navbar';
+import Home from './routes/Home';
 import Dashboard from './routes/Dashboard';
 import Raids from './routes/Raids';
 import About from './routes/About';
@@ -23,7 +24,7 @@ function App() {
         <CssBaseline />
         <Routes>
           <Route element={<MainLayout />}>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/raids" element={<Raids />} />
             <Route path="/about" element={<About />} />
