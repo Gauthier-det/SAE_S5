@@ -1,11 +1,16 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration
+class InitialDatabaseSeeder extends Seeder
 {
-    public function up(): void
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
     {
         DB::table('SAN_ADDRESSES')->insert([
             ['ADD_ID' => 1, 'ADD_POSTAL_CODE' => 50100, 'ADD_CITY' => 'Cherbourg-en-Cotentin', 'ADD_STREET_NAME' => 'Rue des Marins', 'ADD_STREET_NUMBER' => '12'],
@@ -162,22 +167,6 @@ return new class extends Migration
             ['USE_ID' => 10, 'RAC_ID' => 4, 'USR_CHIP_NUMBER' => 1007, 'USR_TIME' => 120.50],
             ['USE_ID' => 3, 'RAC_ID' => 4, 'USR_CHIP_NUMBER' => 1008, 'USR_TIME' => 118.40],
         ]);
+        DB::statement('PRAGMA foreign_keys = ON');
     }
-
-    public function down(): void
-    {
-        DB::table('SAN_USERS_RACES')->truncate();
-        DB::table('SAN_TEAMS_RACES')->truncate();
-        DB::table('SAN_USERS_TEAMS')->truncate();
-        DB::table('SAN_TEAMS')->truncate();
-        DB::table('SAN_CATEGORIES_RACES')->truncate();
-        DB::table('SAN_RACES')->truncate();
-        DB::table('SAN_RAIDS')->truncate();
-        DB::table('SAN_ROLES_USERS')->truncate();
-        DB::table('SAN_CLUBS')->truncate();
-        DB::table('SAN_USERS')->truncate();
-        DB::table('SAN_ROLES')->truncate();
-        DB::table('SAN_CATEGORIES')->truncate();
-        DB::table('SAN_ADDRESSES')->truncate();
-    }
-};
+}
