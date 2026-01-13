@@ -67,8 +67,12 @@ function Navbar() {
                                 mr: 1,
                                 cursor: 'pointer'
                             }}
+                          
+                            alt="Race Explorer Logo"
+                            src={sanglierImage}
                             alt="Orient'Action Logo"
                             src={logo}
+
                             onClick={() => navigate('/')}
                         />
                     </Box>

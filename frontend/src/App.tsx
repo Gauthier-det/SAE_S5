@@ -6,9 +6,9 @@ import Navbar from './components/Navbar';
 import Home from './routes/Home';
 import Dashboard from './routes/Dashboard';
 import Raids from './routes/Raids';
+import InfoRaid from './routes/InfoRaid';
 import About from './routes/About';
 import Login from './routes/Login';
-import CreateRaid from './routes/CreateRaid';
 import { UserProvider } from './contexts/userContext';
 
 const MainLayout = () => {
@@ -31,7 +31,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/raids" element={<Raids />} />
+            <Route path="/raids/:id" element={<InfoRaid />} />
             <Route path="/create-raid" element={<CreateRaid />} />
+
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
           </Route>
