@@ -6,13 +6,7 @@ import {
     TextField,
     Typography,
     Paper,
-    Link,
-    Stack,
-    Checkbox,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
-    FormControl
+    Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../assets/logo-color.png';
@@ -71,8 +65,6 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: '100vh',
-                py: 4
             }}
         >
             <Container maxWidth="md">
@@ -81,7 +73,7 @@ const Register = () => {
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{ backgroundColor: 'white', width: 150, height: 'auto', mb: 2, borderRadius: 4, p: 1 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -154,73 +146,6 @@ const Register = () => {
                             />
                         </Stack>
 
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="phone"
-                            label="Téléphone"
-                            id="phone"
-                            variant="standard"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            sx={{ mb: 2 }}
-                        />
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="address"
-                            label="adresse"
-                            id="address"
-                            variant="standard"
-                            value={formData.address}
-                            onChange={handleChange}
-                            sx={{ mb: 2 }}
-                        />
-
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} alignItems="center" sx={{ mb: 2 }}>
-                            <TextField
-                                required
-                                name="age"
-                                label="Age" // Should be DatePicker as per image but sticking to simplified text for now or verify DatePicker usage in project
-                                id="age"
-                                type="date"
-                                variant="standard"
-                                InputLabelProps={{ shrink: true }}
-                                value={formData.age}
-                                onChange={handleChange}
-                                sx={{ width: '150px' }}
-                            />
-
-                            <FormControl component="fieldset">
-                                <RadioGroup
-                                    row
-                                    aria-label="gender"
-                                    name="gender"
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                >
-                                    <FormControlLabel value="Homme" control={<Radio color="success" />} label="Homme" />
-                                    <FormControlLabel value="Femme" control={<Radio color="success" />} label="Femme" />
-                                </RadioGroup>
-                            </FormControl>
-                        </Stack>
-
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={formData.isLicensed}
-                                    onChange={handleChange}
-                                    name="isLicensed"
-                                    color="success"
-                                />
-                            }
-                            label="Licencié"
-                            sx={{ mb: 3 }}
-                        />
-
                         {error && (
                             <Typography color="error" variant="body2" sx={{ mt: 2 }}>
                                 {error}
@@ -231,16 +156,21 @@ const Register = () => {
                             type="submit"
                             fullWidth
                             variant="contained"
-                            color="success" // Matching the image green button
-                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', backgroundColor: '#1b5e20' }} // Custom green to match image darker green
+                            color="success"
+                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', borderRadius: '10px' }}
                         >
                             S'INSCRIRE
                         </Button>
 
                         <Stack alignItems="center">
-                            <Link href="/login" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                se connecter
-                            </Link>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                sx={{color: 'white', borderRadius: '10px', fontSize: '12px'}}
+                                onClick={() => navigate('/login')}
+                            >
+                                Se connecter
+                            </Button>
                         </Stack>
                     </Box>
                 </Paper>

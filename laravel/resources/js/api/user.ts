@@ -1,4 +1,6 @@
 import type { User } from "../model/db/userDbModel"
+import { getListOfClubManagers } from "./club";
+import { getListOfRaidManagers } from "./raid";
 
 export const getUserWithToken = (): User => {
     return {
@@ -6,7 +8,7 @@ export const getUserWithToken = (): User => {
         last_name: "Christelle",
         email: "christelle.m@outlook.fr",
         role: "admin",
-        id: 1,
+        id: "1",
         address: undefined,
         club: undefined,
         birth_date: "",
@@ -17,3 +19,13 @@ export const getUserWithToken = (): User => {
         gender: "",
     }
 }
+
+
+export const isClubManager = (userId: string) => {
+    return getListOfClubManagers().includes(userId);
+}
+
+export const isRaidManager = (userId: string) => {
+    return getListOfRaidManagers().includes(userId);
+}
+    

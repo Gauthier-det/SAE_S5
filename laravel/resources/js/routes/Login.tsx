@@ -41,16 +41,15 @@ const Login = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                overflow: 'hidden',
             }}
         >
             <Container maxWidth="sm">
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
                     <Box
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -110,18 +109,28 @@ const Login = () => {
                             fullWidth
                             variant="contained"
                             color="primary"
-                            sx={{ mt: 5, mb: 4, py: 1.5, color: 'white' }}
+                            sx={{ mt: 5, mb: 4, py: 1.5, color: 'white', borderRadius: '10px' }}
                         >
                             SE CONNECTER
                         </Button>
 
                         <Stack spacing={2} alignItems="center">
-                            <Link href="#" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                mot de passe oublié
-                            </Link>
-                            <Link href="#" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                s'inscrire
-                            </Link>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                onClick={() => navigate('/login')}
+                            >
+                                Mot de passe oublié ?
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                onClick={() => navigate('/register')}
+                            >
+                                S'inscrire
+                            </Button>
                         </Stack>
                     </Box>
                 </Paper>

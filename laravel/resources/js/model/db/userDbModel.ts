@@ -2,7 +2,7 @@ import type { Address } from "./addressDbModel";
 import type { Club } from "./clubDbModel";
 
 export interface User {
-    id: number;
+    id: string;
     address? : Address;
     club? : Club;
     email: string;

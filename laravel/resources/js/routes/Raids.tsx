@@ -1,5 +1,5 @@
-import { Container, Typography, Box, MenuItem, TextField} from '@mui/material';
-import RaidCard from '../components/RaidCard';
+import { Container, Typography, Box, MenuItem, TextField, Stack, Button } from '@mui/material';
+import RaidCard from '../components/cards/RaidCard';
 import { getListOfRaids } from '../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -7,6 +7,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import React from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
+import { useNavigate } from 'react-router-dom';
+import { getListOfClubManagers } from '../api/club';
+import { useUser } from '../contexts/userContext';
+import { isClubManager } from '../api/user';
 
 
 
@@ -15,8 +19,12 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
+    const { user } = useUser();
+    const navigate = useNavigate();
 
     const raids = React.useMemo(() => getListOfRaids(), []);
+    const clubManagers = React.useMemo(() => getListOfClubManagers(), []);
+
 
     const filteredRaids = React.useMemo(() => {
         const months: Record<string, number> = {
@@ -61,107 +69,122 @@ export default function Raids() {
                 ? raid.name.toLowerCase().includes(keyword.toLowerCase())
                 : true;
 
-            const matchesClub = club ? true : true; 
+            const matchesClub = club ? true : true;
 
             return matchesStart && matchesEnd && matchesKeyword && matchesClub;
         });
     }, [raids, startDate, endDate, keyword, club]);
 
-    const handleRaidDetails = (raidId: number) => {
-        
+    const handleRaidDetails = (raidId: string) => {
+
     };
+    console.log("clubManagers", clubManagers);
+    console.log("user", user);
 
     return (
         <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
-            <Box sx={{ display: 'flex', gap: 4 }}>
-                <Box
-                sx={{
-                    width: 260,
-                    flexShrink: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 3,
-                }}
-                >
-                <Typography variant="h6">Filtrer les raids</Typography>
+                <Box sx={{ display: 'flex', gap: 4 }}>
+                    <Box
+                        sx={{
+                            width: 260,
+                            flexShrink: 0,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 3,
+                        }}
+                    >
+                        <Typography variant="h6">Filtrer les raids</Typography>
 
-                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
-                    <DatePicker
-                    label="Début"
-                    value={startDate}
-                    onChange={(newValue: React.SetStateAction<Dayjs | null>) => setStartDate(newValue)}
-                    slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-                    format="DD/MM/YYYY"
-                    />
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
+                            <DatePicker
+                                label="Début"
+                                value={startDate}
+                                onChange={(newValue: React.SetStateAction<Dayjs | null>) => setStartDate(newValue)}
+                                slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+                                format="DD/MM/YYYY"
+                            />
 
-                    <DatePicker
-                    label="Fin"
-                    value={endDate}
-                    onChange={(newValue: React.SetStateAction<Dayjs | null>) => setEndDate(newValue)}
-                    slotProps={{ textField: { fullWidth: true, size: 'small' } }}
-                    format="DD/MM/YYYY"
-                    />
-                </LocalizationProvider>
+                            <DatePicker
+                                label="Fin"
+                                value={endDate}
+                                onChange={(newValue: React.SetStateAction<Dayjs | null>) => setEndDate(newValue)}
+                                slotProps={{ textField: { fullWidth: true, size: 'small' } }}
+                                format="DD/MM/YYYY"
+                            />
+                        </LocalizationProvider>
 
-                <TextField
-                    label="Mot clé"
-                    placeholder="Nom du raid..."
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    value={keyword}
-                    onChange={(e) => setKeyword(e.target.value)}
-                />
+                        <TextField
+                            label="Mot clé"
+                            placeholder="Nom du raid..."
+                            variant="outlined"
+                            size="small"
+                            fullWidth
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                        />
 
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                    Club
-                </Typography>
-                <TextField
-                    select
-                    label="Club Organisateur"
-                    value={club}
-                    onChange={(e) => setClub(e.target.value)}
-                    size="small"
-                    fullWidth
-                >
-                    <MenuItem value="">Tous les clubs</MenuItem>
-                    <MenuItem value="club1">Club 1</MenuItem>
-                    <MenuItem value="club2">Club 2</MenuItem>
-                </TextField>
-                </Box>
-                <Box sx={{ flex: 1 }}>
-                <Typography variant="h2" component="h1" gutterBottom>
-                    Les Raids
-                </Typography>
-                <Typography variant="body1">
-                    Liste des raids disponibles à l&apos;exploration.
-                </Typography>
-                <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                    {filteredRaids.length} raids trouvés
-                </Typography>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Club
+                        </Typography>
+                        <TextField
+                            select
+                            label="Club Organisateur"
+                            value={club}
+                            onChange={(e) => setClub(e.target.value)}
+                            size="small"
+                            fullWidth
+                        >
+                            <MenuItem value="">Tous les clubs</MenuItem>
+                            <MenuItem value="club1">Club 1</MenuItem>
+                            <MenuItem value="club2">Club 2</MenuItem>
+                        </TextField>
+                    </Box>
+                    <Box sx={{ flex: 1 }}>
+                        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                            <Stack direction="column">
 
-                <Box
-                    sx={{
-                        display: 'grid',
-                        gap: 3,
-                        gridTemplateColumns: {
-                            xs: '1fr',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                            lg: 'repeat(4, 1fr)'
-                        }
-                    }}
-                >
-                    {filteredRaids.map((raid) => (
-                        <Box key={raid.id}>
-                            <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
+                                <Typography variant="h2" component="h1" gutterBottom>
+                                    Les Raids
+                                </Typography>
+                                <Typography variant="body1">
+                                    Liste des raids disponibles à l&apos;exploration.
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                                    {filteredRaids.length} raids trouvés
+                                </Typography>
+                            </Stack>
+                            {user && isClubManager(user!.id) && <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() => navigate('/raid/create')}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '1rem', mr: 2 }}
+                            >
+                                créer un raid
+                            </Button>
+                            }
+                        </Stack>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gap: 3,
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: 'repeat(2, 1fr)',
+                                    md: 'repeat(3, 1fr)',
+                                    lg: 'repeat(4, 1fr)'
+                                }
+                            }}
+                        >
+                            {filteredRaids.map((raid) => (
+                                <Box key={raid.id}>
+                                    <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
+                                </Box>
+                            ))}
                         </Box>
-                    ))}
-                </Box>
+                    </Box>
                 </Box>
             </Box>
-        </Box>
-    </Container>
+        </Container>
     );
 }

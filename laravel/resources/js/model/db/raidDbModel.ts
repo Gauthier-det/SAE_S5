@@ -1,12 +1,10 @@
 import type { Address } from "./addressDbModel";
-import type { Club } from "./clubDbModel";
-import type { User } from "./userDbModel";
 
 export interface Raid {
-    id: number;
-    club? : Club;
+    id: string;
+    club? : string;
     address? : Address;
-    manager?: User;
+    manager?: string;
     name: string;
     mail : string;
     phone_number : string;

@@ -2,15 +2,15 @@ import { Container, Typography, Box, Button, Slider, Checkbox, FormControlLabel,
 import { useParams, useNavigate } from 'react-router-dom';
 import { getListOfRaids } from '../api/raid';
 import { getListOfRacesByRaidId } from '../api/race';
-import RaceCard from '../components/RaceCard';
+import RaceCard from '../components/cards/RaceCard';
 import React from 'react';
 
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const raids = getListOfRaids();
-    const raid = raids.find(r => r.id === parseInt(id || '', 10));
-    const allRaces = getListOfRacesByRaidId(raid?.id || 0);
+    const raid = raids.find(r => r.id === id);
+    const allRaces = getListOfRacesByRaidId(id!);
 
     const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
     const [distance, setDistance] = React.useState<number[]>([0, 100]);
@@ -41,7 +41,7 @@ export default function InfoRaid() {
             const raceDistance = race.age_min || 0;
             const matchesDistance = raceDistance >= distance[0] && raceDistance <= distance[1];
 
-            const matchesType = raceType.size === 0 || 
+            const matchesType = raceType.size === 0 ||
                 (raceType.has('Compétitif') && race.competitive === true) ||
                 (raceType.has('Randonnée') && race.competitive === false) ||
                 (raceType.has('Extrême') && race.competitive === true);
@@ -51,7 +51,7 @@ export default function InfoRaid() {
             return matchesDistance && matchesType && matchesDifficulty;
         });
     }, [allRaces, distance, raceType, difficultyFilter]);
-    
+
 
     if (!raid) {
         return (
@@ -75,8 +75,8 @@ export default function InfoRaid() {
     return (
         <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
-                <Button 
-                    variant="text" 
+                <Button
+                    variant="text"
                     onClick={() => navigate('/raids')}
                     sx={{ mb: 2 }}
                 >
@@ -106,27 +106,27 @@ export default function InfoRaid() {
                                 Difficulté
                             </Typography>
                             <Box sx={{ px: 1 }}>
-                               <FormGroup>
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('facile')}
                                             onChange={() => handleDifficultyChange('facile')}
-                                        />} 
-                                        label="Facile" 
+                                        />}
+                                        label="Facile"
                                     />
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('moyen')}
                                             onChange={() => handleDifficultyChange('moyen')}
-                                        />} 
-                                        label="Moyen" 
+                                        />}
+                                        label="Moyen"
                                     />
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('difficile')}
                                             onChange={() => handleDifficultyChange('difficile')}
-                                        />} 
-                                        label="Difficile" 
+                                        />}
+                                        label="Difficile"
                                     />
                                 </FormGroup>
                             </Box>
@@ -163,26 +163,26 @@ export default function InfoRaid() {
                                 Type
                             </Typography>
                             <FormGroup>
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Compétitif')}
                                         onChange={() => handleTypeChange('Compétitif')}
-                                    />} 
-                                    label="Compétitif" 
+                                    />}
+                                    label="Compétitif"
                                 />
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Randonnée')}
                                         onChange={() => handleTypeChange('Randonnée')}
-                                    />} 
-                                    label="Randonnée" 
+                                    />}
+                                    label="Randonnée"
                                 />
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Extrême')}
                                         onChange={() => handleTypeChange('Extrême')}
-                                    />} 
-                                    label="Extrême" 
+                                    />}
+                                    label="Extrême"
                                 />
                             </FormGroup>
                         </Box>

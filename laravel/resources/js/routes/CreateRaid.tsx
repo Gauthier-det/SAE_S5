@@ -8,7 +8,6 @@ import {
     FormControl,
     InputLabel,
     Select,
-    MenuItem,
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -16,12 +15,16 @@ import { createRaid } from '../api/raid';
 import type { RaidCreation } from '../model/domain/raidModel';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
+import { useUser } from '../contexts/userContext';
+import { getUserClub } from '../api/club';
 
 const CreateRaid = () => {
+    const {user} = useUser();
     const navigate = useNavigate();
+    const club = getUserClub(user!.id);
     const [formData, setFormData] = useState<RaidCreation>({
         name: '',
-        organizer: '',
+        organizer: club!,
         contact: '',
         website: '',
         location: '',
@@ -37,13 +40,6 @@ const CreateRaid = () => {
             [name as string]: value
         }));
     };
-
-    const handleSelectChange = (e: any) => {
-        setFormData((prev) => ({
-            ...prev,
-            organizer: e.target.value as string
-        }));
-    }
 
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -115,15 +111,11 @@ const CreateRaid = () => {
                     <FormControl fullWidth variant="standard" margin="normal">
                         <InputLabel shrink>Club Organisateur</InputLabel>
                         <Select
-                            value={formData.organizer}
-                            onChange={handleSelectChange}
+                            value={getUserClub(user!.id)}
                             name="organizer"
                             label="Club Organisateur"
                             displayEmpty
                         >
-                            <MenuItem value="" disabled>Choisir un organisateur</MenuItem>
-                            <MenuItem value="Club A">Club A</MenuItem>
-                            <MenuItem value="Club B">Club B</MenuItem>
                         </Select>
                     </FormControl>
 
