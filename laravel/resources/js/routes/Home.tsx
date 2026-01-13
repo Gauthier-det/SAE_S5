@@ -15,7 +15,7 @@ import SavingsIcon from '@mui/icons-material/Savings';
 import frontHomeImage from '../assets/front-home-image.png';
 
 function Home() {
-    const navigate = useNavigate();
+    useNavigate();
 
     return (
         <Box>
@@ -46,7 +46,6 @@ function Home() {
                 </Box>
             </Box>
 
-            {/* Responsables Section */}
             <Box sx={{ backgroundColor: '#1B3022', color: 'white', py: { xs: 6, md: 10 }, px: 4, textAlign: 'center' }} id="responsables">
                 <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, letterSpacing: 2, display: 'block', mb: 1 }}>
                     POUR LES RESPONSABLES DE COURSES
@@ -55,7 +54,7 @@ function Home() {
                     Organisez sans Stress
                 </Typography>
 
-                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, maxWidth: '1280px', mx: 'auto' }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, maxWidth: '1280px', mx: 'auto'}}>
                     <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', p: 4, borderRadius: 2, border: 'none' }}>
                         <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                             <AssignmentOutlined sx={{ fontSize: 64 }} />
@@ -94,7 +93,6 @@ function Home() {
                 </Box>
             </Box>
 
-            {/* Coureurs Section */}
             <Box sx={{ backgroundColor: '#1B5E20', color: 'white', py: { xs: 6, md: 10 }, px: 4 }} id="coureurs">
                 <Box sx={{ textAlign: 'center', mb: 6 }}>
                     <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, letterSpacing: 2, display: 'block', mb: 1 }}>
@@ -192,7 +190,7 @@ function Home() {
                                             <SavingsIcon sx={{ fontSize: 60, color: '#757575' }} />
                                         </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: '0.875rem' }}>
-                                            Course du sanglier
+                                            Course Adventure
                                         </Typography>
                                         <Typography variant="caption" sx={{ color: '#4b5563', mb: 1, display: 'block', fontSize: '0.75rem' }}>
                                             10 juin 2025 • Localisation
@@ -223,7 +221,6 @@ function Home() {
                 </Box>
             </Box>
 
-            {/* Contact Section */}
             <Box sx={{ backgroundColor: '#f3f4f6', py: { xs: 6, md: 10 }, px: 4, textAlign: 'center' }} id="contact">
                 <Typography variant="h4" sx={{ fontSize: { xs: '1.875rem', md: '2.25rem' }, fontWeight: 'bold', mb: 6, color: '#1f2937' }}>
                     Comment ça fonctionne ?
@@ -258,7 +255,7 @@ function Home() {
 
                     <Box
                         component="a"
-                        href="#courses"
+                        href="raids"
                         sx={{
                             p: 3,
                             borderRadius: '12px',
@@ -275,7 +272,7 @@ function Home() {
                             <SearchOutlined sx={{ fontSize: 64, color: '#059669', transition: 'transform 300ms', '&:hover': { transform: 'scale(1.1)' } }} />
                         </Box>
                         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: '#047857' }}>
-                            Trouver une course
+                            Trouver un Raid
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#4b5563' }}>
                             Découvrez des centaines d'aventures près de chez vous

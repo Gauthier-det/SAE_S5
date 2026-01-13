@@ -1,6 +1,6 @@
 import { Container, Typography, Box, MenuItem, TextField} from '@mui/material';
 import RaidCard from '../components/RaidCard';
-import { getListOfRaids } from '../api/raids';
+import { getListOfRaids } from '../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -51,8 +51,8 @@ export default function Raids() {
         const endTs = endDate ? endDate.valueOf() : null;
 
         return raids.filter((raid) => {
-            const raidStartTs = parseFrDateToTs(raid.start_date);
-            const raidEndTs = parseFrDateToTs(raid.end_date);
+            const raidStartTs = parseFrDateToTs(raid.time_start);
+            const raidEndTs = parseFrDateToTs(raid.time_end);
 
             const matchesStart = startTs != null ? raidEndTs >= startTs : true;
             const matchesEnd = endTs != null ? raidStartTs <= endTs : true;
@@ -68,11 +68,11 @@ export default function Raids() {
     }, [raids, startDate, endDate, keyword, club]);
 
     const handleRaidDetails = (raidId: number) => {
-        console.log('Voir détails du raid', raidId);
+        
     };
 
     return (
-        <Container maxWidth="xl">
+        <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
             <Box sx={{ display: 'flex', gap: 4 }}>
                 <Box
