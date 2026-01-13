@@ -9,6 +9,9 @@ import Raids from './routes/Raids';
 import InfoRaid from './routes/InfoRaid';
 import About from './routes/About';
 import Login from './routes/Login';
+import CreateCourse from './routes/CreateCourse';
+import CreateRaid from './routes/CreateRaid';
+
 import { UserProvider } from './contexts/userContext';
 
 const MainLayout = () => {
@@ -36,6 +39,7 @@ function App() {
 
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/create-course" element={<CreateCourse />} />
           </Route>
         </Routes>
       </Router>
