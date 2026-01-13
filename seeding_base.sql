@@ -20,10 +20,6 @@ INSERT INTO SAN_CATEGORIES (CAT_ID, CAT_LABEL) VALUES
 (2, 'Majeur non licencié'),
 (3, 'Licensié');
 
-INSERT INTO SAN_CLUBS (CLU_ID, USE_ID, ADD_ID, CLU_NAME) VALUES
-(1, 2, 1, 'CO-DE');
-INSERT INTO SAN_CLUBS (CLU_ID, USE_ID, ADD_ID, CLU_NAME) VALUES
-(2, 3, 3, 'L''Embuscade');
 
 INSERT INTO SAN_USERS (USE_ID, ADD_ID, CLU_ID, USE_MAIL, USE_PASSWORD,
                        USE_NAME, USE_LAST_NAME, USE_BIRTHDATE,
@@ -34,35 +30,43 @@ VALUES
 (1, 1, NULL, 'admin.site@example.com', 'pwd123', 'Admin', 'Site',
  '1980-01-01', 610000001, NULL, NULL, NULL),
 -- 2 : Respo club 1 
-(2, 2, 1, 'marc.marquez@example.com', 'pwd123', 'Marc', 'Marquez',
+(2, 2, null, 'marc.marquez@example.com', 'pwd123', 'Marc', 'Marquez',
  '1985-05-10', 610000002, 100002, NULL, '2021-01-01'),
 -- 3 : Respo club 2 
-(3, 3, 2, 'fabio.quartararo@example.com', 'pwd123', 'Fabio', 'Quartararo',
+(3, 3, null, 'fabio.quartararo@example.com', 'pwd123', 'Fabio', 'Quartararo',
  '1978-03-15', 610000003, 100003, NULL, '2021-01-01'),
 -- 4 : Respo raid/races raid 1
-(4, 2, 1, 'loane.kante@example.com', 'pwd123', 'Loane', 'Kante',
+(4, 2, null, 'loane.kante@example.com', 'pwd123', 'Loane', 'Kante',
  '2000-05-10', 610000004, 100006, NULL, '2023-01-01'),
 -- 3 : Respo Raid 2 
-(5, 3, 2, 'jack.sparrow@example.com', 'pwd123', 'Jack', 'Sparrow',
+(5, 3, null, 'jack.sparrow@example.com', 'pwd123', 'Jack', 'Sparrow',
  '1978-03-15', 610000005, 100007, NULL, '2021-01-01'),
  -- 4 : Respo race raid 2
-(6, 3, 2, 'grace.parker@example.com', 'pwd123', 'Grace', 'Parker',
+(6, 3, null, 'grace.parker@example.com', 'pwd123', 'Grace', 'Parker',
  '1988-03-15', 610000006, 100008, NULL, '2021-01-01'),
 -- Runners club 1 (x3) :
-(7, 4, 1, 'alice.durand@example.com', 'pwd123', 'Alice', 'Durand',
+(7, 4, null, 'alice.durand@example.com', 'pwd123', 'Alice', 'Durand',
  '1990-06-01', 620000004, 200001, null, '2023-01-01'),
-(8, 5, 1, 'bob.douglas@example.com', 'pwd123', 'Bob', 'Douglas',
+(8, 5, null, 'bob.douglas@example.com', 'pwd123', 'Bob', 'Douglas',
  '1992-02-01', 620000005, 200002, null, '2023-01-01'),
-(9, 6, 1, 'hugo.dialo@example.com', 'pwd123', 'Hugo', 'Dialo',
+(9, 6, null, 'hugo.dialo@example.com', 'pwd123', 'Hugo', 'Dialo',
  '1995-09-15', 620000006, 200003, null, '2023-01-01'),
 -- Runners club 2 (x2) :
-(10, 7, 2, 'ino.casablanca@example.com', 'pwd123', 'Ino', 'Casablanca',
+(10, 7, null, 'ino.casablanca@example.com', 'pwd123', 'Ino', 'Casablanca',
  '1991-11-20', 620000007, 200004, null, '2023-01-01'),
-(11, 8, 2, 'cassiopee.guerdat@example.com', 'pwd123', 'Cassiopée', 'Guerdat',
+(11, 8, null, 'cassiopee.guerdat@example.com', 'pwd123', 'Cassiopée', 'Guerdat',
  '1993-04-30', 620000008, 200005, null, '2023-01-01'),
 -- Runner without club 
 (12, 9, NULL, 'coureur.sansclub@example.com', 'pwd123', 'Chloe', 'Libre',
  '1998-01-10', 620000009, NULL, 'pps_chloe.pdf', '2024-01-01');
+
+INSERT INTO SAN_CLUBS (CLU_ID, USE_ID, ADD_ID, CLU_NAME) VALUES
+(1, 2, 1, 'CO-DE');
+INSERT INTO SAN_CLUBS (CLU_ID, USE_ID, ADD_ID, CLU_NAME) VALUES
+(2, 3, 3, 'L''Embuscade');
+
+update SAN_USERS set clu_id = 1 where use_id in (2,4,7,8,9);
+update SAN_USERS set clu_id = 2 where use_id in (3,5,6,10,11);
 
 INSERT INTO SAN_ROLES (ROL_ID, ROL_NAME) VALUES
 (1, 'Coureur'),
