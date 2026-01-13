@@ -2,47 +2,95 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class User extends Authenticatable
+class User extends Model
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    protected $table = 'SAN_USERS';
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+    protected $primaryKey = 'USE_ID';
+
+    public $timestamps = false;
+
     protected $fillable = [
-        'name',
-        'email',
-        'password',
+        'ADD_ID',
+        'CLU_ID',
+        'USE_MAIL',
+        'USE_PASSWORD',
+        'USE_NAME',
+        'USE_LAST_NAME',
+        'USE_BIRTHDATE',
+        'USE_PHONE_NUMBER',
+        'USE_LICENCE_NUMBER',
+        'USE_PPS_FORM',
+        'USE_MEMBERSHIP_DATE',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
+    protected $casts = [
+        'USE_BIRTHDATE'       => 'date',
+        'USE_MEMBERSHIP_DATE' => 'date',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    public function address(): BelongsTo
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
+    }
+
+    public function club(): BelongsTo
+    {
+        return $this->belongsTo(Club::class, 'CLU_ID', 'CLU_ID');
+    }
+
+    public function teams(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Team::class,
+            'SAN_USERS_TEAMS',
+            'USE_ID',
+            'TEA_ID'
+        );
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Role::class,
+            'SAN_ROLES_USERS',
+            'USE_ID',
+            'ROL_ID'
+        );
+    }
+
+    public function races(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Race::class,
+            'SAN_USERS_RACES',
+            'USE_ID',
+            'RAC_ID'
+        );
+    }
+
+    public function teamsCreated(): HasMany
+    {
+        return $this->hasMany(Team::class, 'USE_ID', 'USE_ID');
+    }
+
+    public function clubsCreated(): HasMany
+    {
+        return $this->hasMany(Club::class, 'USE_ID', 'USE_ID');
+    }
+
+    public function racesCreated(): HasMany
+    {
+        return $this->hasMany(Race::class, 'USE_ID', 'USE_ID');
+    }
+
+    public function raidsCreated(): HasMany
+    {
+        return $this->hasMany(Raid::class, 'USE_ID', 'USE_ID');
     }
 }
