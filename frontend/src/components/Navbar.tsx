@@ -67,7 +67,7 @@ function Navbar() {
                                 mr: 1,
                                 cursor: 'pointer'
                             }}
-                            alt="Sanglier Explorer Logo"
+                            alt="Race Explorer Logo"
                             src={sanglierImage}
                             onClick={() => navigate('/')}
                         />

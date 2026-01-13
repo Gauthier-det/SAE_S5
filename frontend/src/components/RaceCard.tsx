@@ -36,7 +36,7 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                     component="img"
                     height="160"
                     image={race.image_url}
-                    alt={race.name}
+
                     sx={{ objectFit: 'cover' }}
                 />
             ) : (
@@ -55,16 +55,14 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
             )}
             
             <CardContent sx={{ p: 2 }}>
-                <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
-                    {race.name}
-                </Typography>
-                
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    {race.date }
+                    <strong>Lieu:</strong> 
                     <br />
-                    {race.type}
+                    <strong>Date:</strong> {race.date}
                     <br />
-                    {race.age_range} 
+                    <strong>Équipes inscrites:</strong> {race.registered_participants || 0}
+                    <br />
+                    <strong>Places disponibles:</strong> {(race.max_participants || 0) - (race.registered_participants || 0)}
                 </Typography>
                 
                 <Button 

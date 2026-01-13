@@ -62,6 +62,12 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
                     Du {raid.start_date} au {raid.end_date}
                     <br />
                     {raid.events_count} épreuves disponibles
+                    <br />
+                    Statut d'inscription: {raid.registration_status}
+                    <br />
+                    Statut du raid: {raid.status}
+                    <br />
+                    Dates d'inscription: {raid.registration_start} - {raid.registration_end}
                 </Typography>
                 
                 <Button 

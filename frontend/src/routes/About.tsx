@@ -8,7 +8,7 @@ export default function About() {
                     À Propos
                 </Typography>
                 <Typography variant="body1">
-                    En savoir plus sur Sanglier Explorer.
+                    En savoir plus sur Race Explorer.
                 </Typography>
             </Box>
         </Container>

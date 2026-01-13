@@ -8,7 +8,7 @@ export default function Dashboard() {
                     Dashboard
                 </Typography>
                 <Typography variant="body1">
-                    Bienvenue sur le tableau de bord de Sanglier Explorer.
+                    Bienvenue sur le tableau de bord de Race Explorer.
                 </Typography>
             </Box>
         </Container>
