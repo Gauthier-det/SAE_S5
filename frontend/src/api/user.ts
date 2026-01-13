@@ -1,4 +1,4 @@
-import type { User } from "../model/db/user"
+import type { User } from "../model/db/userDbModel"
 
 export const getUserWithToken = (): User => {
     return {
