@@ -12,17 +12,14 @@ import {
   MenuItem,
   FormControl,
   Typography,
-  Grid,
-  Popper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { TimeClock } from '@mui/x-date-pickers/TimeClock';
+import dayjs from 'dayjs';
 
 const PageContainer = styled(Box)(({ theme }) => ({
   minHeight: '100vh',
-  backgroundColor: theme.palette.mode === 'dark' ? '#1a3a2e' : '#f5f5f5',
+  backgroundColor: theme.palette.mode === 'dark' ? '#1B3022' : '#1B3022',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -43,7 +40,7 @@ const PageTitle = styled(Typography)(({ theme }) => ({
   fontWeight: 'bold',
   textAlign: 'center',
   marginBottom: theme.spacing(4),
-  color: '#000000',
+  color: '#ffffff',
 }));
 
 const SectionTitle = styled(Typography)({
@@ -66,17 +63,12 @@ const StyledTextField = styled(TextField)({
   },
 });
 
-const CheckboxContainer = styled(Box)({
-  display: 'flex',
-  gap: '2rem',
-  margin: '1.5rem 0',
-});
-
 const RadioContainer = styled(RadioGroup)({
   display: 'flex',
   flexDirection: 'row',
   gap: '2rem',
 });
+
 
 const ValidateButton = styled(Button)({
   backgroundColor: '#2d6a3f',
@@ -93,23 +85,17 @@ const ValidateButton = styled(Button)({
 
 export default function CreateCourse() {
   const [formData, setFormData] = useState({
-    name: 'course durr burger',
     responsible: '',
-    duration: '2h',
-    minPrice: '69',
-    maxPrice: '420',
-    minParticipants: '67',
-    illustration: 'course.png',
-    difficulty: 'moyen',
+    minPrice: '',
+    maxPrice: '',
+    minParticipants: '',
+    difficulty: '',
     startDate: '',
-    startTime: null as Date | null,
+    startTime: dayjs(),
     endDate: '',
-    endTime: null as Date | null,
+    endTime: dayjs(),
     courseType: 'competition',
   });
-
-  const [startTimeAnchor, setStartTimeAnchor] = useState<HTMLButtonElement | null>(null);
-  const [endTimeAnchor, setEndTimeAnchor] = useState<HTMLButtonElement | null>(null);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -134,34 +120,64 @@ export default function CreateCourse() {
     }));
   };
 
-  const handleStartTimeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setStartTimeAnchor(event.currentTarget);
+  const isFormValid = () => {
+    return (
+      formData.responsible &&
+      formData.minPrice &&
+      formData.maxPrice &&
+      formData.minParticipants &&
+      formData.difficulty &&
+      formData.startDate &&
+      formData.endDate
+    );
   };
 
-  const handleEndTimeClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setEndTimeAnchor(event.currentTarget);
-  };
-
-  const handleStartTimeChange = (time: Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      startTime: time,
-    }));
-    setStartTimeAnchor(null);
-  };
-
-  const handleEndTimeChange = (time: Date | null) => {
-    setFormData(prev => ({
-      ...prev,
-      endTime: time,
-    }));
-    setEndTimeAnchor(null);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // TODO: Send formData to backend
+    
+    if (!isFormValid()) {
+      alert('Tous les champs sont obligatoires');
+      return;
+    }
+
+    const courseData = {
+      responsible: formData.responsible,
+      minPrice: parseFloat(formData.minPrice),
+      maxPrice: parseFloat(formData.maxPrice),
+      minParticipants: parseInt(formData.minParticipants),
+      difficulty: formData.difficulty,
+      startDate: formData.startDate,
+      startTime: formData.startTime.format('HH:mm'),
+      endDate: formData.endDate,
+      endTime: formData.endTime.format('HH:mm'),
+      courseType: formData.courseType,
+    };
+
+    try {
+      // Créer le fichier JSON dans src/model/db/race.ts
+      const raceContent = `export const races = ${JSON.stringify([courseData], null, 2)};`;
+      
+      // Pour le développement, on simule la sauvegarde
+      console.log('Course créée:', courseData);
+      alert('Course créée avec succès!');
+      
+      // Réinitialiser le formulaire
+      setFormData({
+        responsible: '',
+        minPrice: '',
+        maxPrice: '',
+        minParticipants: '',
+        difficulty: '',
+        startDate: '',
+        startTime: dayjs(),
+        endDate: '',
+        endTime: dayjs(),
+        courseType: 'competition',
+      });
+    } catch (error) {
+      console.error('Erreur lors de la création de la course:', error);
+      alert('Erreur lors de la création de la course');
+    }
   };
 
   return (
@@ -176,23 +192,11 @@ export default function CreateCourse() {
               RAID - Le sanglier fou
             </Typography>
 
-            {/* Nom de la course */}
-            <Box sx={{ marginBottom: 2.5 }}>
-              <SectionTitle>Nom de la course</SectionTitle>
-              <StyledTextField
-                fullWidth
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                variant="standard"
-              />
-            </Box>
-
             {/* Responsable + Radio Buttons */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2.5, gap: 2 }}>
               <Box sx={{ flex: 1 }}>
                 <SectionTitle>Responsable de la course</SectionTitle>
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth size="small" required>
                   <Select
                     name="responsible"
                     value={formData.responsible}
@@ -227,38 +231,29 @@ export default function CreateCourse() {
               </Box>
             </Box>
 
-            {/* Durée + Difficulté */}
-            <Grid container spacing={3} sx={{ marginBottom: 2.5 }}>
-              <Grid item xs={6}>
-                <SectionTitle>durée</SectionTitle>
-                <StyledTextField
-                  fullWidth
-                  name="duration"
-                  value={formData.duration}
-                  onChange={handleInputChange}
+            {/* Difficulté */}
+            <Box sx={{ marginBottom: 2.5 }}>
+              <SectionTitle>difficulté</SectionTitle>
+              <FormControl fullWidth size="small" required>
+                <Select
+                  name="difficulty"
+                  value={formData.difficulty}
+                  onChange={handleSelectChange}
                   variant="standard"
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <SectionTitle>difficulté</SectionTitle>
-                <FormControl fullWidth size="small">
-                  <Select
-                    name="difficulty"
-                    value={formData.difficulty}
-                    onChange={handleSelectChange}
-                    variant="standard"
-                  >
-                    <MenuItem value="facile">Facile</MenuItem>
-                    <MenuItem value="moyen">Moyen</MenuItem>
-                    <MenuItem value="difficile">Difficile</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+                >
+                  <MenuItem value="">
+                    <em>Sélectionner</em>
+                  </MenuItem>
+                  <MenuItem value="facile">Facile</MenuItem>
+                  <MenuItem value="moyen">Moyen</MenuItem>
+                  <MenuItem value="difficile">Difficile</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
 
             {/* Prix mineur + Prix majeur */}
-            <Grid container spacing={3} sx={{ marginBottom: 2.5 }}>
-              <Grid item xs={6}>
+            <Box sx={{ display: 'flex', gap: 3, marginBottom: 2.5 }}>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>prix mineur</SectionTitle>
                 <StyledTextField
                   fullWidth
@@ -266,9 +261,11 @@ export default function CreateCourse() {
                   value={formData.minPrice}
                   onChange={handleInputChange}
                   variant="standard"
+                  type="number"
+                  required
                 />
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>prix majeur</SectionTitle>
                 <StyledTextField
                   fullWidth
@@ -276,9 +273,11 @@ export default function CreateCourse() {
                   value={formData.maxPrice}
                   onChange={handleInputChange}
                   variant="standard"
+                  type="number"
+                  required
                 />
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* Nombre de participants minimum */}
             <Box sx={{ marginBottom: 2.5 }}>
@@ -289,24 +288,14 @@ export default function CreateCourse() {
                 value={formData.minParticipants}
                 onChange={handleInputChange}
                 variant="standard"
-              />
-            </Box>
-
-            {/* Illustration */}
-            <Box sx={{ marginBottom: 2.5 }}>
-              <SectionTitle>Illustration</SectionTitle>
-              <StyledTextField
-                fullWidth
-                name="illustration"
-                value={formData.illustration}
-                onChange={handleInputChange}
-                variant="standard"
+                type="number"
+                required
               />
             </Box>
 
             {/* Dates et heures */}
-            <Grid container spacing={3} sx={{ marginBottom: 2.5 }}>
-              <Grid item xs={6}>
+            <Box sx={{ display: 'flex', gap: 3, marginBottom: 2.5 }}>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>Date de début</SectionTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e0e0e0', paddingBottom: 1 }}>
                   <StyledTextField
@@ -316,41 +305,37 @@ export default function CreateCourse() {
                     value={formData.startDate}
                     onChange={handleInputChange}
                     variant="standard"
+                    required
+                    InputLabelProps={{ shrink: true }}
                   />
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>heure de départ</SectionTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e0e0e0', paddingBottom: 1 }}>
-                  <Button
+                  <StyledTextField
                     fullWidth
-                    onClick={handleStartTimeClick}
-                    sx={{
-                      textAlign: 'left',
-                      color: '#000',
-                      justifyContent: 'flex-start',
-                      fontSize: '1rem',
-                      textTransform: 'none',
+                    type="time"
+                    name="startTime"
+                    value={formData.startTime.format('HH:mm')}
+                    onChange={(e) => {
+                      const [hours, minutes] = e.target.value.split(':');
+                      setFormData(prev => ({
+                        ...prev,
+                        startTime: prev.startTime.set('hour', parseInt(hours)).set('minute', parseInt(minutes)),
+                      }));
                     }}
-                  >
-                    {formData.startTime ? formData.startTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Sélectionner l\'heure'}
-                    <AccessTimeIcon sx={{ ml: 1, color: '#999' }} />
-                  </Button>
-                  <Popper open={Boolean(startTimeAnchor)} anchorEl={startTimeAnchor}>
-                    <Box sx={{ p: 2, backgroundColor: 'white', boxShadow: 1, borderRadius: 1 }}>
-                      <TimeClock
-                        value={formData.startTime}
-                        onChange={handleStartTimeChange}
-                        ampm={false}
-                      />
-                    </Box>
-                  </Popper>
+                    variant="standard"
+                    InputProps={{
+                      endAdornment: <AccessTimeIcon sx={{ ml: 1, color: '#999' }} />,
+                    }}
+                  />
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
-            <Grid container spacing={3} sx={{ marginBottom: 2 }}>
-              <Grid item xs={6}>
+            <Box sx={{ display: 'flex', gap: 3, marginBottom: 2 }}>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>Date de fin</SectionTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e0e0e0', paddingBottom: 1 }}>
                   <StyledTextField
@@ -360,38 +345,34 @@ export default function CreateCourse() {
                     value={formData.endDate}
                     onChange={handleInputChange}
                     variant="standard"
+                    required
+                    InputLabelProps={{ shrink: true }}
                   />
                 </Box>
-              </Grid>
-              <Grid item xs={6}>
+              </Box>
+              <Box sx={{ flex: 1 }}>
                 <SectionTitle>heure de fin</SectionTitle>
                 <Box sx={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e0e0e0', paddingBottom: 1 }}>
-                  <Button
+                  <StyledTextField
                     fullWidth
-                    onClick={handleEndTimeClick}
-                    sx={{
-                      textAlign: 'left',
-                      color: '#000',
-                      justifyContent: 'flex-start',
-                      fontSize: '1rem',
-                      textTransform: 'none',
+                    type="time"
+                    name="endTime"
+                    value={formData.endTime.format('HH:mm')}
+                    onChange={(e) => {
+                      const [hours, minutes] = e.target.value.split(':');
+                      setFormData(prev => ({
+                        ...prev,
+                        endTime: prev.endTime.set('hour', parseInt(hours)).set('minute', parseInt(minutes)),
+                      }));
                     }}
-                  >
-                    {formData.endTime ? formData.endTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : 'Sélectionner l\'heure'}
-                    <AccessTimeIcon sx={{ ml: 1, color: '#999' }} />
-                  </Button>
-                  <Popper open={Boolean(endTimeAnchor)} anchorEl={endTimeAnchor}>
-                    <Box sx={{ p: 2, backgroundColor: 'white', boxShadow: 1, borderRadius: 1 }}>
-                      <TimeClock
-                        value={formData.endTime}
-                        onChange={handleEndTimeChange}
-                        ampm={false}
-                      />
-                    </Box>
-                  </Popper>
+                    variant="standard"
+                    InputProps={{
+                      endAdornment: <AccessTimeIcon sx={{ ml: 1, color: '#999' }} />,
+                    }}
+                  />
                 </Box>
-              </Grid>
-            </Grid>
+              </Box>
+            </Box>
 
             {/* Submit Button */}
             <ValidateButton type="submit" variant="contained">
