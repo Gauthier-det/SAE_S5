@@ -4,6 +4,11 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 
+use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\ClubManager;
+use App\Http\Middleware\RaidManager;
+use App\Http\Middleware\SiteManager;
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
@@ -12,7 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'Authenticate'=> Authenticate::class,
+            'RaceManager' => RaceManager::class,
+            'ClubManager' => ClubManager::class,
+            'RaidManager' => RaidManager::class,
+            'SiteManager' => SiteManager::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
