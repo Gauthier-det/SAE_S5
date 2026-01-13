@@ -3,7 +3,7 @@ import { createTheme } from '@mui/material/styles';
 const theme = createTheme({
     palette: {
         primary: {
-            main: '#1B3022', // Vert Sanglier
+            main: '#1B3022', // Vert Explorer
             light: '#2D5A27', // Mousse Profonde
             contrastText: '#FDFCF8',
         },

@@ -67,12 +67,14 @@ export default function Raids() {
         });
     }, [raids, startDate, endDate, keyword, club]);
 
+    
+
     const handleRaidDetails = (raidId: number) => {
-        console.log('Voir détails du raid', raidId);
+        
     };
 
     return (
-        <Container maxWidth="xl">
+        <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
             <Box sx={{ display: 'flex', gap: 4 }}>
                 <Box

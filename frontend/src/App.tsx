@@ -6,10 +6,13 @@ import Navbar from './components/Navbar';
 import Home from './routes/Home';
 import Dashboard from './routes/Dashboard';
 import Raids from './routes/Raids';
+import InfoRaid from './routes/InfoRaid';
 import About from './routes/About';
 import Login from './routes/Login';
+import CreateCourse from './routes/CreateCourse';
 import CreateRaid from './routes/CreateRaid';
 import Register from './routes/Register';
+
 import { UserProvider } from './contexts/userContext';
 
 const MainLayout = () => {

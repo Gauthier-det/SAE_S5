@@ -17,3 +17,6 @@ export interface Raid {
     registration_start : string;
     registration_end : string;
 }
+
+export type RaidStatus = 'à venir' | 'en cours' | 'terminé';
+export type RegistrationStatus = 'en attente' | 'confirmée' | 'annulée' | 'non inscrit';
