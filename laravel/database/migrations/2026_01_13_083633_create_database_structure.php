@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -32,7 +33,7 @@ return new class extends Migration
         // SAN_USERS
         Schema::create('SAN_USERS', function (Blueprint $table) {
             $table->increments('USE_ID');
-            $table->unsignedBigInteger('ADD_ID');
+            $table->unsignedBigInteger('ADD_ID')->nullable();
             $table->unsignedInteger('CLU_ID')->nullable();
             $table->string('USE_MAIL', 255);
             $table->string('USE_PASSWORD', 255);
@@ -195,6 +196,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        DB::statement('PRAGMA foreign_keys = OFF');
+
         Schema::dropIfExists('SAN_USERS_RACES');
         Schema::dropIfExists('SAN_CATEGORIES_RACES');
         Schema::dropIfExists('SAN_ROLES_USERS');
@@ -203,10 +206,13 @@ return new class extends Migration
         Schema::dropIfExists('SAN_RACES');
         Schema::dropIfExists('SAN_RAIDS');
         Schema::dropIfExists('SAN_TEAMS');
-        Schema::dropIfExists('SAN_CLUBS');
         Schema::dropIfExists('SAN_USERS');
+        Schema::dropIfExists('SAN_CLUBS');
         Schema::dropIfExists('SAN_ROLES');
         Schema::dropIfExists('SAN_CATEGORIES');
         Schema::dropIfExists('SAN_ADDRESSES');
+
+        DB::statement('PRAGMA foreign_keys = ON');
     }
+
 };
