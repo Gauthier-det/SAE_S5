@@ -3,8 +3,8 @@ import type { Club } from "./clubDbModel";
 
 export interface User {
     id: number;
-    address : Address;
-    club : Club;
+    address? : Address;
+    club? : Club;
     email: string;
     name: string;
     last_name: string;

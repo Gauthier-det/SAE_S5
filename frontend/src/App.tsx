@@ -9,6 +9,7 @@ import Raids from './routes/Raids';
 import About from './routes/About';
 import Login from './routes/Login';
 import CreateRaid from './routes/CreateRaid';
+import Register from './routes/Register';
 import { UserProvider } from './contexts/userContext';
 
 const MainLayout = () => {
@@ -23,21 +24,22 @@ const MainLayout = () => {
 function App() {
   return (
     <UserProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <Router>
-        <CssBaseline />
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/raids" element={<Raids />} />
-            <Route path="/create-raid" element={<CreateRaid />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/login" element={<Login />} />
-          </Route>
-        </Routes>
-      </Router>
-        </LocalizationProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <Router>
+          <CssBaseline />
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/raids" element={<Raids />} />
+              <Route path="/create-raid" element={<CreateRaid />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+          </Routes>
+        </Router>
+      </LocalizationProvider>
     </UserProvider>
   );
 }

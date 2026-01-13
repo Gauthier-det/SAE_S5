@@ -18,6 +18,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../assets/logo-white.png';
+import NoteAltIcon from '@mui/icons-material/NoteAlt';
 
 const pages = [
     { name: 'DASHBOARD', path: '/dashboard' },
@@ -134,16 +135,28 @@ function Navbar() {
                                 </Menu>
                             </>
                             :
-                            <Tooltip title={<Typography variant="body2">Connexion</Typography>} placement="bottom" arrow>
-                                <IconButton
-                                    onClick={() => navigate('/login')}
-                                    aria-label="login"
-                                    size="large"
-                                    sx={{ '&:hover': { color: 'warning.main' } }}
-                                >
-                                    <LoginIcon fontSize="inherit" color="warning" />
-                                </IconButton>
-                            </Tooltip>
+                            <>
+                                <Tooltip title={<Typography variant="body2">Connexion</Typography>} placement="bottom" arrow>
+                                    <IconButton
+                                        onClick={() => navigate('/login')}
+                                        aria-label="login"
+                                        size="large"
+                                        sx={{ '&:hover': { color: 'warning.main' } }}
+                                    >
+                                        <LoginIcon fontSize="inherit" color="warning" />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title={<Typography variant="body2">Inscription</Typography>} placement="bottom" arrow>
+                                    <IconButton
+                                        onClick={() => navigate('/register')}
+                                        aria-label="register"
+                                        size="large"
+                                        sx={{ '&:hover': { color: 'warning.main' } }}
+                                    >
+                                        <NoteAltIcon fontSize="inherit" color="warning" />
+                                    </IconButton>
+                                </Tooltip>
+                            </>
                         }
                     </Box>
 
