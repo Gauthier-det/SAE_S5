@@ -1,0 +1,14 @@
+USE_ID | NOM_COMPLET          | CLU_ID | ROLES                                          | RAI_ID_RESPONSABLE | RAC_ID_RESPONSABLE
+    
+1      | Admin Site           | NULL   | Administrateur de site                         | NULL               | NULL
+2      | Marc Marquez         | 1      | Responsable de club 1                          | NULL               | NULL
+3      | Fabio Quartararo     | 2      | Responsable de club 2                          | NULL               | NULL
+4      | Loane Kante          | 1      | Responsable raid, responsable courses          | 1                  | (toutes courses raid 1)
+5      | Jack Sparrow         | 2      | Responsable raid                               | 2                  | NULL
+6      | Grace Parker         | 2      | Responsable courses raid 2                     | NULL               | (toutes courses raid 2)
+7      | Alice Durand         | 1      | Coureur (club 1)                               | NULL               | NULL
+8      | Bob Douglas          | 1      | Coureur (club 1)                               | NULL               | NULL
+9      | Hugo Dialo           | 1      | Coureur (club 1)                               | NULL               | NULL
+10     | Ino Casablanca       | 2      | Coureur (club 2)                               | NULL               | NULL
+11     | Cassiopée Guerdat    | 2      | Coureur (club 2)                               | NULL               | NULL
+12     | Chloe Libre          | NULL   | Coureur sans club (PPS obligatoire)            | NULL               | NULL
