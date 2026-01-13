@@ -8,7 +8,7 @@ class RaceController extends Controller
 {
     public function getAllRaces()
     {
-        $races = RAce::all();
+        $races = Race::all();
         return response()->json(['data' => $races]);
     }
 }
