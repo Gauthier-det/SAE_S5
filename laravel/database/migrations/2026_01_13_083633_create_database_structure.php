@@ -33,7 +33,7 @@ return new class extends Migration
         // SAN_USERS
         Schema::create('SAN_USERS', function (Blueprint $table) {
             $table->increments('USE_ID');
-            $table->unsignedBigInteger('ADD_ID');
+            $table->unsignedBigInteger('ADD_ID')->nullable();
             $table->unsignedInteger('CLU_ID')->nullable();
             $table->string('USE_MAIL', 255);
             $table->string('USE_PASSWORD', 255);
