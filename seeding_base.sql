@@ -100,15 +100,15 @@ INSERT INTO SAN_RAIDS (RAI_ID, CLU_ID, ADD_ID, USE_ID, RAI_NAME, RAI_MAIL, RAI_P
 -- Raid 2 organised by club 2
 (2, 2, 4, 5, 'Raid de Vanves 2025', 'contact@trailvanves.fr', null, 'https://trailfalaises.fr', 'trail_falaises.jpg', '2026-04-20 07:30:00', '2026-04-20 19:00:00', '2025-12-01 00:00:00', '2026-04-15 23:59:59');
 
-INSERT INTO SAN_RACES (RAC_ID, USE_ID, RAI_ID, RAC_TIME_START, RAC_TIME_END, RAC_TYPE, RAC_DURATION, RAC_DIFFICULTY, RAC_MIN_PARTICIPANTS, RAC_MAX_PARTICIPANTS, RAC_MIN_TEAMS, RAC_MAX_TEAMS, RAC_TEAM_MEMBERS, RAC_MEAL_PRICE, RAC_RESULTS, RAC_AGE_MIN, RAC_AGE_MIDDLE, RAC_AGE_MAX) VALUES
+INSERT INTO SAN_RACES (RAC_ID, USE_ID, RAI_ID, RAC_TIME_START, RAC_TIME_END, RAC_TYPE, RAC_DIFFICULTY, RAC_MIN_PARTICIPANTS, RAC_MAX_PARTICIPANTS, RAC_MIN_TEAMS, RAC_MAX_TEAMS, RAC_TEAM_MEMBERS, RAC_AGE_MIN, RAC_AGE_MIDDLE, RAC_AGE_MAX) VALUES
 -- Course 1 in Raid 1
-(1, 4, 1, '2025-10-10 08:30:00', '2025-10-10 13:30:00', 'Compétitif', 'Moyen', 5, 200, 2, 50, 3, 12, '15', '18'),
+(1, 4, 1, '2025-10-10 08:30:00', '2025-10-10 13:30:00', 'Compétitif', 'Moyen', 5, 200, 2, 50, 3, 12, 15, 18),
 -- Course 2 in Raid 1
-(2, 4, 1, '2025-10-10 12:30:00', '2025-10-10 18:30:00', 'Compétitif', 'Difficile', 4, 150, 2, 40, 2, 18, '25', '30'),
+(2, 4, 1, '2025-10-10 12:30:00', '2025-10-10 18:30:00', 'Compétitif', 'Difficile', 4, 150, 2, 40, 2, 18, 25, 30),
 -- Course 3 in Raid 2
-(3, 6, 2, '2026-06-15 09:15:00', '2026-06-15 13:15:00', 'Compétitif', 'Moyen', 6, 120, 2, 30, 3, 10.00, '18', '20'),
+(3, 6, 2, '2026-06-15 09:15:00', '2026-06-15 13:15:00', 'Compétitif', 'Moyen', 6, 120, 2, 30, 3, 10.00, 18, 20),
 -- Course 4 in Raid 2
-(4, 6, 3, '2026-04-20 08:00:00', '2026-04-20 11:30:00', 'Loisir', 'Facile', 4, 300, 2, 60, 2, 14, '17', '19');
+(4, 6, 3, '2026-04-20 08:00:00', '2026-04-20 11:30:00', 'Loisir', 'Facile', 4, 300, 2, 60, 2, 14, 17, 19);
 -- Duration, results à supprimer, ages à remettre au bon type
 
 INSERT INTO SAN_CATEGORIES_RACES (RAC_ID, CAT_ID, CAR_PRICE) VALUES
@@ -131,15 +131,15 @@ INSERT INTO SAN_TEAMS (TEA_ID, USE_ID, TEA_NAME, TEA_IMAGE) VALUES
 (3, 10, 'Arctic Mokeys', NULL),
 (4, 12, 'Pink Floyd', NULL);
 
-INSERT INTO SAN_TEAMS_RACES (TEA_ID, RAC_ID, TER_TIME, TER_RACE_NUMBER) VALUES
-(1, 1, '02:45:30', 101), -- Team 1 Club 1 Race 1, 3 pers.
-(3, 1, '01:55:00', 402), -- Team 3 Club 2 Race 1, 3 pers.
-(2, 2, '02:50:10', 102), -- Team 2 Club 1 Race 2, 2 pers.
-(4, 2, '02:45:12', 501), -- Team 4 Club 4 Race 2, 2 pers.
-(1, 3, null, 103), -- Team 1 Club 1 Race 3, 3 pers.
-(3, 3, null, 502), -- Team 3 Club 2 Race 3, 3 pers.
-(2, 4, null, 201), -- Team 2 Club 1 Race 4, 2 pers.
-(4, 4, null, 601); -- Team 4 Club 2 Race 4, 2 pers.
+INSERT INTO SAN_TEAMS_RACES (TEA_ID, RAC_ID, TER_TIME, TER_IS_VALID, TER_RACE_NUMBER) VALUES
+(1, 1, '02:45:30', 1, 101), -- Team 1 Club 1 Race 1, 3 pers.
+(3, 1, '01:55:00', 1, 402), -- Team 3 Club 2 Race 1, 3 pers.
+(2, 2, '02:50:10', 1, 102), -- Team 2 Club 1 Race 2, 2 pers.
+(4, 2, '02:45:12', 1, 501), -- Team 4 Club 4 Race 2, 2 pers.
+(1, 3, null, 1, 103), -- Team 1 Club 1 Race 3, 3 pers.
+(3, 3, null, 1, 502), -- Team 3 Club 2 Race 3, 3 pers.
+(2, 4, null, 1, 201), -- Team 2 Club 1 Race 4, 2 pers.
+(4, 4, null, 1, 601); -- Team 4 Club 2 Race 4, 2 pers.
 
 INSERT INTO SAN_USERS_TEAMS (USE_ID, TEA_ID) VALUES
 (7, 1),
