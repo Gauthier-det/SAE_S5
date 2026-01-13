@@ -18,18 +18,14 @@ Route::get('/raids', [RaidController::class, 'getAllRaids']);
 Route::get('/raids/{id}', [RaidController::class, 'getRaidById'])->whereNumber('id');
 
 // Raid routes
-Route::middleware(['Authenticate', 'ClubManager'])->prefix('raids')->name('raids')->group(function () {
-    Route::post('/', [RaidController::class, 'createRaid']);
-});
+Route::post('/', [RaidController::class, 'createRaid']);
 
 // Races routes
-Route::middleware(['Authenticate', 'RaidManager'])->prefix('races')->name('races')->group(function () {
-    Route::post('/', [RaceController::class, 'createRace']);
-});
+Route::post('/', [RaceController::class, 'createRace']);
 
 // Roles routes
-Route::middleware(['Authenticate', 'SiteManager'])->prefix('roles')->name('roles')->group(function () {
-    Route::get('/', [RaceController::class, 'getAllRoles']);
-    Route::get('/{id}', [RaceController::class, 'getRoleById'])->whereNumber('id');
-    Route::post('/', [RaceController::class, 'createRole']);
+Route::middleware(['auth', 'admin'])->prefix('roles')->name('roles')->group(function () {
+    Route::get('/', [RoleController::class, 'getAllRoles']);
+    Route::get('/{id}', [RoleController::class, 'getRoleById'])->whereNumber('id');
+    Route::post('/', [RoleController::class, 'createRole']);
 });

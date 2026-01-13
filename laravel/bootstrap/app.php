@@ -18,11 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'Authenticate'=> Authenticate::class,
-            'RaceManager' => RaceManager::class,
-            'ClubManager' => ClubManager::class,
-            'RaidManager' => RaidManager::class,
-            'SiteManager' => SiteManager::class,
+            'auth'=> Auth::class,
+            'admin' => Admin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
