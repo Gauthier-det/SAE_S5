@@ -12,6 +12,7 @@ import Login from './routes/Login';
 import CreateRaid from './routes/CreateRaid';
 import Register from './routes/Register';
 import CreateRace from './routes/CreateRace';
+import Profile from './routes/Profile';
 
 import { UserProvider } from './contexts/userContext';
 import ProtectedRoute from './components/router/ProtectedRoute';
@@ -49,6 +50,7 @@ function App() {
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/profile" element={<Profile />} />
               </Route>
               {/* Protected Routes for Club Managers */}
               <Route element={<ProtectedRoute condition={(user) => isClubManager(user.id)} />}>
