@@ -31,21 +31,21 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
+        return response()->json(['data' => [
             'user_id' => $user->USE_ID,
             'user_name' => $user->USE_NAME,
             'user_last_name' => $user->USE_LAST_NAME,
             'user_mail' => $user->USE_MAIL,
             'access_token' => $token,
             'token_type' => 'Bearer',
-        ]);
+        ]], 201);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['message' => 'Logged out successfully'], 200);
     }
 
     public function register(Request $request)
@@ -73,13 +73,13 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
+        return response()->json(['data' => [
             'user_id' => $user->USE_ID,
             'user_name' => $user->USE_NAME,
             'user_last_name' => $user->USE_LAST_NAME,
             'user_mail' => $user->USE_MAIL,
             'access_token' => $token,
             'token_type' => 'Bearer',
-        ]);
+        ]], 201);
     }
 }
