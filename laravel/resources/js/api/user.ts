@@ -1,19 +1,8 @@
 import type { User } from "../model/db/userDbModel"
+import { apiClient } from "../utils/apiClient";
 
-export const getUserWithToken = (): User => {
-    return {
-        name: "Magnin",
-        last_name: "Christelle",
-        email: "christelle.m@outlook.fr",
-        role: "admin",
-        id: 1,
-        address: undefined,
-        club: undefined,
-        birth_date: "",
-        phone_number: "",
-        pps_form: "",
-        membership_date: "",
-        is_valid: false,
-        gender: "",
-    }
+export const getUser = async (): Promise<User> => {
+    return apiClient<User>('/user', {
+        method: 'GET'
+    });
 }

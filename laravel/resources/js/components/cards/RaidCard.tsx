@@ -1,28 +1,28 @@
 import { Card, CardContent, CardMedia, Typography, Button, Box } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ImageIcon from '@mui/icons-material/Image';
-import type { Race } from '../model/db/raceDbModel';
+import type { Raid } from '../../model/db/raidDbModel';
+import { formatDate, getRaidStatus, getRegistrationStatus } from '../../utils/dateUtils';
 
-
-interface RaceCardProps {
-    race: Race;
+interface RaidCardProps {
+    raid: Raid
     onDetailsClick?: (raidId: number) => void;
 }
 
-function RaceCard({ race, onDetailsClick }: RaceCardProps) {
+function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     const navigate = useNavigate();
 
     const handleClick = () => {
-        navigate(`/races/${race.id}`);
+        navigate(`/raids/${raid.id}`);
         if (onDetailsClick) {
-            onDetailsClick(race.id);
+            onDetailsClick(raid.id);
         }
     };
 
     return (
-        <Card 
-            sx={{ 
-                borderRadius: 2, 
+        <Card
+            sx={{
+                borderRadius: 2,
                 boxShadow: 2,
                 overflow: 'hidden',
                 transition: 'all 0.3s',
@@ -31,12 +31,12 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                 }
             }}
         >
-            {race.image_url ? (
+            {raid.image ? (
                 <CardMedia
                     component="img"
                     height="160"
-                    image={race.image_url}
-
+                    image={raid.image}
+                    alt={raid.name}
                     sx={{ objectFit: 'cover' }}
                 />
             ) : (
@@ -53,20 +53,24 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                     <ImageIcon sx={{ fontSize: 64, color: '#6b7280' }} />
                 </Box>
             )}
-            
+
             <CardContent sx={{ p: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    <strong>Lieu:</strong> 
-                    <br />
-                    <strong>Date:</strong> {race.date}
-                    <br />
-                    <strong>Équipes inscrites:</strong> {race.registered_participants || 0}
-                    <br />
-                    <strong>Places disponibles:</strong> {(race.max_participants || 0) - (race.registered_participants || 0)}
+                <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                    {raid.name}
                 </Typography>
-                
-                <Button 
-                    variant="contained" 
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Du {formatDate(raid.time_start)} au {formatDate(raid.time_end)}
+                    <br />
+                    Statut d'inscription: {getRegistrationStatus(raid.registration_start, raid.registration_end)}
+                    <br />
+                    Statut du raid: {getRaidStatus(raid.time_start, raid.time_end)}
+                    <br />
+                    Dates d'inscription: {formatDate(raid.registration_start)} - {formatDate(raid.registration_end)}
+                </Typography>
+
+                <Button
+                    variant="contained"
                     fullWidth
                     onClick={handleClick}
                     sx={{
@@ -86,4 +90,4 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
     );
 }
 
-export default RaceCard;
+export default RaidCard;

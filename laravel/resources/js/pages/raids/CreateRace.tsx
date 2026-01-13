@@ -14,8 +14,8 @@ import {
   FormControlLabel
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { createRace } from '../api/race';
-import type { RaceCreation } from '../model/domain/raceModel';
+import { createRace } from '../../api/race';
+import type { RaceCreation } from '../../model/domain/raceModel';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
