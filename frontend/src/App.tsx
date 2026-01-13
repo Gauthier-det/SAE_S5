@@ -5,6 +5,7 @@ import Dashboard from './routes/Dashboard';
 import Raids from './routes/Raids';
 import About from './routes/About';
 import Login from './routes/Login';
+import CreateCourse from './routes/CreateCourse';
 import { UserProvider } from './contexts/userContext';
 
 const MainLayout = () => {
@@ -28,6 +29,7 @@ function App() {
             <Route path="/raids" element={<Raids />} />
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/create-course" element={<CreateCourse />} />
           </Route>
         </Routes>
       </Router>
