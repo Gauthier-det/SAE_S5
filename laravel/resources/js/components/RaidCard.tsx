@@ -1,20 +1,18 @@
 import { Card, CardContent, CardMedia, Typography, Button, Box } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import ImageIcon from '@mui/icons-material/Image';
+import type { Raid } from '../model/db/raidDbModel';
 
 interface RaidCardProps {
-    raid: {
-        id: number;
-        name: string;
-        start_date: string;
-        end_date: string;
-        events_count: number;
-        image_url?: string;
-    };
+    raid: Raid
     onDetailsClick?: (raidId: number) => void;
 }
 
 function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
+    const navigate = useNavigate();
+
     const handleClick = () => {
+        navigate(`/raids/${raid.id}`);
         if (onDetailsClick) {
             onDetailsClick(raid.id);
         }
@@ -64,6 +62,12 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
                     Du {raid.start_date} au {raid.end_date}
                     <br />
                     {raid.events_count} épreuves disponibles
+                    <br />
+                    Statut d'inscription: {raid.registration_status}
+                    <br />
+                    Statut du raid: {raid.status}
+                    <br />
+                    Dates d'inscription: {raid.registration_start} - {raid.registration_end}
                 </Typography>
                 
                 <Button 

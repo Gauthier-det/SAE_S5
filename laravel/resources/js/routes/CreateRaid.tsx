@@ -69,8 +69,8 @@ const CreateRaid = () => {
             }}
         >
             <Typography
-                variant="h3"
-                component="h3"
+                variant="h4"
+                component="h4"
                 sx={{
                     color: 'white',
                     fontWeight: 'bold',
