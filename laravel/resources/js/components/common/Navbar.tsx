@@ -13,11 +13,11 @@ import {
     Tooltip,
     IconButton,
 } from '@mui/material';
-import { useUser } from '../contexts/userContext';
+import { useUser } from '../../contexts/userContext';
 import LoginIcon from '@mui/icons-material/Login';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../assets/logo-white.png';
+import logo from '../../assets/logo-white.png';
 import NoteAltIcon from '@mui/icons-material/NoteAlt';
 
 const pages = [
@@ -106,9 +106,9 @@ function Navbar() {
                                     endIcon={<KeyboardArrowDownIcon />}
                                 >
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar alt={user.last_name + ' ' + user.name} />
+                                        <Avatar alt={user.USE_LAST_NAME + ' ' + user.USE_NAME} />
                                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                            {user.last_name + ' ' + user.name}
+                                            {user.USE_LAST_NAME + ' ' + user.USE_NAME}
                                         </Typography>
                                     </Stack>
                                 </Button>

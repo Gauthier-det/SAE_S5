@@ -15,10 +15,8 @@ import {
     FormControl
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LogoColor from '../assets/logo-color.png';
-import { apiRegister } from '../api/auth'; // Direct API call for now since context might not have it yet
-// Or best to add it to context, but user didn't ask for context update explicitly, but logic suggests it.
-// I'll stick to local state/API for "mocking" as requested.
+import LogoColor from '../../assets/logo-color.png';
+import { useUser } from '../../contexts/userContext';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -34,6 +32,7 @@ const Register = () => {
     });
 
     const [error, setError] = useState('');
+    const { register } = useUser();
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,15 +47,15 @@ const Register = () => {
         e.preventDefault();
         setError('');
         try {
-            // Mapping to the strictly requested model (name, last_name, email, password)
-            await apiRegister({
+            // Register and automatically login the user
+            await register({
                 name: formData.name,
                 last_name: formData.last_name,
                 email: formData.email,
                 password: formData.password
             });
-            // Redirect to dashboard or login
-            navigate('/login');
+            // Redirect to dashboard after successful registration
+            navigate('/dashboard');
         } catch (err) {
             setError("Échec de l'inscription.");
             console.error(err);

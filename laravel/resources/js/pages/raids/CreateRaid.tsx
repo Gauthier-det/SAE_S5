@@ -12,8 +12,8 @@ import {
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { createRaid } from '../api/raid';
-import type { RaidCreation } from '../model/domain/raidModel';
+import { createRaid } from '../../api/raid';
+import type { RaidCreation } from '../../model/domain/raidModel';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 

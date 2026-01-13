@@ -11,8 +11,8 @@ import {
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/userContext';
-import LogoColor from '../assets/logo-color.png';
+import { useUser } from '../../contexts/userContext';
+import LogoColor from '../../assets/logo-color.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');

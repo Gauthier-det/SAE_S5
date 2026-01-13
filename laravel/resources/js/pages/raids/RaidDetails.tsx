@@ -1,16 +1,26 @@
 import { Container, Typography, Box, Button, Slider, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getListOfRaids } from '../api/raid';
-import { getListOfRacesByRaidId } from '../api/race';
-import RaceCard from '../components/RaceCard';
+import { getRaidById } from '../../api/raid';
+import { getListOfRacesByRaidId } from '../../api/race';
+import type { Raid } from '../../model/db/raidDbModel';
+import type { Race } from '../../model/db/raceDbModel';
+import RaceCard from '../../components/cards/RaceCard';
 import React from 'react';
+import { formatDate } from '../../utils/dateUtils';
 
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const raids = getListOfRaids();
-    const raid = raids.find(r => r.id === parseInt(id || '', 10));
-    const allRaces = getListOfRacesByRaidId(raid?.id || 0);
+    const [raid, setRaid] = React.useState<Raid | null>(null);
+    const [allRaces, setAllRaces] = React.useState<Race[]>([]);
+
+    React.useEffect(() => {
+        if (id) {
+            const raidId = parseInt(id, 10);
+            getRaidById(raidId).then(setRaid).catch(console.error);
+            getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
+        }
+    }, [id]);
 
     const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
     const [distance, setDistance] = React.useState<number[]>([0, 100]);
@@ -38,20 +48,20 @@ export default function InfoRaid() {
 
     const filteredRaces = React.useMemo(() => {
         return allRaces.filter((race) => {
-            const raceDistance = race.age_min || 0;
-            const matchesDistance = raceDistance >= distance[0] && raceDistance <= distance[1];
-
-            const matchesType = raceType.size === 0 || 
+            // Type filter
+            const matchesType = raceType.size === 0 ||
                 (raceType.has('Compétitif') && race.competitive === true) ||
                 (raceType.has('Randonnée') && race.competitive === false) ||
                 (raceType.has('Extrême') && race.competitive === true);
 
-            const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(race.difficulty || 'moyen');
+            // Difficulty filter - normalize to lowercase for comparison
+            const raceDifficulty = (race.difficulty || 'moyen').toLowerCase();
+            const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(raceDifficulty);
 
-            return matchesDistance && matchesType && matchesDifficulty;
+            return matchesType && matchesDifficulty;
         });
-    }, [allRaces, distance, raceType, difficultyFilter]);
-    
+    }, [allRaces, raceType, difficultyFilter]);
+
 
     if (!raid) {
         return (
@@ -75,8 +85,8 @@ export default function InfoRaid() {
     return (
         <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
-                <Button 
-                    variant="text" 
+                <Button
+                    variant="text"
                     onClick={() => navigate('/raids')}
                     sx={{ mb: 2 }}
                 >
@@ -106,27 +116,27 @@ export default function InfoRaid() {
                                 Difficulté
                             </Typography>
                             <Box sx={{ px: 1 }}>
-                               <FormGroup>
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('facile')}
                                             onChange={() => handleDifficultyChange('facile')}
-                                        />} 
-                                        label="Facile" 
+                                        />}
+                                        label="Facile"
                                     />
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('moyen')}
                                             onChange={() => handleDifficultyChange('moyen')}
-                                        />} 
-                                        label="Moyen" 
+                                        />}
+                                        label="Moyen"
                                     />
-                                    <FormControlLabel 
-                                        control={<Checkbox 
+                                    <FormControlLabel
+                                        control={<Checkbox
                                             checked={difficultyFilter.has('difficile')}
                                             onChange={() => handleDifficultyChange('difficile')}
-                                        />} 
-                                        label="Difficile" 
+                                        />}
+                                        label="Difficile"
                                     />
                                 </FormGroup>
                             </Box>
@@ -163,26 +173,26 @@ export default function InfoRaid() {
                                 Type
                             </Typography>
                             <FormGroup>
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Compétitif')}
                                         onChange={() => handleTypeChange('Compétitif')}
-                                    />} 
-                                    label="Compétitif" 
+                                    />}
+                                    label="Compétitif"
                                 />
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Randonnée')}
                                         onChange={() => handleTypeChange('Randonnée')}
-                                    />} 
-                                    label="Randonnée" 
+                                    />}
+                                    label="Randonnée"
                                 />
-                                <FormControlLabel 
-                                    control={<Checkbox 
+                                <FormControlLabel
+                                    control={<Checkbox
                                         checked={raceType.has('Extrême')}
                                         onChange={() => handleTypeChange('Extrême')}
-                                    />} 
-                                    label="Extrême" 
+                                    />}
+                                    label="Extrême"
                                 />
                             </FormGroup>
                         </Box>
@@ -193,11 +203,26 @@ export default function InfoRaid() {
                             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
                                 {raid.name}
                             </Typography>
-                            <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                                Du {raid.registration_start} au {raid.registration_end}
-                            </Typography>
-                            <Typography variant="h6">
-                                {filteredRaces.length} courses disponibles
+                            <Box sx={{ display: 'flex', gap: 4, mb: 4, flexWrap: 'wrap' }}>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                        DATES DU RAID
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        Du {formatDate(raid.time_start)} au {formatDate(raid.time_end)}
+                                    </Typography>
+                                </Box>
+                                <Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                        INSCRIPTIONS
+                                    </Typography>
+                                    <Typography variant="h6">
+                                        Du {formatDate(raid.registration_start)} au {formatDate(raid.registration_end)}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                                {filteredRaces.length} épreuves disponibles
                             </Typography>
                         </Box>
 

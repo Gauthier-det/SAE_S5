@@ -2,19 +2,18 @@ import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom
 import { CssBaseline, Box } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import Navbar from './components/Navbar';
-import Home from './routes/Home';
-import Dashboard from './routes/Dashboard';
-import Raids from './routes/Raids';
-import InfoRaid from './routes/InfoRaid';
-import About from './routes/About';
-import Login from './routes/Login';
-import CreateCourse from './routes/CreateRace';
-import CreateRaid from './routes/CreateRaid';
-import Register from './routes/Register';
+import Navbar from './components/common/Navbar';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import RaidsList from './pages/raids/RaidsList';
+import RaidDetails from './pages/raids/RaidDetails';
+import About from './pages/About';
+import Login from './pages/auth/Login';
+import CreateRaid from './pages/raids/CreateRaid';
+import Register from './pages/auth/Register';
+import CreateRace from './pages/raids/CreateRace';
 
 import { UserProvider } from './contexts/userContext';
-import CreateRace from './routes/CreateRace';
 
 const MainLayout = () => {
   return (
@@ -37,8 +36,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/dashboard" element={<Dashboard />} />
               {/* Raid */}
-              <Route path="/raids" element={<Raids />} />
-              <Route path="/raids/:id" element={<InfoRaid />} />
+              <Route path="/raids" element={<RaidsList />} />
+              <Route path="/raids/:id" element={<RaidDetails />} />
               <Route path="/create-raid" element={<CreateRaid />} />
               {/* Races */}
               <Route path="/create-race" element={<CreateRace />} />

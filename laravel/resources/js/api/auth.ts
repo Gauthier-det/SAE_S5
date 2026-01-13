@@ -1,44 +1,56 @@
 import type { User } from "../model/db/userDbModel";
 import type { Login, Register } from "../model/domain/authModel";
+import { apiClient } from "../utils/apiClient";
 
-export const apiLogin = async (login: Login): Promise<{ token: string; user: User }> => {
+interface AuthResponse {
+    token: string;
+    user: User;
+}
+
+export const apiLogin = async (login: Login): Promise<AuthResponse> => {
+    const response = await apiClient<{ data: { user_id: number; user_name: string; user_last_name: string; user_mail: string; access_token: string; token_type: string } }>('/login', {
+        method: 'POST',
+        body: JSON.stringify({ mail: login.email, password: login.password }),
+    });
+    
     return {
-        token: "fake-jwt-token-123456",
+        token: response.data.access_token,
         user: {
-            name: "Magnin",
-            last_name: "Christelle",
-            email: login.email,
-            role: "admin",
-            id: 1,
-            address: undefined,
-            club: undefined,
-            birth_date: "",
-            phone_number: "",
-            pps_form: "",
-            membership_date: "",
-            is_valid: false,
-            gender: ""
+            USE_ID: response.data.user_id,
+            USE_NAME: response.data.user_name,
+            USE_LAST_NAME: response.data.user_last_name,
+            USE_MAIL: response.data.user_mail,
+            USE_PASSWORD: '',
         }
     };
 }
 
-export const apiRegister = async (register: Register): Promise<{ token: string, user: User }> => {
-    return {
-        token: "fake-jwt-token-123456",
-        user: {
+export const apiRegister = async (register: Register): Promise<AuthResponse> => {
+    const response = await apiClient<{ data: { user_id: number; user_name: string; user_last_name: string; user_mail: string; access_token: string; token_type: string } }>('/register', {
+        method: 'POST',
+        body: JSON.stringify({ 
+            mail: register.email, 
+            password: register.password,
             name: register.name,
-            last_name: register.last_name,
-            email: register.email,
-            role: "user",
-            id: 2,
-            address: undefined,
-            club: undefined,
-            birth_date: "",
-            phone_number: "",
-            pps_form: "",
-            membership_date: "",
-            is_valid: false,
-            gender: ""
+            last_name: register.last_name
+        }),
+    });
+    
+    return {
+        token: response.data.access_token,
+        user: {
+            USE_ID: response.data.user_id,
+            USE_NAME: response.data.user_name,
+            USE_LAST_NAME: response.data.user_last_name,
+            USE_MAIL: response.data.user_mail,
+            USE_PASSWORD: '',
         }
     };
 }
+
+export const apiLogout = async (): Promise<void> => {
+    return apiClient<void>('/logout', {
+        method: 'POST',
+    });
+}
+
