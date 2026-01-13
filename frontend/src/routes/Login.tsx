@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../contexts/userContext';
-import sanglierLogoColor from '../assets/sanglier-explorer-color.png';
+import LogoColor from '../assets/logo-color.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -48,9 +48,9 @@ const Login = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
                     <Box
                         component="img"
-                        src={sanglierLogoColor}
-                        alt="Sanglier Explorer"
-                        sx={{ width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
+                        src={LogoColor}
+                        alt="Orient'Action"
+                        sx={{backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper

@@ -31,6 +31,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/raids" element={<Raids />} />
+            <Route path="/create-raid" element={<CreateRaid />} />
             <Route path="/about" element={<About />} />
             <Route path="/login" element={<Login />} />
           </Route>
