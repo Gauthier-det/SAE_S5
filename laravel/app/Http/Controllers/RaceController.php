@@ -25,6 +25,13 @@ class RaceController extends Controller
         return response()->json(['data' => $race], 200);
     }
 
+    public function getRacesByRaid($raidId)
+    {
+        $races = Race::where('RAI_ID', $raidId)->get();
+
+        return response()->json(['data' => $races], 200);
+    }
+
     public function createRace(Request $request)
     {
         $validator = Validator::make($request->all(), [
