@@ -1,6 +1,5 @@
 import type { User } from "../model/db/userDbModel";
-import type { Login } from "../model/domain/login";
-
+import type { Login } from "../model/domain/loginModel";
 
 
 export const apiLogin = async (login: Login): Promise<{ token: string; user: User }> => {

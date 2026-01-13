@@ -10,6 +10,8 @@ import {
     SearchOutlined,
     FlashOnOutlined,
 } from '@mui/icons-material';
+import CrueltyFreeIcon from '@mui/icons-material/CrueltyFree';
+import SavingsIcon from '@mui/icons-material/Savings';
 import frontHomeImage from '../assets/front-home-image.png';
 
 function Home() {
@@ -54,37 +56,37 @@ function Home() {
 
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, maxWidth: '1280px', mx: 'auto'}}>
                     <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', p: 4, borderRadius: 2, border: 'none' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                             <AssignmentOutlined sx={{ fontSize: 64 }} />
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
                             Validation le Jour J
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
                             Gérer les dossards et les paiements sur le terrain avec l'app mobile
                         </Typography>
                     </Card>
 
                     <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', p: 4, borderRadius: 2, border: 'none' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                             <CheckCircleOutlined sx={{ fontSize: 64 }} />
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
                             Validation de la course
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
                             Vérifier la validité de la course
                         </Typography>
                     </Card>
 
                     <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)', p: 4, borderRadius: 2, border: 'none' }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                        <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                             <PublishOutlined sx={{ fontSize: 64 }} />
                         </Box>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                        <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1 }}>
                             Import et publication rapide
                         </Typography>
-                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                        <Typography variant="body2" sx={{ color: 'white', opacity: 0.9 }}>
                             Importez vos données et publiez vos événements en quelques clics
                         </Typography>
                     </Card>
@@ -104,37 +106,37 @@ function Home() {
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 6, maxWidth: '1400px', mx: 'auto', alignItems: 'center' }}>
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' }, gap: 3 }}>
                         <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', p: 3, borderRadius: 2, textAlign: 'center', border: 'none' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                            <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                                 <PersonOutlined sx={{ fontSize: 56 }} />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
+                            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
                                 Inscription Simplifiée
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.875rem' }}>
+                            <Typography variant="body2" sx={{ color: 'white', opacity: 0.9, fontSize: '0.875rem' }}>
                                 S'inscrire n'a jamais été aussi facile. En quelques clics, vous êtes prêt!
                             </Typography>
                         </Card>
 
                         <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', p: 3, borderRadius: 2, textAlign: 'center', border: 'none' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                            <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                                 <DescriptionOutlined sx={{ fontSize: 56 }} />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
+                            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
                                 Gestion des Documents
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.875rem' }}>
+                            <Typography variant="body2" sx={{ color: 'white', opacity: 0.9, fontSize: '0.875rem' }}>
                                 Organisez et consultez tous vos documents en un seul endroit
                             </Typography>
                         </Card>
 
                         <Card sx={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', p: 3, borderRadius: 2, textAlign: 'center', border: 'none' }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                            <Box sx={{ color: 'white', display: 'flex', justifyContent: 'center', mb: 2 }}>
                                 <EmojiEventsOutlined sx={{ fontSize: 56 }} />
                             </Box>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
+                            <Typography variant="h6" sx={{ color: 'white', fontWeight: 600, mb: 1, fontSize: '1.125rem' }}>
                                 Historique & Résultats
                             </Typography>
-                            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.875rem' }}>
+                            <Typography variant="body2" sx={{ color: 'white', opacity: 0.9, fontSize: '0.875rem' }}>
                                 Suivez vos performances et vos résultats au fil du temps
                             </Typography>
                         </Card>
@@ -184,7 +186,9 @@ function Home() {
                                 </Box>
                                 <Box sx={{ backgroundColor: 'white', height: '100%', px: 1.5, pt: 2, overflow: 'hidden' }}>
                                     <Card sx={{ p: 1.5, mb: 2, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-                                        <Box sx={{ width: '100%', height: '80px', backgroundColor: '#d1d5db', borderRadius: 1, mb: 1 }} />
+                                        <Box sx={{ width: '100%', height: '80px', backgroundColor: '#d1d5db', borderRadius: 1, mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                            <SavingsIcon sx={{ fontSize: 60, color: '#757575' }} />
+                                        </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: '0.875rem' }}>
                                             Course Adventure
                                         </Typography>
@@ -197,7 +201,9 @@ function Home() {
                                     </Card>
 
                                     <Card sx={{ p: 1.5, border: '1px solid #e5e7eb', boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)' }}>
-                                        <Box sx={{ width: '100%', height: '80px', backgroundColor: '#d1d5db', borderRadius: 1, mb: 1 }} />
+                                        <Box sx={{ width: '100%', height: '80px', backgroundColor: '#d1d5db', borderRadius: 1, mb: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                            <CrueltyFreeIcon sx={{ fontSize: 60, color: '#757575' }} />
+                                        </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: '0.875rem' }}>
                                             Course du lapin
                                         </Typography>
