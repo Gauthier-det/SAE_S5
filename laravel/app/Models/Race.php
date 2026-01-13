@@ -16,6 +16,23 @@ class Race extends Model
     public $incrementing = true;
     protected $keyType = 'int';
 
+    protected $fillable = [
+        'USE_ID', 
+        'RAI_ID', 
+        'RAC_TIME_START', 
+        'RAC_TIME_END', 
+        'RAC_TYPE', 
+        'RAC_DIFFICULTY', 
+        'RAC_MIN_PARTICIPANTS', 
+        'RAC_MAX_PARTICIPANTS', 
+        'RAC_MIN_TEAMS', 
+        'RAC_MAX_TEAMS', 
+        'RAC_TEAM_MEMBERS', 
+        'RAC_AGE_MIN', 
+        'RAC_AGE_MIDDLE', 
+        'RAC_AGE_MAX'
+    ];
+
     public function races(): HasMany
     {
         return $this->hasMany(self::class);
