@@ -34,6 +34,6 @@ Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('i
 Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
 
 
-// Races routes
+// Clubs routes
 Route::get('/clubs', [ClubController::class, 'getAllClubs']);
 Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
