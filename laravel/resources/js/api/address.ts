@@ -25,6 +25,8 @@ export const createAddress = async (address: Address): Promise<number> => {
         ADD_POSTAL_CODE: parseInt(address.ADD_POSTAL_CODE, 10)
     };
 
+    console.log('Sending Address Payload:', payload);
+
     const response = await apiClient<AddressResponse>('/addresses', {
         method: 'POST',
         body: JSON.stringify(payload)

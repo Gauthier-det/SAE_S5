@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 
-class User extends Model
+class User extends Authenticatable
 {
 
     use HasApiTokens;
@@ -40,8 +40,12 @@ class User extends Model
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
-        'USE_PASSWORD'        => 'hashed',
     ];
+
+    public function getAuthPassword()
+    {
+        return $this->USE_PASSWORD;
+    }
 
     public function address(): BelongsTo
     {

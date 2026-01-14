@@ -9,7 +9,8 @@ import {
     InputLabel,
     Select,
     MenuItem,
-    Stack
+    Stack,
+    Alert
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -55,9 +56,10 @@ const CreateRaid = () => {
     // Extra state
     const [clubName, setClubName] = useState<string>('');
     const [clubUsers, setClubUsers] = useState<User[]>([]);
-    const [selectedResponsible, setSelectedResponsible] = useState<number | ''>(''); // This maps to USE_ID to be sent? Raid model might need update if we want to store responsible. 
-    // Wait, RaidController expects USE_ID? Let's check. Yes 'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID'
-    // This USE_ID in Raid Creation is likely the creator or the responsible. Let's assume it's the responsible selected.
+    const [selectedResponsible, setSelectedResponsible] = useState<number | ''>('');
+    const [errors, setErrors] = useState<string[]>([]);
+
+    // USE_ID in Raid creation is the responsible person selected from club users.
 
     useEffect(() => {
         const init = async () => {
@@ -101,18 +103,46 @@ const CreateRaid = () => {
             // 1. Create Address
             const addId = await createAddress(addressData);
 
+            console.log('Address ID:', addId);
+            // Format dates to YYYY-MM-DD HH:mm:ss for Laravel
+            const formatDate = (d: string | null) => d ? dayjs(d).format('YYYY-MM-DD HH:mm:ss') : null;
+
+            // Handle URL prefix
+            let webSite = formData.RAI_WEB_SITE;
+            if (webSite && !webSite.startsWith('http://') && !webSite.startsWith('https://')) {
+                webSite = 'https://' + webSite;
+            }
+
             // 2. Prepare Raid Data
             const raidData = {
                 ...formData,
                 ADD_ID: addId,
-                USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 1) // Default to current user if not selected (or force selection?)
+                USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 1),
+                RAI_MAIL: formData.RAI_MAIL || null,
+                RAI_PHONE_NUMBER: formData.RAI_PHONE_NUMBER || null,
+                RAI_WEB_SITE: webSite || null,
+                RAI_IMAGE: formData.RAI_IMAGE || null,
+                RAI_TIME_START: formatDate(formData.RAI_TIME_START),
+                RAI_TIME_END: formatDate(formData.RAI_TIME_END),
+                RAI_REGISTRATION_START: formatDate(formData.RAI_REGISTRATION_START),
+                RAI_REGISTRATION_END: formatDate(formData.RAI_REGISTRATION_END),
             };
+
+            console.log('Raid Data:', raidData);
+
 
             // 3. Create Raid
             await createRaid(raidData);
+            setErrors([]);
             navigate('/raids');
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error creating raid:', error);
+            if (error.body?.errors) {
+                const errorMessages = Object.values(error.body.errors).flat() as string[];
+                setErrors(errorMessages);
+            } else {
+                setErrors([error.message || 'Une erreur est survenue']);
+            }
         }
     };
 
@@ -140,6 +170,14 @@ const CreateRaid = () => {
                 <Typography component="h2" variant="h5" sx={{ mb: 6, fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', fontFamily: '"Archivo Black", sans-serif' }}>
                     NOUVEAU RAID
                 </Typography>
+
+                {errors.length > 0 && (
+                    <Box sx={{ mb: 3 }}>
+                        {errors.map((err, idx) => (
+                            <Alert key={idx} severity="error" sx={{ mb: 1 }}>{err}</Alert>
+                        ))}
+                    </Box>
+                )}
 
                 <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
@@ -311,7 +349,7 @@ const CreateRaid = () => {
                                                     helperText: "Après le début des inscriptions"
                                                 }
                                             }}
-                                            minDate={formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START) : dayjs()}
+                                            minDate={formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs()}
                                             format="DD/MM/YYYY"
                                         />
                                     </Stack>
@@ -329,7 +367,7 @@ const CreateRaid = () => {
                                                     helperText: "Après la fin des inscriptions"
                                                 }
                                             }}
-                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END) : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START) : dayjs())}
+                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END).add(1, 'day') : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs())}
                                             format="DD/MM/YYYY"
                                         />
                                         <DatePicker
@@ -343,7 +381,7 @@ const CreateRaid = () => {
                                                     helperText: "Après le début du raid"
                                                 }
                                             }}
-                                            minDate={formData.RAI_TIME_START ? dayjs(formData.RAI_TIME_START) : dayjs()}
+                                            minDate={formData.RAI_TIME_START ? dayjs(formData.RAI_TIME_START).add(1, 'day') : dayjs()}
                                             format="DD/MM/YYYY"
                                         />
                                     </Stack>
