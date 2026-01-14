@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Race;
+use App\Models\Raid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -52,6 +53,13 @@ class RaceController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $raid = Raid::find($request->RAI_ID);
+        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only the raid manager can create races for this raid.',
+            ], 403);
         }
 
         $race = Race::create($request->only([

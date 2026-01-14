@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Club;
 use App\Models\Raid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -27,6 +28,7 @@ class RaidController extends Controller
 
     public function createRaid(Request $request)
     {
+        
         $validator = Validator::make($request->all(), [
             'CLU_ID' => 'required|integer|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'required|integer|exists:SAN_ADDRESSES,ADD_ID',
@@ -44,6 +46,13 @@ class RaidController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $club = Club::find($request->CLU_ID);
+        if (auth()->user()->USE_ID !== $club->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only the club manager can create raids for this club.',
+            ], 403);
         }
 
         $raid = Raid::create($request->only([
