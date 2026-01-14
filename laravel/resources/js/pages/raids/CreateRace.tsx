@@ -23,11 +23,6 @@ import dayjs, { Dayjs } from 'dayjs';
 
 const CreateRace = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const [raid, setRaid] = useState<Raid | null>(null);
-  const { user, isAuthenticated } = useUser();
-
-
   const [formData, setFormData] = useState<RaceCreation>({
     USE_ID: 0,
     RAI_ID: 0,
@@ -104,24 +99,10 @@ const CreateRace = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!isAuthenticated || !user) {
-        alert('Veuillez vous connecter pour créer une course.');
-        return;
-      }
-      console.log("Submitting form data:", formData);
-      const payload: RaceCreation = {
-        ...formData,
-        USE_ID: user.USE_ID,
-        RAC_TIME_START: combineDT(startDate, startTime),
-        RAC_TIME_END: combineDT(endDate, endTime),
-      };
-      if (!payload.RAC_TIME_START || !payload.RAC_TIME_END) {
-        alert('Veuillez renseigner les dates et heures de début et fin.');
-        return;
-      }
-      await createRace(payload);
-      alert('Course créée avec succès !');
-      navigate(`/raids/${formData.RAI_ID}`);
+      await createRace(formData);
+      // navigate('/races'); // Route doesn't exist yet, navigating to raids or dashboard generic
+      alert("Course créée avec succès !");
+      navigate('/');
     } catch (error) {
       console.error('Error creating race:', error);
     }
