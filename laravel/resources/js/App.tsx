@@ -11,6 +11,7 @@ import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
 import About from './pages/About';
 import Register from './pages/auth/Register';
+import RaceDetails from './pages/races/RaceDetails';
 import CreateRace from './pages/raids/CreateRace';
 import CreateRaid from './pages/raids/CreateRaid';
 import Login from './pages/auth/Login';
@@ -20,7 +21,7 @@ import Home from './pages/Home';
 
 const MainLayout = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh'}}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Navbar />
       <Outlet />
     </Box>
@@ -37,6 +38,7 @@ const AppRoutes = () => {
 
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
+        <Route path="/races/:id" element={<RaceDetails />} />
         <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}
