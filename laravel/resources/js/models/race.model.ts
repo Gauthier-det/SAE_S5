@@ -21,6 +21,7 @@ export interface RaceResponse {
 }
 
 export interface RaceCreation {
+    USE_ID: number;
     RAI_ID: number;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
