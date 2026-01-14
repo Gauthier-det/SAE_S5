@@ -9,7 +9,7 @@ export const getUser = async (): Promise<User> => {
     });
 }
 
-export const isClubManager = async (userId: string) => {
+export const isClubManager = async (userId: number) => {
     const listManager = await getListOfClubManagers()
     return listManager.includes(userId);
 }

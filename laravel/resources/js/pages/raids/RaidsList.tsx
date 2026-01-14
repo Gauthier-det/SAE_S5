@@ -1,14 +1,17 @@
-import { Container, Typography, Box, MenuItem, TextField } from '@mui/material';
+import { Container, Typography, Box, MenuItem, TextField, Stack, Button } from '@mui/material';
 import RaidCard from '../../components/cards/RaidCard';
 import { getListOfRaids } from '../../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
 import { parseDateToTs } from '../../utils/dateUtils';
+import { useNavigate } from 'react-router-dom';
+import { isClubManager } from '../../api/user';
+import { useUser } from '../../contexts/userContext';
 
 
 
@@ -17,11 +20,20 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
-
     const [raids, setRaids] = React.useState<Raid[]>([]);
-    // Actually, I should use useMemo for filteredRaids but fetch in useEffect
+    const [isManagerOfAClub, setIsManagerOfAClub] = React.useState(false);
+    const { user } = useUser();
+    const navigate = useNavigate();
+    
+    useEffect(() => {
+        const fetchisManagerOfAClub = async () => {
+            const isManagerOfAClub = await isClubManager(user!.USE_ID);
+            setIsManagerOfAClub(isManagerOfAClub);
+        }
+        fetchisManagerOfAClub();
+    }, [user]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchRaids = async () => {
             try {
                 const data = await getListOfRaids();
@@ -54,10 +66,6 @@ export default function Raids() {
             return matchesStart && matchesEnd && matchesKeyword && matchesClub;
         });
     }, [raids, startDate, endDate, keyword, club]);
-
-    const handleRaidDetails = (raidId: number) => {
-
-    };
 
     return (
         <Container maxWidth={false}>
@@ -119,16 +127,29 @@ export default function Raids() {
                         </TextField>
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                        <Typography variant="h2" component="h1" gutterBottom>
-                            Les Raids
-                        </Typography>
-                        <Typography variant="body1">
-                            Liste des raids disponibles à l&apos;exploration.
-                        </Typography>
-                        <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                            {filteredRaids.length} raids trouvés
-                        </Typography>
+                        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                            <Stack direction="column">
 
+                                <Typography variant="h2" component="h1" gutterBottom>
+                                    Les Raids
+                                </Typography>
+                                <Typography variant="body1">
+                                    Liste des raids disponibles à l&apos;exploration.
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                                    {filteredRaids.length} raids trouvés
+                                </Typography>
+                            </Stack>
+                            {user && isManagerOfAClub && <Button
+                                variant="contained"
+                                color="warning"
+                                onClick={() => navigate('/raid/create')}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '1rem', mr: 2 }}
+                            >
+                                créer un raid
+                            </Button>
+                            }
+                        </Stack>
                         <Box
                             sx={{
                                 display: 'grid',
@@ -143,7 +164,7 @@ export default function Raids() {
                         >
                             {filteredRaids.map((raid) => (
                                 <Box key={raid.RAI_ID}>
-                                    <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
+                                    <RaidCard raid={raid} />
                                 </Box>
                             ))}
                         </Box>

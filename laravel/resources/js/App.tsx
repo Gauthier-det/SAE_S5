@@ -9,16 +9,18 @@ import ProtectedRoute from './components/router/ProtectedRoute';
 import GuestRoute from './components/router/GuestRoute';
 import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
-import { Home, Login, Dashboard } from '@mui/icons-material';
 import About from './pages/About';
 import Register from './pages/auth/Register';
 import CreateRace from './pages/raids/CreateRace';
 import CreateRaid from './pages/raids/CreateRaid';
+import Login from './pages/auth/Login';
+import Dashboard from './pages/Dashboard';
+import Home from './pages/Home';
 
 
 const MainLayout = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh'}}>
       <Navbar />
       <Outlet />
     </Box>
@@ -49,10 +51,10 @@ const AppRoutes = () => {
           <Route path="/profile" element={<Profile />} />
         </Route>
         {/* Protected Routes for Club Managers */}
-        <Route element={<ProtectedRoute condition={() => isClubManager} />}>
+        <Route element={<ProtectedRoute condition={isClubManager} />}>
           <Route path="/raid/create" element={<CreateRaid />} />
         </Route>
-        <Route element={<ProtectedRoute condition={() => isRaidManager} />}>
+        <Route element={<ProtectedRoute condition={isRaidManager} />}>
           <Route path="/race/create" element={<CreateRace />} />
         </Route>
       </Route>

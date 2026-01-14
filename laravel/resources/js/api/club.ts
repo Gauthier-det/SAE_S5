@@ -29,7 +29,3 @@ export const getListOfClubs = () : Club[] => {
 export const getListOfClubManagers = () => {
     return getListOfClubs().map(club => club.manager);
 };
-
-export const getUserClub = (userId: string) => {
-    return getListOfClubs().find(club => club.manager === userId)?.name;
-};

@@ -4,7 +4,7 @@ export interface Race {
     RAI_ID: number;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
-    RAC_TYPE: string;
+    RAC_TYPE: RaceType;
     RAC_DIFFICULTY: string;
     RAC_MIN_PARTICIPANTS: number;
     RAC_MAX_PARTICIPANTS: number;
@@ -24,7 +24,7 @@ export interface RaceCreation {
     RAI_ID: number;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
-    RAC_TYPE: string;
+    RAC_TYPE: RaceType;
     RAC_DIFFICULTY: string;
     RAC_MIN_PARTICIPANTS: number;
     RAC_MAX_PARTICIPANTS: number;
@@ -34,4 +34,10 @@ export interface RaceCreation {
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
     RAC_AGE_MAX: number;
+}
+
+
+export enum RaceType {
+    Competitive = 'Compétitif',
+    Hobby = 'Loisir'
 }

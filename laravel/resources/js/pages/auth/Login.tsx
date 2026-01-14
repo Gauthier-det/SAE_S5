@@ -39,16 +39,16 @@ const Login = () => {
                 backgroundColor: 'primary.main',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'center'
             }}
         >
             <Container maxWidth="sm">
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
                     <Box
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', borderRadius: 4 }}
                     />
                 </Box>
                 <Paper

@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useUser } from '../contexts/userContext';
+import { useUser } from '../../contexts/userContext';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 
