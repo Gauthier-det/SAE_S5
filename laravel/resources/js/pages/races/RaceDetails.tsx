@@ -115,9 +115,10 @@ export default function RaceDetails() {
 
             {/* Title & Tags */}
             <Box sx={{ mb: 3 }}>
-                <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                     <Chip label={race.RAC_TYPE} color="success" size="small" />
                     <Chip label={race.RAC_DIFFICULTY} color="success" size="small" variant="outlined" />
+                    <Chip label={race.RAC_GENDER || 'Mixte'} color="info" size="small" />
                 </Box>
             </Box>
 
@@ -310,16 +311,33 @@ export default function RaceDetails() {
             </Collapse>
 
             {isAuthenticated ? (
-                <Button
-                    variant="contained"
-                    fullWidth
-                    size="large"
-                    startIcon={<CheckCircleIcon />}
-                    onClick={() => navigate(`/races/${race.RAC_ID}/register`)}
-                    sx={{ bgcolor: '#00c853', '&:hover': { bgcolor: '#00a844' } }}
-                >
-                    S'INSCRIRE EN ÉQUIPE
-                </Button>
+                myTeams.length > 0 ? (
+                    <Tooltip title="Vous êtes déjà membre ou responsable d'une équipe pour cette course.">
+                        <span>
+                            <Button
+                                variant="contained"
+                                fullWidth
+                                size="large"
+                                disabled
+                                startIcon={<GroupsIcon />}
+                                sx={{ bgcolor: '#9e9e9e', '&:hover': { bgcolor: '#9e9e9e' } }}
+                            >
+                                DÉJÀ INSCRIT EN ÉQUIPE
+                            </Button>
+                        </span>
+                    </Tooltip>
+                ) : (
+                    <Button
+                        variant="contained"
+                        fullWidth
+                        size="large"
+                        startIcon={<CheckCircleIcon />}
+                        onClick={() => navigate(`/races/${race.RAC_ID}/register`)}
+                        sx={{ bgcolor: '#00c853', '&:hover': { bgcolor: '#00a844' } }}
+                    >
+                        S'INSCRIRE EN ÉQUIPE
+                    </Button>
+                )
             ) : (
                 <Tooltip title="Vous devez être connecté pour vous inscrire à une course.">
                     <span>
