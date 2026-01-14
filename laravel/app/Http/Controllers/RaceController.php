@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Race;
+use App\Models\Raid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class RaceController extends Controller
     public function getRaceById($id)
     {
         $race = Race::find($id);
-        if (! $race) {
+        if (!$race) {
             return response()->json([
                 'message' => 'Race not found',
             ], 404);
@@ -29,7 +30,6 @@ class RaceController extends Controller
     public function getRacesByRaid($raidId)
     {
         $races = Race::where('RAI_ID', $raidId)->get();
-
         return response()->json(['data' => $races], 200);
     }
 
@@ -94,6 +94,13 @@ class RaceController extends Controller
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $raid = Raid::find($request->RAI_ID);
+        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only the raid manager can create races for this raid.',
+            ], 403);
         }
 
         $race = Race::create($request->only([
@@ -184,12 +191,17 @@ class RaceController extends Controller
     public function updateRace(Request $request, $id)
     {
         $race = Race::find($id);
-        if (! $race) {
+        if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only update races you created.',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
-            'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
             'RAC_TIME_START' => 'sometimes|date',
             'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
@@ -210,7 +222,6 @@ class RaceController extends Controller
         }
 
         $race->update($request->only([
-            'USE_ID',
             'RAI_ID',
             'RAC_TIME_START',
             'RAC_TIME_END',
@@ -236,24 +247,14 @@ class RaceController extends Controller
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        try {
-            DB::beginTransaction();
-
-            // Delete related records
-            DB::table('SAN_TEAMS_RACES')->where('RAC_ID', $id)->delete();
-            DB::table('SAN_USERS_RACES')->where('RAC_ID', $id)->delete();
-            DB::table('SAN_CATEGORIES_RACES')->where('RAC_ID', $id)->delete();
-
-            // Delete the race
-            $race->delete();
-
-            DB::commit();
-
-            return response()->json(['message' => 'Race deleted successfully'], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Error deleting race', 'error' => $e->getMessage()], 500);
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete races you created.',
+            ], 403);
         }
+
+        $race->delete();
+        return response()->json(['message' => 'Race deleted successfully'], 200);
     }
 
     public function getRaceDetails($id)
