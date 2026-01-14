@@ -236,8 +236,23 @@ class RaceController extends Controller
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        $race->delete();
+        try {
+            DB::beginTransaction();
 
-        return response()->json(['message' => 'Race deleted successfully'], 200);
+            // Delete related records
+            DB::table('SAN_TEAMS_RACES')->where('RAC_ID', $id)->delete();
+            DB::table('SAN_USERS_RACES')->where('RAC_ID', $id)->delete();
+            DB::table('SAN_CATEGORIES_RACES')->where('RAC_ID', $id)->delete();
+
+            // Delete the race
+            $race->delete();
+
+            DB::commit();
+
+            return response()->json(['message' => 'Race deleted successfully'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error deleting race', 'error' => $e->getMessage()], 500);
+        }
     }
 }
