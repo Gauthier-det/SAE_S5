@@ -16,6 +16,7 @@ import { createRace } from '../../api/race';
 import { getRaidById } from '../../api/raid';
 import type { Raid } from '../../models/raid.model';
 import type { RaceCreation } from '../../models/race.model';
+import { useUser } from '../../contexts/userContext';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -24,9 +25,11 @@ const CreateRace = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [raid, setRaid] = useState<Raid | null>(null);
+  const { user, isAuthenticated } = useUser();
 
 
   const [formData, setFormData] = useState<RaceCreation>({
+    USE_ID: 0,
     RAI_ID: 0,
     RAC_TIME_START: '',
     RAC_TIME_END: '',
@@ -101,11 +104,21 @@ const CreateRace = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (!isAuthenticated || !user) {
+        alert('Veuillez vous connecter pour créer une course.');
+        return;
+      }
+      console.log("Submitting form data:", formData);
       const payload: RaceCreation = {
         ...formData,
+        USE_ID: user.USE_ID,
         RAC_TIME_START: combineDT(startDate, startTime),
         RAC_TIME_END: combineDT(endDate, endTime),
       };
+      if (!payload.RAC_TIME_START || !payload.RAC_TIME_END) {
+        alert('Veuillez renseigner les dates et heures de début et fin.');
+        return;
+      }
       await createRace(payload);
       alert('Course créée avec succès !');
       navigate(`/raids/${formData.RAI_ID}`);
