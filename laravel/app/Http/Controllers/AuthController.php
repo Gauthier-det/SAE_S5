@@ -42,7 +42,6 @@ class AuthController extends Controller
                 'user_address' => $user->address,
                 'user_club' => $user->club,
                 'user_licence' => $user->USE_LICENCE_NUMBER,
-                'user_pps' => $user->USE_PPS_FORM,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
@@ -93,7 +92,6 @@ class AuthController extends Controller
                 'user_address' => null,
                 'user_club' => null,
                 'user_licence' => null,
-                'user_pps' => null,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
