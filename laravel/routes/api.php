@@ -40,3 +40,9 @@ Route::post('/clubs', [ClubController::class, 'createClub']);
 Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
 Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
 Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
+Route::get('/clubs/{clubId}/users', [App\Http\Controllers\UserController::class, 'getUserByClub'])->whereNumber('clubId');
+
+
+// Users routes
+Route::get('/users', [App\Http\Controllers\UserController::class, 'getAllUsers']);
+Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'getUserById'])->whereNumber('id');
