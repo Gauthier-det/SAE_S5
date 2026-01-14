@@ -22,10 +22,20 @@ class Address extends Model
         'ADD_STREET_NAME',
         'ADD_STREET_NUMBER'
     ];
-    public function addresses(): HasMany
+
+    /**
+     * Get all raids at this address.
+     */
+    public function raids(): HasMany
     {
-        return $this->hasMany(self::class);
+        return $this->hasMany(Raid::class, 'ADD_ID', 'ADD_ID');
     }
 
-
+    /**
+     * Get all users at this address.
+     */
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'ADD_ID', 'ADD_ID');
+    }
 }

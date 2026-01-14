@@ -162,11 +162,12 @@ export default function Raids() {
                                     sm: 'repeat(2, 1fr)',
                                     md: 'repeat(3, 1fr)',
                                     lg: 'repeat(4, 1fr)'
-                                }
+                                },
+                                alignItems: 'stretch'
                             }}
                         >
                             {filteredRaids.map((raid) => (
-                                <Box key={raid.RAI_ID}>
+                                <Box key={raid.RAI_ID} sx={{ display: 'flex' }}>
                                     <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
                                 </Box>
                             ))}

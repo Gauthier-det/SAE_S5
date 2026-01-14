@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Slider, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -30,7 +30,6 @@ export default function InfoRaid() {
     }, [id]);
 
     const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
-    const [distance, setDistance] = React.useState<number[]>([0, 100]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
 
     const handleDifficultyChange = (level: string) => {
@@ -55,11 +54,10 @@ export default function InfoRaid() {
 
     const filteredRaces = React.useMemo(() => {
         return allRaces.filter((race) => {
-            // Type filter
+            // Type filter - Compétitif or Loisir
             const matchesType = raceType.size === 0 ||
                 (raceType.has('Compétitif') && race.RAC_TYPE === 'Compétitif') ||
-                (raceType.has('Randonnée') && race.RAC_TYPE !== 'Compétitif') ||
-                (raceType.has('Extrême') && race.RAC_TYPE === 'Compétitif');
+                (raceType.has('Loisir') && race.RAC_TYPE === 'Loisir');
 
             // Difficulty filter - normalize to lowercase for comparison
             const raceDifficulty = (race.RAC_DIFFICULTY || 'moyen').toLowerCase();
@@ -151,32 +149,6 @@ export default function InfoRaid() {
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                Distance
-                            </Typography>
-                            <Box sx={{ px: 1 }}>
-                                <Slider
-                                    value={distance}
-                                    onChange={(_, newValue) => setDistance(newValue as number[])}
-                                    valueLabelDisplay="auto"
-                                    min={0}
-                                    max={100}
-                                    sx={{
-                                        color: '#2196f3',
-                                        '& .MuiSlider-thumb': {
-                                            backgroundColor: '#fff',
-                                            border: '2px solid #2196f3',
-                                        },
-                                    }}
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                                    <Typography variant="caption" color="text.secondary">0</Typography>
-                                    <Typography variant="caption" color="text.secondary">100km</Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                 Type
                             </Typography>
                             <FormGroup>
@@ -189,17 +161,10 @@ export default function InfoRaid() {
                                 />
                                 <FormControlLabel
                                     control={<Checkbox
-                                        checked={raceType.has('Randonnée')}
-                                        onChange={() => handleTypeChange('Randonnée')}
+                                        checked={raceType.has('Loisir')}
+                                        onChange={() => handleTypeChange('Loisir')}
                                     />}
-                                    label="Randonnée"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox
-                                        checked={raceType.has('Extrême')}
-                                        onChange={() => handleTypeChange('Extrême')}
-                                    />}
-                                    label="Extrême"
+                                    label="Loisir"
                                 />
                             </FormGroup>
                         </Box>
