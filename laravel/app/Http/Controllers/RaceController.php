@@ -17,7 +17,7 @@ class RaceController extends Controller
     public function getRaceById($id)
     {
         $race = Race::find($id);
-        if (! $race) {
+        if (!$race) {
             return response()->json([
                 'message' => 'Race not found',
             ], 404);
@@ -28,7 +28,6 @@ class RaceController extends Controller
     public function getRacesByRaid($raidId)
     {
         $races = Race::where('RAI_ID', $raidId)->get();
-
         return response()->json(['data' => $races], 200);
     }
 
@@ -78,12 +77,17 @@ class RaceController extends Controller
     public function updateRace(Request $request, $id)
     {
         $race = Race::find($id);
-        if (! $race) {
+        if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only update races you created.',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
-            'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
             'RAC_TIME_START' => 'sometimes|date',
             'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
@@ -104,7 +108,6 @@ class RaceController extends Controller
         }
 
         $race->update($request->only([
-            'USE_ID',
             'RAI_ID',
             'RAC_TIME_START',
             'RAC_TIME_END',
@@ -130,8 +133,13 @@ class RaceController extends Controller
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        $race->delete();
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete races you created.',
+            ], 403);
+        }
 
+        $race->delete();
         return response()->json(['message' => 'Race deleted successfully'], 200);
     }
 }

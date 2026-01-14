@@ -75,6 +75,12 @@ class UserController extends Controller
             ], 404);
         }
 
+        if (auth()->user()->USE_ID !== (int)$id && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only update your own profile.',
+            ], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'USE_MAIL' => 'sometimes|email|unique:SAN_USERS,USE_MAIL,' . $id . ',USE_ID',
             'USE_NAME' => 'sometimes|string|max:255',
@@ -95,8 +101,8 @@ class UserController extends Controller
 
         $data = $request->all();
         
-        if (isset($data['USEPASSWORD'])) {
-            $data['USEPASSWORD'] = Hash::make($data['USEPASSWORD']);
+        if (isset($data['USE_PASSWORD'])) {
+            $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']);
         }
 
         $user->update($data);
@@ -117,11 +123,16 @@ class UserController extends Controller
             ], 404);
         }
 
+        if (auth()->user()->USE_ID !== (int)$id && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only delete your own profile.',
+            ], 403);
+        }
+
         $user->delete();
 
         return response()->json([
             'message' => 'User deleted successfully',
         ], 200);
     }
-
 }
