@@ -255,4 +255,75 @@ class RaceController extends Controller
             return response()->json(['message' => 'Error deleting race', 'error' => $e->getMessage()], 500);
         }
     }
+
+    public function getRaceDetails($id)
+    {
+        $race = Race::with([
+            'categories' => function($query) {
+                $query->withPivot('CAR_PRICE');
+            },
+            'teams.owner',
+            'teams.members'
+        ])->find($id);
+
+        if (!$race) {
+            return response()->json(['message' => 'Race not found'], 404);
+        }
+
+        // Calculate stats based on participants
+        $participantsCount = 0;
+        foreach ($race->teams as $team) {
+            $participantsCount += $team->members->count();
+        }
+
+        $maxParticipants = $race->RAC_MAX_PARTICIPANTS;
+        $placesRemaining = max(0, $maxParticipants - $participantsCount);
+        $fillingRate = $maxParticipants > 0 ? round(($participantsCount / $maxParticipants) * 100) : 0;
+
+        $raceData = $race->toArray();
+        $raceData['stats'] = [
+            'teams_count' => $race->teams->count(),
+            'participants_count' => $participantsCount,
+            'places_remaining' => $placesRemaining, // Now based on participants
+            'filling_rate' => $fillingRate, // Now based on participants
+            'participants_expected_min' => $race->RAC_MIN_PARTICIPANTS,
+            'participants_expected_max' => $race->RAC_MAX_PARTICIPANTS,
+        ];
+
+        // Format categories
+        $raceData['formatted_categories'] = $race->categories->map(function ($cat) {
+            return [
+                'id' => $cat->CAT_ID,
+                'label' => $cat->CAT_LABEL,
+                'price' => $cat->pivot->CAR_PRICE,
+            ];
+        });
+
+        // Format teams list
+        $raceData['teams_list'] = $race->teams->map(function ($team) {
+            return [
+                'id' => $team->TEA_ID,
+                'name' => $team->TEA_NAME,
+                'image' => $team->TEA_IMAGE,
+                'members_count' => $team->members->count(),
+                'responsible' => $team->owner ? [
+                    'id' => $team->owner->USE_ID,
+                    'name' => $team->owner->USE_NAME . ' ' . $team->owner->USE_LAST_NAME,
+                ] : null,
+                'members' => $team->members->map(function ($member) {
+                    return [
+                        'id' => $member->USE_ID,
+                        'name' => $member->USE_NAME . ' ' . $member->USE_LAST_NAME,
+                        'email' => $member->USE_MAIL,
+                    ];
+                }),
+            ];
+        });
+
+        // Remove raw relationships to clean up response size if needed, 
+        // but 'toArray()' already included them. We can overwrite 'teams' or just keep 'teams_list'.
+        unset($raceData['teams']); 
+
+        return response()->json(['data' => $raceData], 200);
+    }
 }

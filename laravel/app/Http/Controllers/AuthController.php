@@ -25,7 +25,16 @@ class AuthController extends Controller
 
         $user = User::with(['address', 'club'])->where('USE_MAIL', $request->mail)->first();
 
-        if (!$user || $request->password !== $user->USE_PASSWORD) {
+        $validPassword = false;
+        if ($user) {
+            if ($user->USE_PASSWORD === $request->password) {
+                $validPassword = true;
+            } elseif (Hash::check($request->password, $user->USE_PASSWORD)) {
+                $validPassword = true;
+            }
+        }
+
+        if (!$validPassword) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
@@ -74,7 +83,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'USE_MAIL' => $request->mail,
-            'USE_PASSWORD' => $request->password,
+            'USE_PASSWORD' => Hash::make($request->password),
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
         ]);

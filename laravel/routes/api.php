@@ -25,6 +25,7 @@ Route::get('/raids/{raidId}/races', [RaceController::class, 'getRacesByRaid'])->
 // Race routes
 Route::get('/races', [RaceController::class, 'getAllRaces']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
+Route::get('/races/{id}/details', [RaceController::class, 'getRaceDetails'])->whereNumber('id');
 Route::get('/races/{raceId}/results', [RaceController::class, 'getRaceResults'])->whereNumber('raceId');
 Route::get('/races/{raceId}/prices', [RaceController::class, 'getRacePrices'])->whereNumber('raceId');
 
