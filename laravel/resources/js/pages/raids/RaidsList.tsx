@@ -8,6 +8,9 @@ import React from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { parseDateToTs } from '../../utils/dateUtils';
 
 
@@ -17,6 +20,7 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
+    const navigate = useNavigate();
 
     const [raids, setRaids] = React.useState<Raid[]>([]);
     // Actually, I should use useMemo for filteredRaids but fetch in useEffect
@@ -125,9 +129,22 @@ export default function Raids() {
                         <Typography variant="body1">
                             Liste des raids disponibles à l&apos;exploration.
                         </Typography>
-                        <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                            {filteredRaids.length} raids trouvés
-                        </Typography>
+                        {filteredRaids.length} raids trouvés
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={() => navigate('/create-raid')}
+                                sx={{
+                                    bgcolor: '#1b5e20',
+                                    '&:hover': { bgcolor: '#144a19' }
+                                }}
+                            >
+                                CRÉER UN RAID
+                            </Button>
+                        </Box>
 
                         <Box
                             sx={{
@@ -150,6 +167,6 @@ export default function Raids() {
                     </Box>
                 </Box>
             </Box>
-        </Container>
+        </Container >
     );
 }
