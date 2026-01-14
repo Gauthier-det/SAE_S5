@@ -21,17 +21,10 @@ export default function Raids() {
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
     const [raids, setRaids] = React.useState<Raid[]>([]);
-    const [isManagerOfAClub, setIsManagerOfAClub] = React.useState(false);
-    const { user } = useUser();
+    const { user,isClubManager } = useUser();
     const navigate = useNavigate();
     
-    useEffect(() => {
-        const fetchisManagerOfAClub = async () => {
-            const isManagerOfAClub = await isClubManager(user!.USE_ID);
-            setIsManagerOfAClub(isManagerOfAClub);
-        }
-        fetchisManagerOfAClub();
-    }, [user]);
+
 
     useEffect(() => {
         const fetchRaids = async () => {
@@ -140,7 +133,7 @@ export default function Raids() {
                                     {filteredRaids.length} raids trouvés
                                 </Typography>
                             </Stack>
-                            {user && isManagerOfAClub && <Button
+                            {user && isClubManager && <Button
                                 variant="contained"
                                 color="warning"
                                 onClick={() => navigate('/raid/create')}

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../models/user.model';
 import type { Login, Register } from '../models/auth.model';
-import { getUser, isClubManager, isRaidManager } from '../api/user';
+import { getUser, isRaidManager } from '../api/user';
 import { apiLogin, apiLogout, apiRegister } from '../api/auth';
 
 interface UserContextType {
@@ -25,14 +25,16 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isRaidManagerUser, setIsRaidManagerUser] = useState<boolean>(false);
 
     const updateRoles = async (userData: User) => {
+        // Club Manager: derived directly from loaded relationship
+        const isClubMgr = (userData.clubs_created?.length ?? 0) > 0;
+        setIsClubManagerUser(isClubMgr);
+
+        // Raid Manager: still using API check (unless refactored similarly later)
         try {
-            const clubMgr = await isClubManager(userData.USE_ID);
             const raidMgr = await isRaidManager(userData.USE_ID);
-            setIsClubManagerUser(clubMgr);
             setIsRaidManagerUser(raidMgr);
         } catch (e) {
-            console.error("Failed to fetch roles", e);
-            setIsClubManagerUser(false);
+            console.error("Failed to fetch raid role", e);
             setIsRaidManagerUser(false);
         }
     }

@@ -20,6 +20,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useUser } from '../../contexts/userContext';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
+import { formatDate } from '../../utils/dateUtils';
 
 // Mock data for UI demonstration
 const mockStats = {
@@ -35,13 +36,13 @@ const mockHistory = [
 ];
 
 const Profile = () => {
-    const { user } = useUser();
+    const { user, isClubManager, isRaidManager } = useUser();
 
     // Generate Avatar
     const avatarSvg = useMemo(() => {
         if (!user) return '';
         const avatar = createAvatar(thumbs, {
-            seed: `${user.name}${user.last_name}`,
+            seed: `${user.USE_NAME}${user.USE_LAST_NAME}`,
             backgroundColor: ['1a2e22', '1b5e20', 'f97316'],
         });
         return avatar.toDataUri();
@@ -82,12 +83,14 @@ const Profile = () => {
                             </Box>
 
                             <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center' }}>
-                                {user.name} {user.last_name}
+                                {user.USE_NAME} {user.USE_LAST_NAME}
                             </Typography>
 
                             <Stack direction="row" spacing={1} sx={{ mb: 4 }}>
                                 <Chip label="Coureur" sx={{ bgcolor: '#2e7d32', color: 'white', fontWeight: 'bold' }} size="small" />
-                                {user.role === 'admin' && <Chip label="Responsable de RAID" color="primary" size="small" />}
+                                {isRaidManager && <Chip label="Responsable de RAID" color="primary" size="small" />}
+                                {isClubManager && <Chip label="Responsable de CLUB" color="secondary" size="small" />}
+                                { }
                             </Stack>
 
                             <Button
@@ -130,7 +133,7 @@ const Profile = () => {
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                                         <TextField
                                             label="Date de naissance :"
-                                            defaultValue={user.birth_date || '26/02/2005'}
+                                            defaultValue={formatDate(user.USE_BIRTHDATE!) || " "}
                                             variant="filled"
                                             fullWidth
                                             disabled
@@ -142,7 +145,7 @@ const Profile = () => {
                                         />
                                         <TextField
                                             label="Téléphone : "
-                                            defaultValue={user.phone_number || '06 15 14 25 32'}
+                                            defaultValue={user.USE_PHONE_NUMBER}
                                             variant="filled"
                                             fullWidth
                                             disabled
@@ -154,10 +157,29 @@ const Profile = () => {
                                         />
                                     </Stack>
 
+                                    <TextField
+                                        label="Email :"
+                                        defaultValue={user.USE_MAIL}
+                                        variant="filled"
+                                        fullWidth
+                                        disabled
+                                        InputProps={{ disableUnderline: true, style: { fontWeight: 'bold', color: 'black' } }}
+                                        sx={{
+                                            '& .MuiFilledInput-root': { borderRadius: '12px', bgcolor: '#f0f0f0' },
+                                            '& .MuiInputLabel-root': { color: '#666' }
+                                        }}
+                                    />
+                                </Stack>
+
+                                <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 4, mb: 3 }}>
+                                    Adresse
+                                </Typography>
+
+                                <Stack spacing={3}>
                                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                                         <TextField
-                                            label="Email :"
-                                            defaultValue={user.email}
+                                            label="Ville / Code postal"
+                                            defaultValue={`${user.address?.ADD_CITY || ''} ${user.address?.ADD_POSTAL_CODE || ''}`}
                                             variant="filled"
                                             fullWidth
                                             disabled
@@ -168,8 +190,8 @@ const Profile = () => {
                                             }}
                                         />
                                         <TextField
-                                            label="Adresse :"
-                                            defaultValue="26/02/2005"
+                                            label="Adresse"
+                                            defaultValue={`${user.address?.ADD_STREET_NUMBER || ''} ${user.address?.ADD_STREET_NAME || ''}`}
                                             variant="filled"
                                             fullWidth
                                             disabled
@@ -183,13 +205,13 @@ const Profile = () => {
                                 </Stack>
 
                                 <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 4, mb: 3 }}>
-                                    Données de course
+                                    Données de courses
                                 </Typography>
 
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3}>
                                     <TextField
                                         label="Numéro de licence"
-                                        defaultValue="A0145JC"
+                                        defaultValue={user.USE_LICENCE_NUMBER || " "}
                                         variant="filled"
                                         fullWidth
                                         disabled
@@ -201,11 +223,11 @@ const Profile = () => {
                                     />
                                     <TextField
                                         label="Certificat médical"
-                                        defaultValue="PPS_2026.pdf"
+                                        defaultValue={user.USE_PPS_FORM || " "}
                                         variant="filled"
                                         fullWidth
                                         disabled
-                                        InputProps={{ disableUnderline: true, style: { fontWeight: 'bold', color: 'black' }, endAdornment: <Typography variant="caption" sx={{ color: 'text.secondary' }}> (simulé)</Typography> }}
+                                        InputProps={{ disableUnderline: true, style: { fontWeight: 'bold', color: 'black' } }}
                                         sx={{
                                             '& .MuiFilledInput-root': { borderRadius: '12px', bgcolor: '#f0f0f0' },
                                             '& .MuiInputLabel-root': { color: '#666' }

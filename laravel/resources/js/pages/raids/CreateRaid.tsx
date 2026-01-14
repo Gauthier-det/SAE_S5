@@ -103,7 +103,7 @@ const CreateRaid = () => {
                         onChange={handleChange}
                         margin="normal"
                         required
-                        placeholder="Raid Miam"
+                        placeholder="Raid"
                     />
 
                     <TextField

@@ -1,31 +1,11 @@
-import type { Club } from "../model/db/clubDbModel";
+import type { Club } from "../models/club.model";
+import { apiClient } from "../utils/apiClient";
 
-
-export const getListOfClubs = () : Club[] => {
-    return [
-        {
-            id: "1",
-            name: "Club 1",
-            manager: "1",
-        },
-        {
-            id: "2",
-            name: "Club 2",
-            manager: "2",
-        },
-        {
-            id: "3",
-            name: "Club 3",
-            manager: "3",
-        },
-        {
-            id: "4",
-            name: "Club 4",
-            manager: "4",
-        },
-    ];
+export const getListOfClubs = async (): Promise<Club[]> => {
+    return apiClient<Club[]>('/clubs');
 };
 
-export const getListOfClubManagers = () => {
-    return getListOfClubs().map(club => club.manager);
+export const getListOfClubManagers = async (): Promise<number[]> => {
+    const clubs = await getListOfClubs();
+    return clubs.map(club => club.USE_ID);
 };

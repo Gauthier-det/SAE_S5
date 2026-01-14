@@ -9,7 +9,7 @@ use App\Http\Controllers\RaceController;
 use App\Http\Controllers\ClubController;
 
 Route::get('/user', function (Request $request) {
-    return $request->user();
+    return $request->user()->load(['address', 'club', 'clubsCreated']);
 })->middleware('auth:sanctum');
 
 

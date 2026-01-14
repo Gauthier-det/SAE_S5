@@ -13,8 +13,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ condition }) => {
     if (!user || !isAuthenticated) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
-
-    if (condition) {
+    console.log(condition)
+    if (condition!==undefined && !condition) {
         return <Navigate to="/" replace />;
     }
 

@@ -16,7 +16,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
         last_name: '',
-        email: '',
+        mail: '',
         password: ''
     });
 
@@ -42,19 +42,11 @@ const Register = () => {
         }
 
         try {
-            // Register and automatically login the user
-            await register({
-                name: formData.name,
-                last_name: formData.last_name,
-                email: formData.email,
-                password: formData.password
-            });
-            // Redirect to dashboard after successful registration
+            await register(formData);
             navigate('/dashboard');
-        } catch (err: any) { // Type as any or import ApiError to check instance
+        } catch (err: any) { 
             console.error(err);
             if (err.name === 'ApiError' && err.data && err.data.errors) {
-                // Laravel validation errors format: { field: ["error1", "error2"] }
                 const messages = Object.values(err.data.errors).flat().join(' ');
                 setError(messages);
             } else {
@@ -108,7 +100,7 @@ const Register = () => {
                             name="email"
                             autoComplete="email"
                             variant="standard"
-                            value={formData.email}
+                            value={formData.mail}
                             onChange={handleChange}
                             placeholder="jean.dupont@gmail.com"
                         />

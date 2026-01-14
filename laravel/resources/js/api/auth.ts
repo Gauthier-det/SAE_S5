@@ -1,5 +1,5 @@
 import type { User } from "../models/user.model";
-import type { Login, Register } from "../models/auth.model";
+import type { Login, Register, AuthAPIResponse } from "../models/auth.model";
 import { apiClient } from "../utils/apiClient";
 
 interface AuthResponse {
@@ -8,11 +8,11 @@ interface AuthResponse {
 }
 
 export const apiLogin = async (login: Login): Promise<AuthResponse> => {
-    const response = await apiClient<{ data: { user_id: number; user_name: string; user_last_name: string; user_mail: string; access_token: string; token_type: string } }>('/login', {
+    const response = await apiClient<AuthAPIResponse>('/login', {
         method: 'POST',
-        body: JSON.stringify({ mail: login.email, password: login.password }),
+        body: JSON.stringify(login),
     });
-    
+
     return {
         token: response.data.access_token,
         user: {
@@ -20,22 +20,22 @@ export const apiLogin = async (login: Login): Promise<AuthResponse> => {
             USE_NAME: response.data.user_name,
             USE_LAST_NAME: response.data.user_last_name,
             USE_MAIL: response.data.user_mail,
-            USE_PASSWORD: '',
+            USE_PHONE_NUMBER: response.data.user_phone ?? undefined,
+            USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
+            USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
+            USE_PPS_FORM: response.data.user_pps ?? undefined,
+            address: response.data.user_address || undefined,
+            club: response.data.user_club || undefined
         }
     };
 }
 
 export const apiRegister = async (register: Register): Promise<AuthResponse> => {
-    const response = await apiClient<{ data: { user_id: number; user_name: string; user_last_name: string; user_mail: string; access_token: string; token_type: string } }>('/register', {
+    const response = await apiClient<AuthAPIResponse>('/register', {
         method: 'POST',
-        body: JSON.stringify({ 
-            mail: register.email, 
-            password: register.password,
-            name: register.name,
-            last_name: register.last_name
-        }),
+        body: JSON.stringify(register),
     });
-    
+
     return {
         token: response.data.access_token,
         user: {
@@ -43,7 +43,12 @@ export const apiRegister = async (register: Register): Promise<AuthResponse> => 
             USE_NAME: response.data.user_name,
             USE_LAST_NAME: response.data.user_last_name,
             USE_MAIL: response.data.user_mail,
-            USE_PASSWORD: '',
+            USE_PHONE_NUMBER: response.data.user_phone ?? undefined,
+            USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
+            USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
+            USE_PPS_FORM: response.data.user_pps ?? undefined,
+            address: response.data.user_address || undefined,
+            club: response.data.user_club || undefined
         }
     };
 }
@@ -53,4 +58,3 @@ export const apiLogout = async (): Promise<void> => {
         method: 'POST',
     });
 }
-

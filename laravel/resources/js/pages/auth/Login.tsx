@@ -14,7 +14,7 @@ import { useUser } from '../../contexts/userContext';
 import LogoColor from '../../assets/logo-color.png';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const { login } = useUser();
@@ -24,7 +24,7 @@ const Login = () => {
         e.preventDefault();
         setError('');
         try {
-            await login({ email, password });
+            await login({ mail, password });
             navigate('/dashboard');
         } catch (err) {
             setError('Échec de la connexion. Vérifiez vos identifiants.');
@@ -77,8 +77,8 @@ const Login = () => {
                             autoComplete="email"
                             autoFocus
                             variant="standard"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={mail}
+                            onChange={(e) => setMail(e.target.value)}
                             placeholder="adresse.email@mail.com"
                         />
                         <TextField

@@ -4,7 +4,7 @@ import { getListOfClubManagers } from "./club";
 import { getListOfRaidManagers } from "./raid";
 
 export const getUser = async (): Promise<User> => {
-    return apiClient<User>('/user', {
+    return await apiClient<User>('/user', {
         method: 'GET'
     });
 }
