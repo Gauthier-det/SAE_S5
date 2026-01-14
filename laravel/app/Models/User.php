@@ -33,7 +33,9 @@ class User extends Model
         'USE_MEMBERSHIP_DATE',
     ];
 
-    protected $hidden = ['USE_PASSWORD'];
+    protected $hidden = [
+        'USE_PASSWORD',
+    ];
 
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
