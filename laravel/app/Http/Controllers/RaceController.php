@@ -73,6 +73,41 @@ class RaceController extends Controller
         return response()->json(['data' => $prices], 200);
     }
 
+    public function storeTeamRaceResult(Request $request, $raceId)
+    {
+        $race = Race::find($raceId);
+        if (!$race) {
+            return response()->json([
+                'message' => 'Race not found',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'TEA_ID' => 'required|integer|exists:SAN_TEAMS,TEA_ID',
+            'TER_TIME' => 'nullable|date_format:H:i:s',
+            'TER_IS_VALID' => 'nullable|integer|in:0,1',
+            'TER_RACE_NUMBER' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            DB::table('SAN_TEAMS_RACES')->insert([
+                'RAC_ID' => $raceId,
+                'TEA_ID' => $request->input('TEA_ID'),
+                'TER_TIME' => $request->input('TER_TIME'),
+                'TER_IS_VALID' => $request->input('TER_IS_VALID'),
+                'TER_RACE_NUMBER' => $request->input('TER_RACE_NUMBER'),
+            ]);
+
+            return response()->json(['message' => 'Team race result created successfully'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error creating team race result', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function createRace(Request $request)
     {
         $validator = Validator::make($request->all(), [
