@@ -2,8 +2,8 @@ import { Container, Typography, Box, Button, Slider, Checkbox, FormControlLabel,
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
-import type { Raid } from '../../model/db/raidDbModel';
-import type { Race } from '../../model/db/raceDbModel';
+import type { Raid } from '../../models/raid.model';
+import type { Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
 import React from 'react';
 import { formatDate } from '../../utils/dateUtils';
@@ -50,12 +50,12 @@ export default function InfoRaid() {
         return allRaces.filter((race) => {
             // Type filter
             const matchesType = raceType.size === 0 ||
-                (raceType.has('Compétitif') && race.competitive === true) ||
-                (raceType.has('Randonnée') && race.competitive === false) ||
-                (raceType.has('Extrême') && race.competitive === true);
+                (raceType.has('Compétitif') && race.RAC_TYPE === 'Compétitif') ||
+                (raceType.has('Randonnée') && race.RAC_TYPE !== 'Compétitif') ||
+                (raceType.has('Extrême') && race.RAC_TYPE === 'Compétitif');
 
             // Difficulty filter - normalize to lowercase for comparison
-            const raceDifficulty = (race.difficulty || 'moyen').toLowerCase();
+            const raceDifficulty = (race.RAC_DIFFICULTY || 'moyen').toLowerCase();
             const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(raceDifficulty);
 
             return matchesType && matchesDifficulty;
@@ -201,7 +201,7 @@ export default function InfoRaid() {
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 3 }}>
                             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                                {raid.name}
+                                {raid.RAI_NAME}
                             </Typography>
                             <Box sx={{ display: 'flex', gap: 4, mb: 4, flexWrap: 'wrap' }}>
                                 <Box>
@@ -209,7 +209,7 @@ export default function InfoRaid() {
                                         DATES DU RAID
                                     </Typography>
                                     <Typography variant="h6">
-                                        Du {formatDate(raid.time_start)} au {formatDate(raid.time_end)}
+                                        Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
                                     </Typography>
                                 </Box>
                                 <Box>
@@ -217,7 +217,7 @@ export default function InfoRaid() {
                                         INSCRIPTIONS
                                     </Typography>
                                     <Typography variant="h6">
-                                        Du {formatDate(raid.registration_start)} au {formatDate(raid.registration_end)}
+                                        Du {formatDate(raid.RAI_REGISTRATION_START)} au {formatDate(raid.RAI_REGISTRATION_END)}
                                     </Typography>
                                 </Box>
                             </Box>
@@ -239,7 +239,7 @@ export default function InfoRaid() {
                             }}
                         >
                             {filteredRaces.map((race) => (
-                                <Box key={race.id}>
+                                <Box key={race.RAC_ID}>
                                     <RaceCard race={race} onDetailsClick={handleRaceDetails} />
                                 </Box>
                             ))}

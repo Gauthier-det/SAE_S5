@@ -7,7 +7,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import React from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
-import type { Raid } from '../../model/db/raidDbModel';
+import type { Raid } from '../../models/raid.model';
 import { parseDateToTs } from '../../utils/dateUtils';
 
 
@@ -39,14 +39,14 @@ export default function Raids() {
         const endTs = endDate ? endDate.valueOf() : null;
 
         return raids.filter((raid) => {
-            const raidStartTs = parseDateToTs(raid.time_start);
-            const raidEndTs = parseDateToTs(raid.time_end);
+            const raidStartTs = parseDateToTs(raid.RAI_TIME_START);
+            const raidEndTs = parseDateToTs(raid.RAI_TIME_END);
 
             const matchesStart = startTs != null ? raidEndTs >= startTs : true;
             const matchesEnd = endTs != null ? raidStartTs <= endTs : true;
 
             const matchesKeyword = keyword
-                ? raid.name.toLowerCase().includes(keyword.toLowerCase())
+                ? raid.RAI_NAME.toLowerCase().includes(keyword.toLowerCase())
                 : true;
 
             const matchesClub = club ? true : true;
@@ -142,7 +142,7 @@ export default function Raids() {
                             }}
                         >
                             {filteredRaids.map((raid) => (
-                                <Box key={raid.id}>
+                                <Box key={raid.RAI_ID}>
                                     <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
                                 </Box>
                             ))}
