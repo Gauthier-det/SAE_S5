@@ -26,6 +26,7 @@ Route::get('/raids/{raidId}/races', [RaceController::class, 'getRacesByRaid'])->
 Route::get('/races', [RaceController::class, 'getAllRaces']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
 Route::get('/races/{raceId}/results', [RaceController::class, 'getRaceResults'])->whereNumber('raceId');
+Route::get('/races/{raceId}/prices', [RaceController::class, 'getRacePrices'])->whereNumber('raceId');
 
 // Clubs routes
 Route::get('/clubs', [ClubController::class, 'getAllClubs']);
@@ -40,6 +41,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Auth Races routes
     Route::post('/races', [RaceController::class, 'createRace']);
+    Route::post('/races/with-prices', [RaceController::class, 'createRaceWithPrices']);
     Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
     Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
 });
