@@ -47,7 +47,8 @@ return new class extends Migration
 
             $table->index('ADD_ID', 'I_FK_SAN_USERS_SAN_ADDRESSES');
             $table->index('CLU_ID', 'I_FK_SAN_USERS_SAN_CLUBS');
-            $table->foreign('ADD_ID')->references('ADD_ID')->on('SAN_ADDRESSES');
+            // Remove the foreign key constraint for ADD_ID to allow null values
+            // $table->foreign('ADD_ID')->references('ADD_ID')->on('SAN_ADDRESSES');
         });
 
         // SAN_CLUBS

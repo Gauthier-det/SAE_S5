@@ -62,6 +62,7 @@ return [
     |
     */
 
+    'prefix' => 'sanctum',
     'token_prefix' => env('SANCTUM_TOKEN_PREFIX', ''),
 
     /*
