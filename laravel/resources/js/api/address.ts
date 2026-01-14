@@ -1,26 +1,33 @@
 import { apiClient } from "../utils/apiClient";
 
 export interface Address {
-    ADD_NUMBER?: string; // Optional (e.g. "12 bis")
-    ADD_LABEL: string; // Street name
+    ADD_STREET_NUMBER: string;
+    ADD_STREET_NAME: string;
     ADD_CITY: string;
-    ADD_ZIP_CODE: string;
+    ADD_POSTAL_CODE: string;
 }
 
 export interface AddressResponse {
     data: {
         ADD_ID: number;
-        // ... other fields
+        ADD_STREET_NUMBER: string;
+        ADD_STREET_NAME: string;
+        ADD_CITY: string;
+        ADD_POSTAL_CODE: number;
     };
 }
 
 export const createAddress = async (address: Address): Promise<number> => {
-    // Assuming backend has POST /addresses or similar. 
-    // If not, we might need to adjust or mock.
-    // Based on RaidController, it expects ADD_ID, meaning address likely needs to exist.
+    const payload = {
+        ADD_STREET_NUMBER: address.ADD_STREET_NUMBER,
+        ADD_STREET_NAME: address.ADD_STREET_NAME,
+        ADD_CITY: address.ADD_CITY,
+        ADD_POSTAL_CODE: parseInt(address.ADD_POSTAL_CODE, 10)
+    };
+
     const response = await apiClient<AddressResponse>('/addresses', {
         method: 'POST',
-        body: JSON.stringify(address)
+        body: JSON.stringify(payload)
     });
     return response.data.ADD_ID;
 };

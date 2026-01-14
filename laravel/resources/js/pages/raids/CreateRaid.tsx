@@ -46,9 +46,10 @@ const CreateRaid = () => {
 
     // Address Form Data
     const [addressData, setAddressData] = useState<Address>({
-        ADD_LABEL: '',
+        ADD_STREET_NUMBER: '',
+        ADD_STREET_NAME: '',
         ADD_CITY: '',
-        ADD_ZIP_CODE: ''
+        ADD_POSTAL_CODE: ''
     });
 
     // Extra state
@@ -233,25 +234,37 @@ const CreateRaid = () => {
                                             />
                                             <TextField
                                                 label="Code Postal"
-                                                name="ADD_ZIP_CODE"
+                                                name="ADD_POSTAL_CODE"
                                                 variant="standard"
-                                                value={addressData.ADD_ZIP_CODE}
+                                                value={addressData.ADD_POSTAL_CODE}
                                                 onChange={handleAddressChange}
                                                 fullWidth
                                                 required
                                                 placeholder="14000"
                                             />
                                         </Stack>
-                                        <TextField
-                                            label="Rue"
-                                            name="ADD_LABEL"
-                                            variant="standard"
-                                            value={addressData.ADD_LABEL}
-                                            onChange={handleAddressChange}
-                                            fullWidth
-                                            sx={{ mt: 1 }}
-                                            placeholder="1 rue de la Paix"
-                                        />
+                                        <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                                            <TextField
+                                                label="N°"
+                                                name="ADD_STREET_NUMBER"
+                                                variant="standard"
+                                                value={addressData.ADD_STREET_NUMBER}
+                                                onChange={handleAddressChange}
+                                                sx={{ width: '100px' }}
+                                                required
+                                                placeholder="12"
+                                            />
+                                            <TextField
+                                                label="Rue"
+                                                name="ADD_STREET_NAME"
+                                                variant="standard"
+                                                value={addressData.ADD_STREET_NAME}
+                                                onChange={handleAddressChange}
+                                                fullWidth
+                                                required
+                                                placeholder="rue de la Paix"
+                                            />
+                                        </Stack>
                                     </Box>
 
                                     <TextField
