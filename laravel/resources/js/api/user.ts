@@ -6,3 +6,10 @@ export const getUser = async (): Promise<User> => {
         method: 'GET'
     });
 }
+
+export const getUsersByClub = async (clubId: number): Promise<User[]> => {
+    const response = await apiClient<{ data: User[] }>(`/clubs/${clubId}/users`, {
+        method: 'GET'
+    });
+    return response.data;
+}
