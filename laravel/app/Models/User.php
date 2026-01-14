@@ -16,6 +16,7 @@ class User extends Model
 
     protected $table = 'SAN_USERS';
     protected $primaryKey = 'USE_ID';
+    public $incrementing = true;
     public $timestamps = false;
 
     protected $fillable = [
@@ -39,6 +40,7 @@ class User extends Model
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
+        'USE_PASSWORD'        => 'hashed',
     ];
 
     public function address(): BelongsTo

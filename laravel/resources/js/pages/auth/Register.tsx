@@ -7,12 +7,7 @@ import {
     Typography,
     Paper,
     Link,
-    Stack,
-    Checkbox,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
-    FormControl
+    Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../../assets/logo-color.png';
@@ -23,12 +18,7 @@ const Register = () => {
         name: '',
         last_name: '',
         email: '',
-        password: '',
-        phone: '',
-        address: '',
-        age: '', // Date picker in image but string for now
-        gender: 'Homme', // Default
-        isLicensed: false
+        password: ''
     });
 
     const [error, setError] = useState('');
@@ -36,16 +26,22 @@ const Register = () => {
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, checked, type } = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (formData.password.length < 8) {
+            setError('Le mot de passe doit contenir au moins 8 caractères.');
+            return;
+        }
+
         try {
             // Register and automatically login the user
             await register({
@@ -56,9 +52,15 @@ const Register = () => {
             });
             // Redirect to dashboard after successful registration
             navigate('/dashboard');
-        } catch (err) {
-            setError("Échec de l'inscription.");
+        } catch (err: any) { // Type as any or import ApiError to check instance
             console.error(err);
+            if (err.name === 'ApiError' && err.data && err.data.errors) {
+                // Laravel validation errors format: { field: ["error1", "error2"] }
+                const messages = Object.values(err.data.errors).flat().join(' ');
+                setError(messages);
+            } else {
+                setError(err.message || "Échec de l'inscription. Vérifiez vos informations.");
+            }
         }
     };
 
@@ -152,73 +154,6 @@ const Register = () => {
                                 placeholder="Jean"
                             />
                         </Stack>
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="phone"
-                            label="Téléphone"
-                            id="phone"
-                            variant="standard"
-                            value={formData.phone}
-                            onChange={handleChange}
-                            sx={{ mb: 2 }}
-                        />
-
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="address"
-                            label="adresse"
-                            id="address"
-                            variant="standard"
-                            value={formData.address}
-                            onChange={handleChange}
-                            sx={{ mb: 2 }}
-                        />
-
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={4} alignItems="center" sx={{ mb: 2 }}>
-                            <TextField
-                                required
-                                name="age"
-                                label="Age" // Should be DatePicker as per image but sticking to simplified text for now or verify DatePicker usage in project
-                                id="age"
-                                type="date"
-                                variant="standard"
-                                InputLabelProps={{ shrink: true }}
-                                value={formData.age}
-                                onChange={handleChange}
-                                sx={{ width: '150px' }}
-                            />
-
-                            <FormControl component="fieldset">
-                                <RadioGroup
-                                    row
-                                    aria-label="gender"
-                                    name="gender"
-                                    value={formData.gender}
-                                    onChange={handleChange}
-                                >
-                                    <FormControlLabel value="Homme" control={<Radio color="success" />} label="Homme" />
-                                    <FormControlLabel value="Femme" control={<Radio color="success" />} label="Femme" />
-                                </RadioGroup>
-                            </FormControl>
-                        </Stack>
-
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={formData.isLicensed}
-                                    onChange={handleChange}
-                                    name="isLicensed"
-                                    color="success"
-                                />
-                            }
-                            label="Licencié"
-                            sx={{ mb: 3 }}
-                        />
 
                         {error && (
                             <Typography color="error" variant="body2" sx={{ mt: 2 }}>
