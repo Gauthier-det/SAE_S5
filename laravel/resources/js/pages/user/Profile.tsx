@@ -36,7 +36,7 @@ const mockHistory = [
 ];
 
 const Profile = () => {
-    const { user, isClubManager, isRaidManager } = useUser();
+    const { user, isClubManager, isRaidManager, isRaceManager } = useUser();
 
     // Generate Avatar
     const avatarSvg = useMemo(() => {
@@ -51,11 +51,9 @@ const Profile = () => {
     if (!user) return null;
 
     return (
-        <Box sx={{ flexGrow: 1, minHeight: 'calc(100vh - 64px)', bgcolor: '#f5f5f5', py: 4 }}>
+        <Box sx={{ flexGrow: 1, minHeight: 'calc(100vh - 64px)', py: 4 }}>
             <Container maxWidth="lg">
-                {/* Main Layout using Stack */}
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={4}>
-                    {/* Left Column: Profile Card */}
                     <Box sx={{ width: { xs: '100%', md: '350px' }, flexShrink: 0 }}>
                         <Paper
                             elevation={0}
@@ -86,11 +84,11 @@ const Profile = () => {
                                 {user.USE_NAME} {user.USE_LAST_NAME}
                             </Typography>
 
-                            <Stack direction="row" spacing={1} sx={{ mb: 4 }}>
+                            <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 4, flexWrap: 'wrap' }}>
                                 <Chip label="Coureur" sx={{ bgcolor: '#2e7d32', color: 'white', fontWeight: 'bold' }} size="small" />
                                 {isRaidManager && <Chip label="Responsable de RAID" color="primary" size="small" />}
                                 {isClubManager && <Chip label="Responsable de CLUB" color="secondary" size="small" />}
-                                { }
+                                {isRaceManager && <Chip label="Responsable de COURSE" color="success" size="small" />}
                             </Stack>
 
                             <Button

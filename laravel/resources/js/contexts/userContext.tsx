@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../models/user.model';
 import type { Login, Register } from '../models/auth.model';
-import { getUser, isRaidManager } from '../api/user';
+import { getUser, isClubManager, isRaceManager, isRaidManager } from '../api/user';
 import { apiLogin, apiLogout, apiRegister } from '../api/auth';
 
 interface UserContextType {
@@ -13,6 +13,7 @@ interface UserContextType {
     loading: boolean;
     isClubManager: boolean;
     isRaidManager: boolean;
+    isRaceManager: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -23,19 +24,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState<boolean>(true);
     const [isClubManagerUser, setIsClubManagerUser] = useState<boolean>(false);
     const [isRaidManagerUser, setIsRaidManagerUser] = useState<boolean>(false);
+    const [isRaceManagerUser, setIsRaceManagerUser] = useState<boolean>(false);
+
 
     const updateRoles = async (userData: User) => {
-        // Club Manager: derived directly from loaded relationship
-        const isClubMgr = (userData.clubs_created?.length ?? 0) > 0;
-        setIsClubManagerUser(isClubMgr);
-
-        // Raid Manager: still using API check (unless refactored similarly later)
         try {
+            const clubMgr = await isClubManager(userData.USE_ID);
             const raidMgr = await isRaidManager(userData.USE_ID);
+            const raceMgr = await isRaceManager(userData.USE_ID);
+            setIsClubManagerUser(clubMgr);
             setIsRaidManagerUser(raidMgr);
+            setIsRaceManagerUser(raceMgr);
         } catch (e) {
-            console.error("Failed to fetch raid role", e);
+            console.error("Failed to fetch roles", e);
+            setIsClubManagerUser(false);
             setIsRaidManagerUser(false);
+            setIsRaceManagerUser(false);
+
         }
     }
 
@@ -103,7 +108,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isAuthenticated,
             loading,
             isClubManager: isClubManagerUser,
-            isRaidManager: isRaidManagerUser
+            isRaidManager: isRaidManagerUser,
+            isRaceManager: isRaceManagerUser
         }}>
             {children}
         </UserContext.Provider>

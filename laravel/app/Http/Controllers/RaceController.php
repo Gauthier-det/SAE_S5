@@ -32,6 +32,22 @@ class RaceController extends Controller
         return response()->json(['data' => $races], 200);
     }
 
+    public function getRaceResults($raceId)
+    {
+        $race = Race::find($raceId);
+        if (!$race) {
+            return response()->json([
+                'message' => 'Race not found',
+            ], 404);
+        }
+
+        $results = $race->teams()
+            ->orderBy('SAN_TEAMS_RACES.TER_TIME', 'asc')
+            ->get();
+
+        return response()->json(['data' => $results], 200);
+    }
+
     public function createRace(Request $request)
     {
         $validator = Validator::make($request->all(), [

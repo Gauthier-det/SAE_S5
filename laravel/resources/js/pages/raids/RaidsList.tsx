@@ -8,9 +8,8 @@ import React, { useEffect } from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
-import { parseDateToTs } from '../../utils/dateUtils';
 import { useNavigate } from 'react-router-dom';
-import { isClubManager } from '../../api/user';
+import { parseDateToTs } from '../../utils/dateUtils';
 import { useUser } from '../../contexts/userContext';
 
 
@@ -23,8 +22,6 @@ export default function Raids() {
     const [raids, setRaids] = React.useState<Raid[]>([]);
     const { user,isClubManager } = useUser();
     const navigate = useNavigate();
-    
-
 
     useEffect(() => {
         const fetchRaids = async () => {
@@ -54,11 +51,17 @@ export default function Raids() {
                 ? raid.RAI_NAME.toLowerCase().includes(keyword.toLowerCase())
                 : true;
 
-            const matchesClub = club ? true : true;
+            const matchesClub = club ? raid.club?.CLU_NAME === club : true;
 
             return matchesStart && matchesEnd && matchesKeyword && matchesClub;
         });
     }, [raids, startDate, endDate, keyword, club]);
+
+    // Extract unique clubs for filter dropdown
+    const uniqueClubs = React.useMemo(() => {
+        const clubs = raids.map(r => r.club?.CLU_NAME).filter(Boolean);
+        return [...new Set(clubs)] as string[];
+    }, [raids]);
 
     return (
         <Container maxWidth={false}>
@@ -115,14 +118,14 @@ export default function Raids() {
                             fullWidth
                         >
                             <MenuItem value="">Tous les clubs</MenuItem>
-                            <MenuItem value="club1">Club 1</MenuItem>
-                            <MenuItem value="club2">Club 2</MenuItem>
+                            {uniqueClubs.map((c) => (
+                                <MenuItem key={c} value={c}>{c}</MenuItem>
+                            ))}
                         </TextField>
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
                             <Stack direction="column">
-
                                 <Typography variant="h2" component="h1" gutterBottom>
                                     Les Raids
                                 </Typography>
@@ -152,7 +155,8 @@ export default function Raids() {
                                     sm: 'repeat(2, 1fr)',
                                     md: 'repeat(3, 1fr)',
                                     lg: 'repeat(4, 1fr)'
-                                }
+                                },
+                                alignItems: 'stretch'
                             }}
                         >
                             {filteredRaids.map((raid) => (
@@ -164,6 +168,6 @@ export default function Raids() {
                     </Box>
                 </Box>
             </Box>
-        </Container>
+        </Container >
     );
 }

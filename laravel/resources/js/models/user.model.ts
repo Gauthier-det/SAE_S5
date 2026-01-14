@@ -5,7 +5,6 @@ export interface User {
     USE_NAME: string;
     USE_LAST_NAME: string;
     USE_MAIL: string;
-    CLU_ID?: number;
     USE_BIRTHDATE?: string;
     USE_PHONE_NUMBER?: string;
     USE_LICENCE_NUMBER?: string;
@@ -13,7 +12,6 @@ export interface User {
     USE_MEMBERSHIP_DATE?: string;
     address?: Address;
     club?: Club;
-    clubs_created?: Club[];
 }
 
 export interface Address {

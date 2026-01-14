@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Slider, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -7,6 +7,13 @@ import { RaceType, type Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
 import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../utils/dateUtils';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import GroupIcon from '@mui/icons-material/Group';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import EventIcon from '@mui/icons-material/Event';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LanguageIcon from '@mui/icons-material/Language';
 
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
@@ -19,23 +26,8 @@ export default function InfoRaid() {
         const raidId = parseInt(id!);
         getRaidById(raidId).then(setRaid).catch(console.error);
         getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
-
-
     }, [id]);
-
-    const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
-    const [distance, setDistance] = React.useState<number[]>([0, 100]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
-
-    const handleDifficultyChange = (level: string) => {
-        const newFilter = new Set(difficultyFilter);
-        if (newFilter.has(level)) {
-            newFilter.delete(level);
-        } else {
-            newFilter.add(level);
-        }
-        setDifficultyFilter(newFilter);
-    };
 
     const handleTypeChange = (type: string) => {
         const newFilter = new Set(raceType);
@@ -52,13 +44,9 @@ export default function InfoRaid() {
             const matchesType = raceType.size === 0 ||
                 (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
                 (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
-
-            const raceDifficulty = (race.RAC_DIFFICULTY || 'moyen').toLowerCase();
-            const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(raceDifficulty);
-
-            return matchesType && matchesDifficulty;
+            return matchesType;
         });
-    }, [allRaces, raceType, difficultyFilter]);
+    }, [allRaces, raceType]);
 
 
     if (!raid) {
@@ -111,63 +99,6 @@ export default function InfoRaid() {
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                Difficulté
-                            </Typography>
-                            <Box sx={{ px: 1 }}>
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('facile')}
-                                            onChange={() => handleDifficultyChange('facile')}
-                                        />}
-                                        label="Facile"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('moyen')}
-                                            onChange={() => handleDifficultyChange('moyen')}
-                                        />}
-                                        label="Moyen"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('difficile')}
-                                            onChange={() => handleDifficultyChange('difficile')}
-                                        />}
-                                        label="Difficile"
-                                    />
-                                </FormGroup>
-                            </Box>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                Distance
-                            </Typography>
-                            <Box sx={{ px: 1 }}>
-                                <Slider
-                                    value={distance}
-                                    onChange={(_, newValue) => setDistance(newValue as number[])}
-                                    valueLabelDisplay="auto"
-                                    min={0}
-                                    max={100}
-                                    sx={{
-                                        color: '#2196f3',
-                                        '& .MuiSlider-thumb': {
-                                            backgroundColor: '#fff',
-                                            border: '2px solid #2196f3',
-                                        },
-                                    }}
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                                    <Typography variant="caption" color="text.secondary">0</Typography>
-                                    <Typography variant="caption" color="text.secondary">100km</Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                 Type
                             </Typography>
                             <FormGroup>
@@ -180,46 +111,103 @@ export default function InfoRaid() {
                                 />
                                 <FormControlLabel
                                     control={<Checkbox
-                                        checked={raceType.has('Randonnée')}
-                                        onChange={() => handleTypeChange('Randonnée')}
+                                        checked={raceType.has('Loisir')}
+                                        onChange={() => handleTypeChange('Loisir')}
                                     />}
-                                    label="Randonnée"
-                                />
-                                <FormControlLabel
-                                    control={<Checkbox
-                                        checked={raceType.has('Extrême')}
-                                        onChange={() => handleTypeChange('Extrême')}
-                                    />}
-                                    label="Extrême"
+                                    label="Loisir"
                                 />
                             </FormGroup>
                         </Box>
                     </Box>
 
                     <Box sx={{ flex: 1 }}>
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
                                 {raid.RAI_NAME}
                             </Typography>
-                            <Box sx={{ display: 'flex', gap: 4, mb: 4, flexWrap: 'wrap' }}>
-                                <Box>
-                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                        DATES DU RAID
-                                    </Typography>
-                                    <Typography variant="h6">
+
+                            {/* Club and Location Row */}
+                            <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {raid.club && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <GroupIcon color="primary" />
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {raid.club.CLU_NAME}
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {raid.address && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <LocationOnIcon color="error" />
+                                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                                            {raid.address.ADD_STREET_NUMBER} {raid.address.ADD_STREET_NAME}, {raid.address.ADD_CITY} ({raid.address.ADD_POSTAL_CODE})
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+
+                            {/* Info Cards */}
+                            <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+                                <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <CalendarTodayIcon fontSize="small" color="primary" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            DATES DU RAID
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                         Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
                                     </Typography>
                                 </Box>
-                                <Box>
-                                    <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                        INSCRIPTIONS
-                                    </Typography>
-                                    <Typography variant="h6">
+                                <Box sx={{ p: 2, backgroundColor: '#fff3e0', borderRadius: 2, minWidth: 200 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <EventIcon fontSize="small" color="warning" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            INSCRIPTIONS
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                         Du {formatDate(raid.RAI_REGISTRATION_START)} au {formatDate(raid.RAI_REGISTRATION_END)}
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+
+                            {/* Contact Info */}
+                            <Box sx={{ display: 'flex', gap: 3, mb: 3, flexWrap: 'wrap' }}>
+                                {raid.RAI_MAIL && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <EmailIcon fontSize="small" color="action" />
+                                        <Typography variant="body2" color="text.secondary">
+                                            {raid.RAI_MAIL}
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {raid.RAI_PHONE_NUMBER && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <PhoneIcon fontSize="small" color="action" />
+                                        <Typography variant="body2" color="text.secondary">
+                                            {raid.RAI_PHONE_NUMBER}
+                                        </Typography>
+                                    </Box>
+                                )}
+                                {raid.RAI_WEB_SITE && (
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <LanguageIcon fontSize="small" color="action" />
+                                        <Typography
+                                            component="a"
+                                            href={raid.RAI_WEB_SITE}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            variant="body2"
+                                            sx={{ color: 'primary.main', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
+                                        >
+                                            Site web
+                                        </Typography>
+                                    </Box>
+                                )}
+                            </Box>
+
+                            <Typography variant="h5" sx={{ mb: 2, fontWeight: 600, borderBottom: '2px solid #f97316', pb: 1, display: 'inline-block' }}>
                                 {filteredRaces.length} épreuves disponibles
                             </Typography>
                         </Box>

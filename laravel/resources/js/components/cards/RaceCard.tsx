@@ -54,11 +54,11 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                     <br />
                     <strong>Fin:</strong> {formatDate(race.RAC_TIME_END)}
                     <br />
+                    <strong>Participants total:</strong> {race.RAC_MIN_PARTICIPANTS} - {race.RAC_MAX_PARTICIPANTS}
+                    <br />
                     <strong>Équipes:</strong> {race.RAC_MIN_TEAMS} - {race.RAC_MAX_TEAMS} équipes
                     <br />
-                    <strong>Participants/équipe:</strong> {race.RAC_TEAM_MEMBERS}
-                    <br />
-                    <strong>Participants total:</strong> {race.RAC_MIN_PARTICIPANTS} - {race.RAC_MAX_PARTICIPANTS}
+                    <strong>Participants max/équipe:</strong> {race.RAC_TEAM_MEMBERS}
                     <br />
                     <strong>Age:</strong> {race.RAC_AGE_MIN} - {race.RAC_AGE_MAX} ans
                 </Typography>

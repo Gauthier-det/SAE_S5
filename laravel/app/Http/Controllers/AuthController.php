@@ -23,7 +23,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::with(['address', 'club', 'clubsCreated'])->where('USE_MAIL', $request->mail)->first();
+        $user = User::with(['address', 'club'])->where('USE_MAIL', $request->mail)->first();
 
         if (!$user || $request->password !== $user->USE_PASSWORD) {
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -41,7 +41,6 @@ class AuthController extends Controller
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
                 'user_address' => $user->address,
                 'user_club' => $user->club,
-                'user_clubs_managed' => $user->clubsCreated,
                 'user_licence' => $user->USE_LICENCE_NUMBER,
                 'user_pps' => $user->USE_PPS_FORM,
                 'access_token' => $token,
@@ -92,7 +91,6 @@ class AuthController extends Controller
                 'user_birthdate' => null,
                 'user_address' => null,
                 'user_club' => null,
-                'user_clubs_managed' => null,
                 'user_licence' => null,
                 'user_pps' => null,
                 'access_token' => $token,
