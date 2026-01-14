@@ -26,10 +26,10 @@ class User extends Authenticatable
         'USE_PASSWORD',
         'USE_NAME',
         'USE_LAST_NAME',
+        'USE_GENDER',
         'USE_BIRTHDATE',
         'USE_PHONE_NUMBER',
         'USE_LICENCE_NUMBER',
-        'USE_PPS_FORM',
         'USE_MEMBERSHIP_DATE',
     ];
 
