@@ -9,6 +9,7 @@ interface UserContextType {
     login: (creds: Login) => Promise<void>;
     register: (creds: Register) => Promise<void>;
     logout: () => void;
+    refreshUser: () => Promise<void>;
     isAuthenticated: boolean;
     loading: boolean;
     isClubManager: boolean;
@@ -44,15 +45,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     }
 
+    const refreshUser = async () => {
+        try {
+            const userData = await getUser();
+            setUser(userData);
+            setIsAuthenticated(true);
+            await updateRoles(userData);
+        } catch (error) {
+            console.error("Failed to refresh user", error);
+            // Don't logout on simple refresh fail to avoid UX jumping, 
+            // but if init fails it might be token issue.
+        }
+    };
+
     useEffect(() => {
         const initSession = async () => {
             const token = localStorage.getItem('token');
             if (token) {
                 try {
-                    const userData = await getUser();
-                    setUser(userData);
-                    setIsAuthenticated(true);
-                    await updateRoles(userData);
+                    await refreshUser();
                 } catch (error) {
                     console.error("Failed to restore session", error);
                     logout();
@@ -105,6 +116,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             login,
             register,
             logout,
+            refreshUser,
             isAuthenticated,
             loading,
             isClubManager: isClubManagerUser,

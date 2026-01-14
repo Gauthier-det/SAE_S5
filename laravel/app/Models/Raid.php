@@ -24,6 +24,7 @@ class Raid extends Model
         'RAI_TIME_END',
         'RAI_REGISTRATION_START',
         'RAI_REGISTRATION_END',
+        'RAI_NB_RACES',
     ];
 
     protected $casts = [
