@@ -28,4 +28,10 @@ class UserController extends Controller
 
         return response()->json(['data' => $user], 200);
     }
+
+    public function getUsersByClub($clubId)
+    {
+        $users = User::where('CLU_ID', $clubId)->get();
+        return response()->json(['data' => $users], 200);
+    }
 }

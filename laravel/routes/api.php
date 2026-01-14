@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RaidController;
 use App\Http\Controllers\RaceController;
+use App\Http\Controllers\ClubController;
 use App\Http\Controllers\RoleController;
 
 Route::post('/login', [AuthController::class, 'login']);
@@ -19,6 +20,23 @@ Route::get('/raids/{id}', [RaidController::class, 'getRaidById'])->whereNumber('
 // Race routes
 Route::get('/races', [RaceController::class, 'getAllRaces']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
+Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
+Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
+
+
+// Clubs routes
+Route::get('/clubs', [ClubController::class, 'getAllClubs']);
+Route::post('/clubs', [ClubController::class, 'createClub']);
+Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
+Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
+Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
+Route::get('/clubs/{clubId}/users', [App\Http\Controllers\UserController::class, 'getUserByClub'])->whereNumber('clubId');
+
+
+// Users routes
+Route::get('/users', [App\Http\Controllers\UserController::class, 'getAllUsers']);
+Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'getUserById'])->whereNumber('id');
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Raid routes
