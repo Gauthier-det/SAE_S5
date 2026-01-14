@@ -79,7 +79,7 @@ return new class extends Migration
             $table->increments('TEA_ID');
             $table->unsignedInteger('USE_ID');
             $table->string('TEA_NAME', 255);
-            $table->string('TEA_IMAGE', 255)->nullable();
+            $table->string('TEA_IMAGE', 1023)->nullable();
 
             $table->index('USE_ID', 'I_FK_SAN_TEAMS_SAN_USERS');
             // CASCADE: if the creator is deleted, delete the team
@@ -97,7 +97,7 @@ return new class extends Migration
             $table->string('RAI_MAIL', 255)->nullable();
             $table->string('RAI_PHONE_NUMBER', 255)->nullable();
             $table->string('RAI_WEB_SITE', 255)->nullable();
-            $table->string('RAI_IMAGE', 255)->nullable();
+            $table->string('RAI_IMAGE', 1023)->nullable();
             $table->dateTime('RAI_TIME_START');
             $table->dateTime('RAI_TIME_END');
             $table->dateTime('RAI_REGISTRATION_START');
