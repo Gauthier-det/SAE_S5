@@ -36,6 +36,7 @@ class AuthController extends Controller
             'user_name' => $user->USE_NAME,
             'user_last_name' => $user->USE_LAST_NAME,
             'user_mail' => $user->USE_MAIL,
+            'club_id' => $user->CLU_ID,
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]], 201);
@@ -78,6 +79,7 @@ class AuthController extends Controller
             'user_name' => $user->USE_NAME,
             'user_last_name' => $user->USE_LAST_NAME,
             'user_mail' => $user->USE_MAIL,
+            'club_id' => $user->CLU_ID,
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]], 201);
