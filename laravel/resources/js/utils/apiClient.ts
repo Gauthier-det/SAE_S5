@@ -4,6 +4,19 @@ interface RequestConfig extends RequestInit {
     token?: string;
 }
 
+
+export class ApiError extends Error {
+    public status: number;
+    public data: any;
+
+    constructor(message: string, status: number, data: any) {
+        super(message);
+        this.name = 'ApiError';
+        this.status = status;
+        this.data = data;
+    }
+}
+
 export const apiClient = async <T>(endpoint: string, { token, ...customConfig }: RequestConfig = {}): Promise<T> => {
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -31,15 +44,16 @@ export const apiClient = async <T>(endpoint: string, { token, ...customConfig }:
 
     if (response.status === 401) {
         localStorage.removeItem('token');
-        // window.location.href = '/login'; // Avoiding hard reload/redirect here to let Context handle it if possible
+        // window.location.href = '/login'; 
     }
 
     if (!response.ok) {
         try {
             const errorData = await response.json();
-            throw new Error(errorData.message || response.statusText);
+            throw new ApiError(errorData.message || response.statusText, response.status, errorData);
         } catch (e) {
-            throw new Error(response.statusText);
+            if (e instanceof ApiError) throw e;
+            throw new ApiError(response.statusText, response.status, null);
         }
     }
 

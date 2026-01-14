@@ -50,7 +50,7 @@ const Login = () => {
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -119,7 +119,7 @@ const Login = () => {
                             <Link href="#" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
                                 mot de passe oublié
                             </Link>
-                            <Link href="#" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
+                            <Link href="/register" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
                                 s'inscrire
                             </Link>
                         </Stack>
