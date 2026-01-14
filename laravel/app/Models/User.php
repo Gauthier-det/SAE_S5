@@ -42,21 +42,6 @@ class User extends Authenticatable
         'USE_MEMBERSHIP_DATE' => 'date',
     ];
 
-    public function getAuthPassword()
-    {
-        return $this->USE_PASSWORD;
-    }
-
-    public function address(): BelongsTo
-    {
-        return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
-    }
-
-    public function club(): BelongsTo
-    {
-        return $this->belongsTo(Club::class, 'CLU_ID', 'CLU_ID');
-    }
-
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -85,6 +70,28 @@ class User extends Authenticatable
             'USE_ID',
             'RAC_ID'
         );
+    }
+
+    public function isAdmin()
+    {
+        return $this->roles()
+            ->where('ROL_NAME', 'Gestionnaire de site')
+            ->exists();
+    }
+  
+    public function getAuthPassword()
+    {
+        return $this->USE_PASSWORD;
+    }
+
+    public function address(): BelongsTo
+    {
+        return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
+    }
+
+    public function club(): BelongsTo
+    {
+        return $this->belongsTo(Club::class, 'CLU_ID', 'CLU_ID');
     }
 
     public function teamsCreated(): HasMany
