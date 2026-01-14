@@ -9,18 +9,20 @@ import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EventIcon from '@mui/icons-material/Event';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
+import { useUser } from '../../contexts/userContext';
 
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [raid, setRaid] = useState<Raid | null>(null);
     const [allRaces, setAllRaces] = useState<Race[]>([]);
-
+    const { user } = useUser();
     useEffect(() => {
         if (!id) navigate('/raids');
         const raidId = parseInt(id!);
@@ -69,7 +71,7 @@ export default function InfoRaid() {
     }
 
     return (
-        <Container maxWidth={false}>
+        <Container maxWidth={false} sx={{ overflowX: 'hidden' }}>
             <Box sx={{ my: 4 }}>
                 <Button
                     variant="text"
@@ -125,7 +127,6 @@ export default function InfoRaid() {
                             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
                                 {raid.RAI_NAME}
                             </Typography>
-
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
                                 {raid.club && (
@@ -148,6 +149,19 @@ export default function InfoRaid() {
 
                             {/* Info Cards */}
                             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+                                {user?.USE_ID === raid.user?.USE_ID &&
+                                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                        <Box sx={{ p: 2, backgroundColor: '#e3fde3ff', borderRadius: 2, minWidth: 200 }}>
+                                            <ManageAccountsIcon fontSize="medium" color="primary" />
+                                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                                Informations
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                vous êtes l'organisateur de ce raid
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                }
                                 <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" color="primary" />

@@ -219,18 +219,6 @@ const Profile = () => {
                                             '& .MuiInputLabel-root': { color: '#666' }
                                         }}
                                     />
-                                    <TextField
-                                        label="Certificat médical"
-                                        defaultValue={user.USE_PPS_FORM || " "}
-                                        variant="filled"
-                                        fullWidth
-                                        disabled
-                                        InputProps={{ disableUnderline: true, style: { fontWeight: 'bold', color: 'black' } }}
-                                        sx={{
-                                            '& .MuiFilledInput-root': { borderRadius: '12px', bgcolor: '#f0f0f0' },
-                                            '& .MuiInputLabel-root': { color: '#666' }
-                                        }}
-                                    />
                                 </Stack>
                             </Paper>
 

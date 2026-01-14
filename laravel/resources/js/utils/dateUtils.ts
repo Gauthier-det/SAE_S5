@@ -9,20 +9,20 @@ export const formatDate = (dateStr: string, options?: Intl.DateTimeFormatOptions
 };
 
 export const getRaidStatus = (start: string, end: string): string => {
-    const now = new Date();
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const now = new Date().toISOString();
+    const startDate = new Date(start).toISOString();
+    const endDate = new Date(end).toISOString();
     if (now < startDate) return 'À venir';
-    if (now >= startDate && now <= endDate) return 'En cours';
+    if (startDate <= now && now <= endDate) return 'En cours';
     return 'Terminé';
 };
 
 export const getRegistrationStatus = (start: string, end: string): string => {
-    const now = new Date();
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const now = new Date().toISOString();
+    const startDate = new Date(start).toISOString();
+    const endDate = new Date(end).toISOString();
     if (now < startDate) return 'Non ouverte';
-    if (now >= startDate && now <= endDate) return 'Ouverte';
+    if (startDate <= now && now <= endDate) return 'Ouverte';
     return 'Close';
 };
 

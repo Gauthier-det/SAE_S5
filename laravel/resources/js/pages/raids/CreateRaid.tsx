@@ -22,7 +22,7 @@ import type { RaidCreation } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
-import { getClub, getClubUsers } from '../../api/club';
+import { getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
 import { createAddress, type Address } from '../../api/address';
 

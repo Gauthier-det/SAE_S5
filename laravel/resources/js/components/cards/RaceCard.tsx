@@ -1,8 +1,8 @@
-import { Card, CardContent, Typography, Button, Box } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Race } from '../../models/race.model';
 import { formatDate } from '../../utils/dateUtils';
-
+import { useUser } from '../../contexts/userContext';
 
 interface RaceCardProps {
     race: Race;
@@ -11,6 +11,7 @@ interface RaceCardProps {
 
 function RaceCard({ race, onDetailsClick }: RaceCardProps) {
     const navigate = useNavigate();
+    const { user } = useUser();
 
     const handleClick = () => {
         navigate(`/races/${race.RAC_ID}`);
@@ -49,6 +50,14 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
             </Box>
 
             <CardContent sx={{ p: 2 }}>
+                {race.user.USE_ID === user?.USE_ID && <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    <Chip
+                        label="Vous êtes manager de cette course"
+                        size="small"
+                        color="info"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
+                </Box>}
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     <strong>Début:</strong> {formatDate(race.RAC_TIME_START)}
                     <br />

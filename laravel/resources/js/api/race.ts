@@ -16,7 +16,7 @@ export const getListOfRace = async (): Promise<Race[]> => {
 
 export const getListOfRaceManagers = async (): Promise<number[]> => {
     const response = await getListOfRace();
-    return response.map((race) => race.RAI_ID);
+    return response.map((race) => race.user.USE_ID);
 };
 
 export const getListOfRacesByRaidId = async (raidId: number): Promise<Race[]> => {

@@ -11,7 +11,7 @@ class RaceController extends Controller
 {
     public function getAllRaces()
     {
-        $races = Race::all();
+        $races = Race::with(['user', 'raid'])->get();
         return response()->json(['data' => $races]);
     }
 
@@ -28,7 +28,7 @@ class RaceController extends Controller
 
     public function getRacesByRaid($raidId)
     {
-        $races = Race::where('RAI_ID', $raidId)->get();
+        $races = Race::where('RAI_ID', $raidId)->get()->load('user');
 
         return response()->json(['data' => $races], 200);
     }
