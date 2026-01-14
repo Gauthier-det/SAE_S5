@@ -25,7 +25,7 @@ class AuthController extends Controller
 
         $user = User::with(['address', 'club'])->where('USE_MAIL', $request->mail)->first();
 
-        if (!$user || $request->password !== $user->USE_PASSWORD) {
+        if (!$user || !Hash::check($request->password, $user->USE_PASSWORD)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
@@ -49,12 +49,20 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function logout(Request $request)
+    /*public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully'], 200);
+    }*/
+
+    public function logout(Request $request)
+    {
+        $request->user()->tokens()->delete(); // Revokes ALL tokens for this user
+
+        return response()->json(['message' => 'Logged out successfully'], 200);
     }
+
 
     public function register(Request $request)
     {
@@ -74,7 +82,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'USE_MAIL' => $request->mail,
-            'USE_PASSWORD' => $request->password,
+            'USE_PASSWORD' => Hash::make($request->password),
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
         ]);

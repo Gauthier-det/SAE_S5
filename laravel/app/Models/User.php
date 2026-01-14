@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $table = 'SAN_USERS';
     protected $primaryKey = 'USE_ID';
@@ -40,6 +42,7 @@ class User extends Authenticatable
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
+        'USE_PASSWORD'        => 'hashed',
     ];
 
     public function teams(): BelongsToMany
