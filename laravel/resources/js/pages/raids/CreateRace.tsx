@@ -16,7 +16,6 @@ import { createRace } from '../../api/race';
 import { getRaidById } from '../../api/raid';
 import type { Raid } from '../../models/raid.model';
 import type { RaceCreation } from '../../models/race.model';
-import type { RaceCategory } from '../../models/category.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -25,12 +24,6 @@ const CreateRace = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [raid, setRaid] = useState<Raid | null>(null);
-  // Prix par catégories pour SAN_CATEGORIES_RACES (labels statiques en DB)
-  const [priceData, setPriceData] = useState<{ minor: number; major: number; licensed: number }>({
-    minor: 0,
-    major: 0,
-    licensed: 0,
-  });
 
 
   const [formData, setFormData] = useState<RaceCreation>({
@@ -46,7 +39,10 @@ const CreateRace = () => {
     RAC_TEAM_MEMBERS: 0,
     RAC_AGE_MIN: 0,
     RAC_AGE_MIDDLE: 0,
-    RAC_AGE_MAX: 0
+    RAC_AGE_MAX: 0,
+    minor: 0,
+    major: 0,
+    licensed: 0,
   });
 
   
@@ -95,14 +91,6 @@ const CreateRace = () => {
     }));
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setPriceData(prev => ({
-      ...prev,
-      [name]: Number(value)
-    }));
-  };
-
   // plus de isCompetitive : on utilise directement RAC_TYPE ('Compétitif' ou 'Loisir')
 
   const combineDT = (d?: string, t?: string) => {
@@ -117,7 +105,6 @@ const CreateRace = () => {
         ...formData,
         RAC_TIME_START: combineDT(startDate, startTime),
         RAC_TIME_END: combineDT(endDate, endTime),
-        prices: priceData
       };
       await createRace(payload);
       alert('Course créée avec succès !');
@@ -236,8 +223,8 @@ const CreateRace = () => {
               name="minor"
               type="number"
               variant="standard"
-              value={priceData.minor}
-              onChange={handlePriceChange}
+              value={formData.minor}
+              onChange={handleChange}
               margin="normal"
             />
             <TextField
@@ -246,8 +233,8 @@ const CreateRace = () => {
               name="major"
               type="number"
               variant="standard"
-              value={priceData.major}
-              onChange={handlePriceChange}
+              value={formData.major}
+              onChange={handleChange}
               margin="normal"
             />
             <TextField
@@ -256,8 +243,8 @@ const CreateRace = () => {
               name="licensed"
               type="number"
               variant="standard"
-              value={priceData.licensed}
-              onChange={handlePriceChange}
+              value={formData.licensed}
+              onChange={handleChange}
               margin="normal"
             />
           </Stack>
