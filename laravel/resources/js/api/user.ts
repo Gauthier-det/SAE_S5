@@ -1,15 +1,28 @@
 import type { User } from "../models/user.model"
 import { apiClient } from "../utils/apiClient";
+import { getListOfClubManagers } from "./club";
+import { getListOfRaceManagers } from "./race";
+import { getListOfRaidManagers } from "./raid";
 
 export const getUser = async (): Promise<User> => {
-    return apiClient<User>('/user', {
+    return await apiClient<User>('/user', {
         method: 'GET'
     });
 }
 
-export const getUsersByClub = async (clubId: number): Promise<User[]> => {
-    const response = await apiClient<{ data: User[] }>(`/clubs/${clubId}/users`, {
-        method: 'GET'
-    });
-    return response.data;
+export const isClubManager = async (userId: number) => {
+    const listManager = await getListOfClubManagers()
+    return listManager.includes(userId);
 }
+
+export const isRaidManager = async (userId: number) => {
+    const listManager = await getListOfRaidManagers()
+    return listManager.includes(userId);
+}
+
+export const isRaceManager = async (userId: number) => {
+    const listManager = await getListOfRaceManagers()
+    return listManager.includes(userId);
+}
+    
+

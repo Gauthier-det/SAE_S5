@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../models/user.model';
 import type { Login, Register } from '../models/auth.model';
-import { getUser } from '../api/user';
+import { getUser, isClubManager, isRaceManager, isRaidManager } from '../api/user';
 import { apiLogin, apiLogout, apiRegister } from '../api/auth';
 
 interface UserContextType {
@@ -11,6 +11,9 @@ interface UserContextType {
     logout: () => void;
     isAuthenticated: boolean;
     loading: boolean;
+    isClubManager: boolean;
+    isRaidManager: boolean;
+    isRaceManager: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,6 +22,27 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [user, setUser] = useState<User | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isClubManagerUser, setIsClubManagerUser] = useState<boolean>(false);
+    const [isRaidManagerUser, setIsRaidManagerUser] = useState<boolean>(false);
+    const [isRaceManagerUser, setIsRaceManagerUser] = useState<boolean>(false);
+
+
+    const updateRoles = async (userData: User) => {
+        try {
+            const clubMgr = await isClubManager(userData.USE_ID);
+            const raidMgr = await isRaidManager(userData.USE_ID);
+            const raceMgr = await isRaceManager(userData.USE_ID);
+            setIsClubManagerUser(clubMgr);
+            setIsRaidManagerUser(raidMgr);
+            setIsRaceManagerUser(raceMgr);
+        } catch (e) {
+            console.error("Failed to fetch roles", e);
+            setIsClubManagerUser(false);
+            setIsRaidManagerUser(false);
+            setIsRaceManagerUser(false);
+
+        }
+    }
 
     useEffect(() => {
         const initSession = async () => {
@@ -28,6 +52,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     const userData = await getUser();
                     setUser(userData);
                     setIsAuthenticated(true);
+                    await updateRoles(userData);
                 } catch (error) {
                     console.error("Failed to restore session", error);
                     logout();
@@ -45,6 +70,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('token', token);
             setUser(user);
             setIsAuthenticated(true);
+            await updateRoles(user);
         } catch (error) {
             console.error("Login failed", error);
             throw error;
@@ -57,6 +83,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             localStorage.setItem('token', token);
             setUser(user);
             setIsAuthenticated(true);
+            await updateRoles(user);
         } catch (error) {
             console.error("Register failed", error);
             throw error;
@@ -68,10 +95,22 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('token');
         setUser(null);
         setIsAuthenticated(false);
+        setIsClubManagerUser(false);
+        setIsRaidManagerUser(false);
     };
 
     return (
-        <UserContext.Provider value={{ user, login, register, logout, isAuthenticated, loading }}>
+        <UserContext.Provider value={{
+            user,
+            login,
+            register,
+            logout,
+            isAuthenticated,
+            loading,
+            isClubManager: isClubManagerUser,
+            isRaidManager: isRaidManagerUser,
+            isRaceManager: isRaceManagerUser
+        }}>
             {children}
         </UserContext.Provider>
     );

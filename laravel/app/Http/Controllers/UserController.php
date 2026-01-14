@@ -15,6 +15,11 @@ class UserController extends Controller
         return response()->json(['data' => $users]);
     }
 
+    public function getUserInfo(Request $request)
+    {
+        return $request->user()->load('address')->load('club');
+    }
+
     public function getUserById($id)
     {
         $user = User::find($id);

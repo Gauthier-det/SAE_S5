@@ -6,7 +6,6 @@ import {
     TextField,
     Typography,
     Paper,
-    Link,
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
         last_name: '',
-        email: '',
+        mail: '',
         password: ''
     });
 
@@ -43,19 +42,11 @@ const Register = () => {
         }
 
         try {
-            // Register and automatically login the user
-            await register({
-                name: formData.name,
-                last_name: formData.last_name,
-                email: formData.email,
-                password: formData.password
-            });
-            // Redirect to dashboard after successful registration
+            await register(formData);
             navigate('/dashboard');
-        } catch (err: any) { // Type as any or import ApiError to check instance
+        } catch (err: any) { 
             console.error(err);
             if (err.name === 'ApiError' && err.data && err.data.errors) {
-                // Laravel validation errors format: { field: ["error1", "error2"] }
                 const messages = Object.values(err.data.errors).flat().join(' ');
                 setError(messages);
             } else {
@@ -72,8 +63,6 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: '100vh',
-                py: 4
             }}
         >
             <Container maxWidth="md">
@@ -82,7 +71,7 @@ const Register = () => {
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{ backgroundColor: 'white', width: 150, height: 'auto', mb: 2, borderRadius: 4, p: 1 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -111,7 +100,7 @@ const Register = () => {
                             name="email"
                             autoComplete="email"
                             variant="standard"
-                            value={formData.email}
+                            value={formData.mail}
                             onChange={handleChange}
                             placeholder="jean.dupont@gmail.com"
                         />
@@ -165,16 +154,21 @@ const Register = () => {
                             type="submit"
                             fullWidth
                             variant="contained"
-                            color="success" // Matching the image green button
-                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', backgroundColor: '#1b5e20' }} // Custom green to match image darker green
+                            color="success"
+                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', borderRadius: '10px' }}
                         >
                             S'INSCRIRE
                         </Button>
 
                         <Stack alignItems="center">
-                            <Link href="/login" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                se connecter
-                            </Link>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                sx={{color: 'white', borderRadius: '10px', fontSize: '12px'}}
+                                onClick={() => navigate('/login')}
+                            >
+                                Se connecter
+                            </Button>
                         </Stack>
                     </Box>
                 </Paper>
