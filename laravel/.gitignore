@@ -22,4 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+<<<<<<< HEAD
 node_modules
+=======
+.idea/
+>>>>>>> main

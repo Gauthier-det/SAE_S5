@@ -1,31 +1,21 @@
-import type { User } from "../model/db/userDbModel"
+import type { User } from "../models/user.model"
+import { apiClient } from "../utils/apiClient";
 import { getListOfClubManagers } from "./club";
 import { getListOfRaidManagers } from "./raid";
 
-export const getUserWithToken = (): User => {
-    return {
-        name: "Magnin",
-        last_name: "Christelle",
-        email: "christelle.m@outlook.fr",
-        role: "admin",
-        id: "1",
-        address: undefined,
-        club: undefined,
-        birth_date: "",
-        phone_number: "",
-        pps_form: "",
-        membership_date: "",
-        is_valid: false,
-        gender: "",
-    }
+export const getUser = async (): Promise<User> => {
+    return apiClient<User>('/user', {
+        method: 'GET'
+    });
 }
 
-
-export const isClubManager = (userId: string) => {
-    return getListOfClubManagers().includes(userId);
+export const isClubManager = async (userId: string) => {
+    const listManager = await getListOfClubManagers()
+    return listManager.includes(userId);
 }
 
-export const isRaidManager = (userId: string) => {
-    return getListOfRaidManagers().includes(userId);
+export const isRaidManager = async (userId: number) => {
+    const listManager = await getListOfRaidManagers()
+    return listManager.includes(userId);
 }
     

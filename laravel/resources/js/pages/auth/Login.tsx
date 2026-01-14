@@ -7,12 +7,11 @@ import {
     TextField,
     Typography,
     Paper,
-    Link,
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../contexts/userContext';
-import LogoColor from '../assets/logo-color.png';
+import { useUser } from '../../contexts/userContext';
+import LogoColor from '../../assets/logo-color.png';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -115,22 +114,24 @@ const Login = () => {
                         </Button>
 
                         <Stack spacing={2} alignItems="center">
-                            <Button
-                                variant="contained"
-                                color="warning"
-                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
-                                onClick={() => navigate('/login')}
-                            >
-                                Mot de passe oublié ?
-                            </Button>
-                            <Button
-                                variant="contained"
-                                color="warning"
-                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
-                                onClick={() => navigate('/register')}
-                            >
-                                S'inscrire
-                            </Button>
+                            <>
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                    onClick={() => navigate('/login')}
+                                >
+                                    Mot de passe oublié ?
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                    onClick={() => navigate('/register')}
+                                >
+                                    S'inscrire
+                                </Button>
+                            </>
                         </Stack>
                     </Box>
                 </Paper>

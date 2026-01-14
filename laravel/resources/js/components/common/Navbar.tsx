@@ -18,7 +18,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../assets/logo-white.png';
-import NoteAltIcon from '@mui/icons-material/NoteAlt';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 const pages = [
     { name: 'DASHBOARD', path: '/dashboard' },
@@ -106,9 +106,9 @@ function Navbar() {
                                     endIcon={<KeyboardArrowDownIcon />}
                                 >
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar alt={user.last_name + ' ' + user.name} />
+                                        <Avatar alt={user.USE_LAST_NAME + ' ' + user.USE_NAME} />
                                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                            {user.last_name + ' ' + user.name}
+                                            {user.USE_LAST_NAME + ' ' + user.USE_NAME}
                                         </Typography>
                                     </Stack>
                                 </Button>
@@ -154,13 +154,12 @@ function Navbar() {
                                         size="large"
                                         sx={{ '&:hover': { color: 'warning.main' } }}
                                     >
-                                        <NoteAltIcon fontSize="inherit" color="warning" />
+                                        <PersonAddIcon fontSize="inherit" color="warning" />
                                     </IconButton>
                                 </Tooltip>
                             </>
                         }
                     </Box>
-
                 </Toolbar>
             </Container>
         </AppBar >

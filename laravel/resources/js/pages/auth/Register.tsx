@@ -9,51 +9,57 @@ import {
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import LogoColor from '../assets/logo-color.png';
-import { apiRegister } from '../api/auth'; // Direct API call for now since context might not have it yet
-// Or best to add it to context, but user didn't ask for context update explicitly, but logic suggests it.
-// I'll stick to local state/API for "mocking" as requested.
+import LogoColor from '../../assets/logo-color.png';
+import { useUser } from '../../contexts/userContext';
 
 const Register = () => {
     const [formData, setFormData] = useState({
         name: '',
         last_name: '',
         email: '',
-        password: '',
-        phone: '',
-        address: '',
-        age: '', // Date picker in image but string for now
-        gender: 'Homme', // Default
-        isLicensed: false
+        password: ''
     });
 
     const [error, setError] = useState('');
+    const { register } = useUser();
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, checked, type } = e.target;
+        const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: value
         }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (formData.password.length < 8) {
+            setError('Le mot de passe doit contenir au moins 8 caractères.');
+            return;
+        }
+
         try {
-            // Mapping to the strictly requested model (name, last_name, email, password)
-            await apiRegister({
+            // Register and automatically login the user
+            await register({
                 name: formData.name,
                 last_name: formData.last_name,
                 email: formData.email,
                 password: formData.password
             });
-            // Redirect to dashboard or login
-            navigate('/login');
-        } catch (err) {
-            setError("Échec de l'inscription.");
+            // Redirect to dashboard after successful registration
+            navigate('/dashboard');
+        } catch (err: any) { // Type as any or import ApiError to check instance
             console.error(err);
+            if (err.name === 'ApiError' && err.data && err.data.errors) {
+                // Laravel validation errors format: { field: ["error1", "error2"] }
+                const messages = Object.values(err.data.errors).flat().join(' ');
+                setError(messages);
+            } else {
+                setError(err.message || "Échec de l'inscription. Vérifiez vos informations.");
+            }
         }
     };
 
