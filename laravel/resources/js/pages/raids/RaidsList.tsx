@@ -53,11 +53,17 @@ export default function Raids() {
                 ? raid.RAI_NAME.toLowerCase().includes(keyword.toLowerCase())
                 : true;
 
-            const matchesClub = club ? true : true;
+            const matchesClub = club ? raid.club?.CLU_NAME === club : true;
 
             return matchesStart && matchesEnd && matchesKeyword && matchesClub;
         });
     }, [raids, startDate, endDate, keyword, club]);
+
+    // Extract unique clubs for filter dropdown
+    const uniqueClubs = React.useMemo(() => {
+        const clubs = raids.map(r => r.club?.CLU_NAME).filter(Boolean);
+        return [...new Set(clubs)] as string[];
+    }, [raids]);
 
     const handleRaidDetails = (raidId: number) => {
 
@@ -118,8 +124,9 @@ export default function Raids() {
                             fullWidth
                         >
                             <MenuItem value="">Tous les clubs</MenuItem>
-                            <MenuItem value="club1">Club 1</MenuItem>
-                            <MenuItem value="club2">Club 2</MenuItem>
+                            {uniqueClubs.map((c) => (
+                                <MenuItem key={c} value={c}>{c}</MenuItem>
+                            ))}
                         </TextField>
                     </Box>
                     <Box sx={{ flex: 1 }}>
