@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
     protected $table = 'SAN_USERS';
     protected $primaryKey = 'USE_ID';
@@ -26,10 +28,10 @@ class User extends Authenticatable
         'USE_PASSWORD',
         'USE_NAME',
         'USE_LAST_NAME',
+        'USE_GENDER',
         'USE_BIRTHDATE',
         'USE_PHONE_NUMBER',
         'USE_LICENCE_NUMBER',
-        'USE_PPS_FORM',
         'USE_MEMBERSHIP_DATE',
     ];
 
@@ -40,22 +42,8 @@ class User extends Authenticatable
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
+        'USE_PASSWORD'        => 'hashed',
     ];
-
-    public function getAuthPassword()
-    {
-        return $this->USE_PASSWORD;
-    }
-
-    public function address(): BelongsTo
-    {
-        return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
-    }
-
-    public function club(): BelongsTo
-    {
-        return $this->belongsTo(Club::class, 'CLU_ID', 'CLU_ID');
-    }
 
     public function teams(): BelongsToMany
     {
@@ -85,6 +73,28 @@ class User extends Authenticatable
             'USE_ID',
             'RAC_ID'
         );
+    }
+
+    public function isAdmin()
+    {
+        return $this->roles()
+            ->where('ROL_NAME', 'Gestionnaire de site')
+            ->exists();
+    }
+  
+    public function getAuthPassword()
+    {
+        return $this->USE_PASSWORD;
+    }
+
+    public function address(): BelongsTo
+    {
+        return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
+    }
+
+    public function club(): BelongsTo
+    {
+        return $this->belongsTo(Club::class, 'CLU_ID', 'CLU_ID');
     }
 
     public function teamsCreated(): HasMany

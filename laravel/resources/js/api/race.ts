@@ -1,4 +1,4 @@
-import type { RaceCreation, Race, RaceResponse } from "../models/race.model";
+import type { RaceCreation, Race, RaceResponse, RaceDetail, RaceDetailResponse } from "../models/race.model";
 import { apiClient } from "../utils/apiClient";
 
 export const createRace = async (race: RaceCreation): Promise<Race> => {
@@ -21,5 +21,10 @@ export const getListOfRaceManagers = async (): Promise<number[]> => {
 
 export const getListOfRacesByRaidId = async (raidId: number): Promise<Race[]> => {
     const response = await apiClient<RaceResponse>(`/raids/${raidId}/races`);
+    return response.data;
+};
+
+export const getRaceDetails = async (id: number): Promise<RaceDetail> => {
+    const response = await apiClient<RaceDetailResponse>(`/races/${id}/details`);
     return response.data;
 };

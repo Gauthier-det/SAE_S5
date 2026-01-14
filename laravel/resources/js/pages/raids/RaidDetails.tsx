@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -31,6 +31,26 @@ export default function InfoRaid() {
     }, [id]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
 
+    // Calculate global min/max for the slider bounds
+    const limits = React.useMemo(() => {
+        if (allRaces.length === 0) return { min: 0, max: 100 };
+        const mins = allRaces.map(r => r.RAC_AGE_MIN);
+        const maxs = allRaces.map(r => r.RAC_AGE_MAX);
+        return {
+            min: Math.min(...mins),
+            max: Math.max(...maxs)
+        };
+    }, [allRaces]);
+
+    const [ageRange, setAgeRange] = useState<number[]>([0, 100]);
+
+    // Update range when limits change
+    useEffect(() => {
+        if (allRaces.length > 0) {
+            setAgeRange([limits.min, limits.max]);
+        }
+    }, [limits, allRaces.length]);
+
     const handleTypeChange = (type: string) => {
         const newFilter = new Set(raceType);
         if (newFilter.has(type)) {
@@ -41,14 +61,21 @@ export default function InfoRaid() {
         setRaceType(newFilter);
     };
 
+    const handleAgeChange = (_event: Event, newValue: number | number[]) => {
+        setAgeRange(newValue as number[]);
+    };
+
     const filteredRaces = React.useMemo(() => {
         return allRaces.filter((race) => {
             const matchesType = raceType.size === 0 ||
                 (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
                 (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
-            return matchesType;
+
+            const matchesAge = race.RAC_AGE_MIN >= ageRange[0] && race.RAC_AGE_MAX <= ageRange[1];
+
+            return matchesType && matchesAge;
         });
-    }, [allRaces, raceType]);
+    }, [allRaces, raceType, ageRange]);
 
 
     if (!raid) {
@@ -120,8 +147,33 @@ export default function InfoRaid() {
                                 />
                             </FormGroup>
                         </Box>
-                    </Box>
 
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Age (ans)
+                            </Typography>
+                            <Box sx={{ px: 1 }}>
+                                <Slider
+                                    value={ageRange}
+                                    onChange={handleAgeChange}
+                                    valueLabelDisplay="auto"
+                                    min={limits.min}
+                                    max={limits.max}
+                                />
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {ageRange[0]} ans
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {ageRange[1]} ans
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+
+
+                    </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
                             <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
