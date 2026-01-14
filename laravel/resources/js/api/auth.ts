@@ -20,10 +20,10 @@ export const apiLogin = async (login: Login): Promise<AuthResponse> => {
             USE_NAME: response.data.user_name,
             USE_LAST_NAME: response.data.user_last_name,
             USE_MAIL: response.data.user_mail,
+            USE_GENDER: response.data.user_gender,
             USE_PHONE_NUMBER: response.data.user_phone ?? undefined,
             USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
             USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
-            USE_PPS_FORM: response.data.user_pps ?? undefined,
             address: response.data.user_address || undefined,
             club: response.data.user_club || undefined
         }
@@ -43,10 +43,10 @@ export const apiRegister = async (register: Register): Promise<AuthResponse> => 
             USE_NAME: response.data.user_name,
             USE_LAST_NAME: response.data.user_last_name,
             USE_MAIL: response.data.user_mail,
+            USE_GENDER: response.data.user_gender,
             USE_PHONE_NUMBER: response.data.user_phone ?? undefined,
             USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
             USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
-            USE_PPS_FORM: response.data.user_pps ?? undefined,
             address: response.data.user_address || undefined,
             club: response.data.user_club || undefined
         }
