@@ -53,7 +53,7 @@ class AuthController extends Controller
         try {
             $request->validate([
                 'mail' => 'required|email|unique:SAN_USERS,USE_MAIL',
-                'password' => 'required|min:6',
+                'password' => 'required|min:8',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
             ]);
