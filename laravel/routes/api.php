@@ -56,6 +56,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // Admin Club routes
     Route::post('/clubs', [ClubController::class, 'createClub']);
+    Route::post('/clubs/with-address', [ClubController::class, 'createClubWithAddress']);
     Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
 
