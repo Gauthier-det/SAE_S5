@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { createRace } from '../../api/race';
-import type { RaceCreation } from '../../model/domain/raceModel';
+import type { RaceCreation } from '../../models/race.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -23,19 +23,19 @@ import dayjs, { Dayjs } from 'dayjs';
 const CreateRace = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<RaceCreation>({
-    name: '',
-    manager: '',
-    isCompetitive: true,
-    duration: '',
-    difficulty: '',
-    minorPrice: 0,
-    majorPrice: 0,
-    minParticipants: 0,
-    illustration: '',
-    startDate: '',
-    startTime: '',
-    endDate: '',
-    endTime: ''
+    RAI_ID: 0,
+    RAC_TIME_START: '',
+    RAC_TIME_END: '',
+    RAC_TYPE: 'Compétitif',
+    RAC_DIFFICULTY: 'Moyen',
+    RAC_MIN_PARTICIPANTS: 0,
+    RAC_MAX_PARTICIPANTS: 0,
+    RAC_MIN_TEAMS: 0,
+    RAC_MAX_TEAMS: 0,
+    RAC_TEAM_MEMBERS: 0,
+    RAC_AGE_MIN: 0,
+    RAC_AGE_MIDDLE: 0,
+    RAC_AGE_MAX: 0
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {

@@ -1,5 +1,5 @@
-import type { User } from "../model/db/userDbModel";
-import type { Login, Register } from "../model/domain/authModel";
+import type { User } from "../models/user.model";
+import type { Login, Register } from "../models/auth.model";
 import { apiClient } from "../utils/apiClient";
 
 interface AuthResponse {

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { User } from '../model/db/userDbModel';
-import type { Login, Register } from '../model/domain/authModel';
+import type { User } from '../models/user.model';
+import type { Login, Register } from '../models/auth.model';
 import { getUser } from '../api/user';
 import { apiLogin, apiLogout, apiRegister } from '../api/auth';
 
