@@ -49,3 +49,9 @@ Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whe
 Route::post('/addresses', [AddressController::class, 'createAddress']);
 Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
 Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
+Route::get('/clubs/{clubId}/users', [App\Http\Controllers\UserController::class, 'getUserByClub'])->whereNumber('clubId');
+
+
+// Users routes
+Route::get('/users', [App\Http\Controllers\UserController::class, 'getAllUsers']);
+Route::get('/users/{id}', [App\Http\Controllers\UserController::class, 'getUserById'])->whereNumber('id');
