@@ -289,7 +289,7 @@ export default function RaceDetails() {
                         {myTeams.length > 0 && (
                             <Box sx={{ mb: 2 }}>
                                 <Typography variant="subtitle2" color="primary" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <StarIcon fontSize="small" /> MES ÉQUIPES
+                                    <StarIcon fontSize="small" /> MON ÉQUIPE
                                 </Typography>
                                 {myTeams.map(renderTeamCard)}
                                 <Box sx={{ my: 1, borderBottom: '1px dashed #ccc' }} />
