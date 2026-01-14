@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RaidController;
 use App\Http\Controllers\RaceController;
+use App\Http\Controllers\ClubController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -31,3 +32,8 @@ Route::post('/races', [RaceController::class, 'createRace']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
 Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
 Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
+
+
+// Races routes
+Route::get('/clubs', [ClubController::class, 'getAllClubs']);
+Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
