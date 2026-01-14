@@ -54,4 +54,14 @@ class Race extends Model
             'TEA_ID'
         )->withPivot('TER_TIME', 'TER_IS_VALID', 'TER_RACE_NUMBER');
     }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Category::class,
+            'SAN_CATEGORIES_RACES',
+            'RAC_ID',
+            'CAT_ID'
+        )->withPivot('CAR_PRICE');
+    }
 }
