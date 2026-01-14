@@ -10,12 +10,13 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\TeamController;
 
 // Authentication routes
-
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/register', [AuthController::class, 'register']);
+
 
 // Raid routes
 Route::get('/raids', [RaidController::class, 'getAllRaids']);
@@ -44,6 +45,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/races/with-prices', [RaceController::class, 'createRaceWithPrices']);
     Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
     Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
+
+    // Team routes
+    Route::post('/teams', [TeamController::class, 'createTeam']);
+    Route::post('/teams/addMember', [TeamController::class, 'addMember']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
