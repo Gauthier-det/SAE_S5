@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
 import type { Raid } from '../../models/raid.model';
-import type { Race } from '../../models/race.model';
+import { RaceType, type Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
@@ -18,29 +18,16 @@ import LanguageIcon from '@mui/icons-material/Language';
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [raid, setRaid] = React.useState<Raid | null>(null);
-    const [allRaces, setAllRaces] = React.useState<Race[]>([]);
+    const [raid, setRaid] = useState<Raid | null>(null);
+    const [allRaces, setAllRaces] = useState<Race[]>([]);
 
-    React.useEffect(() => {
-        if (id) {
-            const raidId = parseInt(id, 10);
-            getRaidById(raidId).then(setRaid).catch(console.error);
-            getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
-        }
+    useEffect(() => {
+        if (!id) navigate('/raids');
+        const raidId = parseInt(id!);
+        getRaidById(raidId).then(setRaid).catch(console.error);
+        getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
     }, [id]);
-
-    const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
-
-    const handleDifficultyChange = (level: string) => {
-        const newFilter = new Set(difficultyFilter);
-        if (newFilter.has(level)) {
-            newFilter.delete(level);
-        } else {
-            newFilter.add(level);
-        }
-        setDifficultyFilter(newFilter);
-    };
 
     const handleTypeChange = (type: string) => {
         const newFilter = new Set(raceType);
@@ -54,18 +41,12 @@ export default function InfoRaid() {
 
     const filteredRaces = React.useMemo(() => {
         return allRaces.filter((race) => {
-            // Type filter - Compétitif or Loisir
             const matchesType = raceType.size === 0 ||
-                (raceType.has('Compétitif') && race.RAC_TYPE === 'Compétitif') ||
-                (raceType.has('Loisir') && race.RAC_TYPE === 'Loisir');
-
-            // Difficulty filter - normalize to lowercase for comparison
-            const raceDifficulty = (race.RAC_DIFFICULTY || 'moyen').toLowerCase();
-            const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(raceDifficulty);
-
-            return matchesType && matchesDifficulty;
+                (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
+                (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
+            return matchesType;
         });
-    }, [allRaces, raceType, difficultyFilter]);
+    }, [allRaces, raceType]);
 
 
     if (!raid) {
@@ -115,37 +96,6 @@ export default function InfoRaid() {
                         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                             Filtres
                         </Typography>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                Difficulté
-                            </Typography>
-                            <Box sx={{ px: 1 }}>
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('facile')}
-                                            onChange={() => handleDifficultyChange('facile')}
-                                        />}
-                                        label="Facile"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('moyen')}
-                                            onChange={() => handleDifficultyChange('moyen')}
-                                        />}
-                                        label="Moyen"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('difficile')}
-                                            onChange={() => handleDifficultyChange('difficile')}
-                                        />}
-                                        label="Difficile"
-                                    />
-                                </FormGroup>
-                            </Box>
-                        </Box>
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>

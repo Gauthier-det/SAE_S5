@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Raid } from '../../models/raid.model';
 import { formatDate, getRaidStatus, getRegistrationStatus } from '../../utils/dateUtils';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ImageIcon from '@mui/icons-material/Image';
 
 interface RaidCardProps {
     raid: Raid
@@ -12,6 +14,7 @@ interface RaidCardProps {
 
 function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     const navigate = useNavigate();
+    const [imageError, setImageError] = useState(false);
 
     const handleClick = () => {
         navigate(`/raids/${raid.RAI_ID}`);
@@ -28,7 +31,7 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
         if (status.includes('Fermé') || status.includes('Terminé')) return 'error';
         return 'warning';
     };
-
+    console.log("image" + raid.RAI_IMAGE)
     return (
         <Card
             sx={{
@@ -50,14 +53,28 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
             }}
             onClick={handleClick}
         >
-            {raid.RAI_IMAGE && (
+            {raid.RAI_IMAGE && !imageError ? (
                 <CardMedia
                     component="img"
                     height="180"
                     image={raid.RAI_IMAGE}
                     alt={raid.RAI_NAME}
-                    sx={{ objectFit: 'cover' }}
+                    sx={{ objectFit: 'cover', height: 180, width: '100%' }}
+                    onError={() => setImageError(true)}
                 />
+            ) : (
+                <Box
+                    sx={{
+                        width: '100%',
+                        height: 180,
+                        backgroundColor: '#f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}
+                >
+                    <ImageIcon sx={{ fontSize: 48, color: '#94a3b8' }} />
+                </Box>
             )}
 
             <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>

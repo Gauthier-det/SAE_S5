@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     AppBar,
     Box,
@@ -6,7 +6,6 @@ import {
     Typography,
     Button,
     Container,
-    Avatar,
     Menu,
     MenuItem,
     Stack,
@@ -19,6 +18,8 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '../../assets/logo-white.png';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import { createAvatar } from '@dicebear/core';
+import { thumbs } from '@dicebear/collection';
 
 const pages = [
     { name: 'DASHBOARD', path: '/dashboard' },
@@ -33,6 +34,15 @@ function Navbar() {
     const { user, logout } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const avatarSvg = useMemo(() => {
+        if (!user) return '';
+        const avatar = createAvatar(thumbs, {
+            seed: `${user.USE_NAME}${user.USE_LAST_NAME}`,
+            backgroundColor: ['1a2e22', '1b5e20', 'f97316'],
+        });
+        return avatar.toDataUri();
+    }, [user]);
 
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElUser(event.currentTarget);
@@ -106,7 +116,19 @@ function Navbar() {
                                     endIcon={<KeyboardArrowDownIcon />}
                                 >
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Avatar alt={user.USE_LAST_NAME + ' ' + user.USE_NAME} />
+                                        <Box
+                                            sx={{
+                                                width: "5vh",
+                                                height: "5vh",
+                                                mb: 2,
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                border: '4px solid #2D5A27',
+                                                boxShadow: '0 4px 14px 0 rgba(0,0,0,0.1)'
+                                            }}
+                                        >
+                                            <img src={avatarSvg} alt="Avatar" style={{ width: '100%', height: '100%' }} />
+                                        </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                                             {user.USE_LAST_NAME + ' ' + user.USE_NAME}
                                         </Typography>
@@ -144,7 +166,7 @@ function Navbar() {
                                         size="large"
                                         sx={{ '&:hover': { color: 'warning.main' } }}
                                     >
-                                        <LoginIcon fontSize="inherit" color="warning" />
+                                        <LoginIcon fontSize="inherit" color="info" />
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip title={<Typography variant="body2">Inscription</Typography>} placement="bottom" arrow>
@@ -154,16 +176,17 @@ function Navbar() {
                                         size="large"
                                         sx={{ '&:hover': { color: 'warning.main' } }}
                                     >
-                                        <PersonAddIcon fontSize="inherit" color="warning" />
+                                        <PersonAddIcon fontSize="inherit" color="info" />
                                     </IconButton>
                                 </Tooltip>
                             </>
                         }
                     </Box>
-
                 </Toolbar>
             </Container>
         </AppBar >
     );
 }
 export default Navbar;
+
+

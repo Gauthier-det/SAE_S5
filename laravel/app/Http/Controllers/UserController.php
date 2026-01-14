@@ -12,15 +12,19 @@ class UserController extends Controller
     public function getAllUsers()
     {
         $users = User::all();
-
         return response()->json(['data' => $users]);
+    }
+
+    public function getUserInfo(Request $request)
+    {
+        return $request->user()->load('address')->load('club');
     }
 
     public function getUserById($id)
     {
         $user = User::find($id);
 
-        if (! $user) {
+        if (!$user) {
             return response()->json([
                 'message' => 'User not found',
             ], 404);

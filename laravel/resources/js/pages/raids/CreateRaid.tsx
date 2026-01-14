@@ -5,11 +5,11 @@ import {
     TextField,
     Typography,
     Paper,
+    Stack,
     FormControl,
     InputLabel,
     Select,
     MenuItem,
-    Stack,
     Alert
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -22,13 +22,13 @@ import type { RaidCreation } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
-import { getClub, getClubUsers, type Club } from '../../api/club';
+import { getClub, getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
 import { createAddress, type Address } from '../../api/address';
 
 const CreateRaid = () => {
-    const navigate = useNavigate();
     const { user } = useUser();
+    const navigate = useNavigate();
 
     // Form data for Raid
     const [formData, setFormData] = useState<RaidCreation>({
@@ -63,15 +63,14 @@ const CreateRaid = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (user && user.CLU_ID) {
-                setFormData(prev => ({ ...prev, CLU_ID: user.CLU_ID! }));
+            if (user && user.club) {
+                setFormData(prev => ({ ...prev, CLU_ID: user.club?.CLU_ID! }));
                 try {
                     // Fetch Club info
-                    const club = await getClub(user.CLU_ID);
-                    if (club) setClubName(club.CLU_NAME);
+                    setClubName(user.club.CLU_NAME);
 
                     // Fetch Club Users for Responsible selection
-                    const users = await getClubUsers(user.CLU_ID);
+                    const users = await getClubUsers(user.club.CLU_ID);
                     setClubUsers(users || []);
                 } catch (e) {
                     console.error("Failed to load club info", e);
@@ -150,7 +149,7 @@ const CreateRaid = () => {
         <Box
             sx={{
                 flexGrow: 1,
-                bgcolor: '#fcfcfc', // Off-white background as per image
+                bgcolor: '#1a2e22',
                 minHeight: '100vh',
                 display: 'flex',
                 alignItems: 'center',
@@ -164,7 +163,6 @@ const CreateRaid = () => {
                     p: 6,
                     width: '100%',
                     maxWidth: 1000,
-                    bgcolor: 'transparent'
                 }}
             >
                 <Typography component="h2" variant="h5" sx={{ mb: 6, fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', fontFamily: '"Archivo Black", sans-serif' }}>
@@ -194,19 +192,17 @@ const CreateRaid = () => {
                                         onChange={handleChange}
                                         required
                                         InputLabelProps={{ shrink: true }}
-                                        placeholder="Raid Miam"
+                                        placeholder="Raid"
                                     />
 
                                     <FormControl fullWidth variant="standard">
-                                        <InputLabel shrink>Club Organisateur</InputLabel>
-                                        <Select
-                                            value={user?.CLU_ID || ''}
+                                        <TextField
+                                            label="Club organisateur"
+                                            variant="standard"
+                                            value={clubName || ''}
+                                            onChange={handleAddressChange}
                                             disabled
-                                            displayEmpty
-                                            renderValue={() => clubName || "Chargement..."}
-                                        >
-                                            <MenuItem value={user?.CLU_ID}>{clubName}</MenuItem>
-                                        </Select>
+                                        />
                                     </FormControl>
 
                                     <FormControl fullWidth variant="standard">
@@ -225,25 +221,21 @@ const CreateRaid = () => {
 
                                     <TextField
                                         fullWidth
-                                        label="Contact (Email)"
+                                        label="Email du contact"
                                         name="RAI_MAIL"
                                         variant="standard"
                                         value={formData.RAI_MAIL}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
                                         required
-                                        placeholder="test@gmail.com"
                                     />
 
                                     <TextField
                                         fullWidth
-                                        label="Téléphone (Si besoin)"
+                                        label="Téléphone"
                                         name="RAI_PHONE_NUMBER"
                                         variant="standard"
                                         value={formData.RAI_PHONE_NUMBER}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="06..."
                                     />
 
                                     <TextField
@@ -253,8 +245,6 @@ const CreateRaid = () => {
                                         variant="standard"
                                         value={formData.RAI_WEB_SITE}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="test.course.com"
                                     />
 
                                     <Box>
@@ -268,7 +258,6 @@ const CreateRaid = () => {
                                                 onChange={handleAddressChange}
                                                 fullWidth
                                                 required
-                                                placeholder="Caen"
                                             />
                                             <TextField
                                                 label="Code Postal"
@@ -278,7 +267,6 @@ const CreateRaid = () => {
                                                 onChange={handleAddressChange}
                                                 fullWidth
                                                 required
-                                                placeholder="14000"
                                             />
                                         </Stack>
                                         <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
@@ -289,8 +277,6 @@ const CreateRaid = () => {
                                                 value={addressData.ADD_STREET_NUMBER}
                                                 onChange={handleAddressChange}
                                                 sx={{ width: '100px' }}
-                                                required
-                                                placeholder="12"
                                             />
                                             <TextField
                                                 label="Rue"
@@ -299,21 +285,17 @@ const CreateRaid = () => {
                                                 value={addressData.ADD_STREET_NAME}
                                                 onChange={handleAddressChange}
                                                 fullWidth
-                                                required
-                                                placeholder="rue de la Paix"
                                             />
                                         </Stack>
                                     </Box>
 
                                     <TextField
                                         fullWidth
-                                        label="Illustration"
+                                        label="lien image"
                                         name="RAI_IMAGE"
                                         variant="standard"
                                         value={formData.RAI_IMAGE}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="course.png"
                                     />
                                 </Stack>
                             </Grid>
@@ -364,10 +346,10 @@ const CreateRaid = () => {
                                                 textField: {
                                                     variant: 'standard',
                                                     fullWidth: true,
-                                                    helperText: "Après la fin des inscriptions"
+                                                    helperText: "5 jours après la fin des inscriptions"
                                                 }
                                             }}
-                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END).add(1, 'day') : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs())}
+                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END).add(6, 'day') : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs())}
                                             format="DD/MM/YYYY"
                                         />
                                         <DatePicker

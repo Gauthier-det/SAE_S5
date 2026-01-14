@@ -1,17 +1,16 @@
-import { Container, Typography, Box, MenuItem, TextField } from '@mui/material';
+import { Container, Typography, Box, MenuItem, TextField, Stack, Button } from '@mui/material';
 import RaidCard from '../../components/cards/RaidCard';
 import { getListOfRaids } from '../../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
 import { parseDateToTs } from '../../utils/dateUtils';
+import { useUser } from '../../contexts/userContext';
 
 
 
@@ -20,12 +19,11 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
+    const [raids, setRaids] = React.useState<Raid[]>([]);
+    const { user,isClubManager } = useUser();
     const navigate = useNavigate();
 
-    const [raids, setRaids] = React.useState<Raid[]>([]);
-    // Actually, I should use useMemo for filteredRaids but fetch in useEffect
-
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchRaids = async () => {
             try {
                 const data = await getListOfRaids();
@@ -64,10 +62,6 @@ export default function Raids() {
         const clubs = raids.map(r => r.club?.CLU_NAME).filter(Boolean);
         return [...new Set(clubs)] as string[];
     }, [raids]);
-
-    const handleRaidDetails = (raidId: number) => {
-
-    };
 
     return (
         <Container maxWidth={false}>
@@ -130,29 +124,28 @@ export default function Raids() {
                         </TextField>
                     </Box>
                     <Box sx={{ flex: 1 }}>
-                        <Typography variant="h2" component="h1" gutterBottom>
-                            Les Raids
-                        </Typography>
-                        <Typography variant="body1">
-                            Liste des raids disponibles à l&apos;exploration.
-                        </Typography>
-                        {filteredRaids.length} raids trouvés
-
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                            <Button
+                        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                            <Stack direction="column">
+                                <Typography variant="h2" component="h1" gutterBottom>
+                                    Les Raids
+                                </Typography>
+                                <Typography variant="body1">
+                                    Liste des raids disponibles à l&apos;exploration.
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                                    {filteredRaids.length} raids trouvés
+                                </Typography>
+                            </Stack>
+                            {user && isClubManager && <Button
                                 variant="contained"
-                                color="success"
-                                startIcon={<AddIcon />}
-                                onClick={() => navigate('/create-raid')}
-                                sx={{
-                                    bgcolor: '#1b5e20',
-                                    '&:hover': { bgcolor: '#144a19' }
-                                }}
+                                color="warning"
+                                onClick={() => navigate('/raid/create')}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '1rem', mr: 2 }}
                             >
-                                CRÉER UN RAID
+                                créer un raid
                             </Button>
-                        </Box>
-
+                            }
+                        </Stack>
                         <Box
                             sx={{
                                 display: 'grid',
@@ -167,8 +160,8 @@ export default function Raids() {
                             }}
                         >
                             {filteredRaids.map((raid) => (
-                                <Box key={raid.RAI_ID} sx={{ display: 'flex' }}>
-                                    <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
+                                <Box key={raid.RAI_ID}>
+                                    <RaidCard raid={raid} />
                                 </Box>
                             ))}
                         </Box>
