@@ -98,13 +98,21 @@ export default function InfoRaid() {
     return (
         <Container maxWidth={false}>
             <Box sx={{ my: 4 }}>
-                <Button
-                    variant="text"
-                    onClick={() => navigate('/raids')}
-                    sx={{ mb: 2 }}
-                >
-                    ← Retour aux raids
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Button
+                        variant="text"
+                        onClick={() => navigate('/raids')}
+                    >
+                        ← Retour aux raids
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => navigate(`/create-race?raidId=${raid.RAI_ID}`)}
+                    >
+                        Créer une course
+                    </Button>
+                </Box>
 
                 <Box sx={{ display: 'flex', gap: 4 }}>
                     <Box
