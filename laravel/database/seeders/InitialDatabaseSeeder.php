@@ -88,8 +88,8 @@ class InitialDatabaseSeeder extends Seeder
         ]);
 
         DB::table('SAN_RAIDS')->insert([
-            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 7, 'USE_ID' => 4, 'RAI_NAME' => 'Raid Cotentin 2026', 'RAI_MAIL' => 'contact@raidcotentin.fr', 'RAI_PHONE_NUMBER' => null, 'RAI_WEB_SITE' => 'https://raidcotentin.fr', 'RAI_IMAGE' => 'raid_cotentin.jpg', 'RAI_TIME_START' => '2025-10-10 08:00:00', 'RAI_TIME_END' => '2025-10-10 20:00:00', 'RAI_REGISTRATION_START' => '2025-09-01 00:00:00', 'RAI_REGISTRATION_END' => '2026-09-30 23:59:59'],
-            ['RAI_ID' => 2, 'CLU_ID' => 2, 'ADD_ID' => 4, 'USE_ID' => 5, 'RAI_NAME' => 'Raid de Vanves 2025', 'RAI_MAIL' => 'contact@trailvanves.fr', 'RAI_PHONE_NUMBER' => null, 'RAI_WEB_SITE' => 'https://trailfalaises.fr', 'RAI_IMAGE' => 'trail_falaises.jpg', 'RAI_TIME_START' => '2026-04-20 07:30:00', 'RAI_TIME_END' => '2026-04-20 19:00:00', 'RAI_REGISTRATION_START' => '2025-12-01 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-15 23:59:59'],
+            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 7, 'USE_ID' => 4, 'RAI_NB_RACES' => 5, 'RAI_NAME' => 'Raid Cotentin 2026', 'RAI_MAIL' => 'contact@raidcotentin.fr', 'RAI_PHONE_NUMBER' => null, 'RAI_WEB_SITE' => 'https://raidcotentin.fr', 'RAI_IMAGE' => 'raid_cotentin.jpg', 'RAI_TIME_START' => '2025-10-10 08:00:00', 'RAI_TIME_END' => '2025-10-10 20:00:00', 'RAI_REGISTRATION_START' => '2025-09-01 00:00:00', 'RAI_REGISTRATION_END' => '2026-09-30 23:59:59'],
+            ['RAI_ID' => 2, 'CLU_ID' => 2, 'ADD_ID' => 4, 'USE_ID' => 5, 'RAI_NB_RACES' => 5, 'RAI_NAME' => 'Raid de Vanves 2025', 'RAI_MAIL' => 'contact@trailvanves.fr', 'RAI_PHONE_NUMBER' => null, 'RAI_WEB_SITE' => 'https://trailfalaises.fr', 'RAI_IMAGE' => 'trail_falaises.jpg', 'RAI_TIME_START' => '2026-04-20 07:30:00', 'RAI_TIME_END' => '2026-04-20 19:00:00', 'RAI_REGISTRATION_START' => '2025-12-01 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-15 23:59:59'],
         ]);
 
         DB::table('SAN_RACES')->insert([

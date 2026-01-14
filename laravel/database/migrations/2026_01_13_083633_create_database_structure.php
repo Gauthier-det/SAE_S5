@@ -86,6 +86,7 @@ return new class extends Migration
             $table->unsignedInteger('CLU_ID');
             $table->unsignedBigInteger('ADD_ID');
             $table->unsignedInteger('USE_ID');
+            $table->unsignedBigInteger('RAI_NB_RACES');
             $table->string('RAI_NAME', 255);
             $table->string('RAI_MAIL', 255)->nullable();
             $table->string('RAI_PHONE_NUMBER', 255)->nullable();
