@@ -34,4 +34,9 @@ export interface RaceCreation {
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
     RAC_AGE_MAX: number;
+    prices?: {
+        minor: number;
+        major: number;
+        licensed: number;
+    };
 }
