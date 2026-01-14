@@ -45,7 +45,7 @@ class InitialDatabaseSeeder extends Seeder
             ['ROL_ID' => 5, 'ROL_NAME' => 'Responsable de course'],
         ]);
 
-        $hashedPassword = 'pwd123';
+        $hashedPassword = Hash::make('pwd123');
 
         DB::table('SAN_USERS')->insert([
             ['USE_ID' => 1, 'ADD_ID' => 1, 'CLU_ID' => null, 'USE_MAIL' => 'admin.site@example.com', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Admin', 'USE_LAST_NAME' => 'Site', 'USE_BIRTHDATE' => '1980-01-01', 'USE_PHONE_NUMBER' => 610000001, 'USE_LICENCE_NUMBER' => null, 'USE_PPS_FORM' => null, 'USE_MEMBERSHIP_DATE' => null],
@@ -141,7 +141,7 @@ class InitialDatabaseSeeder extends Seeder
             ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => '02:45:30', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 101],
             ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => '01:55:00', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 402],
             ['TEA_ID' => 2, 'RAC_ID' => 2, 'TER_TIME' => '02:50:10', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 102],
-            // ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => '02:45:12', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 501], // Removed for testing
+            ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => '02:45:12', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 501],
             ['TEA_ID' => 1, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 103],
             ['TEA_ID' => 3, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 502],
             ['TEA_ID' => 2, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 201],
