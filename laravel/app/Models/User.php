@@ -15,7 +15,7 @@ class User extends Model
     use HasApiTokens;
 
     protected $table = 'SAN_USERS';
-    protected $primaryKey = 'USE_ID';
+    protected $primaryKey = 'TEA_ID';
     public $timestamps = false;
 
     protected $fillable = [

@@ -12,10 +12,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
+// Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/register', [AuthController::class, 'register']);
-
 
 // Raid routes
 Route::get('/raids', [RaidController::class, 'getAllRaids']);
@@ -31,3 +31,6 @@ Route::post('/races', [RaceController::class, 'createRace']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
 Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
 Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
+
+// Team routes
+Route::post('/team', [TeamController::class, 'createTeam']);
