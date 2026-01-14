@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RaidController;
 use App\Http\Controllers\RaceController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\AddressController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -40,7 +41,14 @@ Route::post('/clubs', [ClubController::class, 'createClub']);
 Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
 Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
 Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
-Route::post('/addresses', [App\Http\Controllers\AddressController::class, 'createAddress']);
+
+
+// Addresses routes
+Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
+Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
+Route::post('/addresses', [AddressController::class, 'createAddress']);
+Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
+Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
 Route::get('/clubs/{clubId}/users', [App\Http\Controllers\UserController::class, 'getUserByClub'])->whereNumber('clubId');
 
 
