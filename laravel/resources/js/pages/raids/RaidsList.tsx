@@ -8,6 +8,9 @@ import React from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { parseDateToTs } from '../../utils/dateUtils';
 
 
@@ -17,6 +20,7 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
+    const navigate = useNavigate();
 
     const [raids, setRaids] = React.useState<Raid[]>([]);
     // Actually, I should use useMemo for filteredRaids but fetch in useEffect
@@ -49,11 +53,17 @@ export default function Raids() {
                 ? raid.RAI_NAME.toLowerCase().includes(keyword.toLowerCase())
                 : true;
 
-            const matchesClub = club ? true : true;
+            const matchesClub = club ? raid.club?.CLU_NAME === club : true;
 
             return matchesStart && matchesEnd && matchesKeyword && matchesClub;
         });
     }, [raids, startDate, endDate, keyword, club]);
+
+    // Extract unique clubs for filter dropdown
+    const uniqueClubs = React.useMemo(() => {
+        const clubs = raids.map(r => r.club?.CLU_NAME).filter(Boolean);
+        return [...new Set(clubs)] as string[];
+    }, [raids]);
 
     const handleRaidDetails = (raidId: number) => {
 
@@ -114,8 +124,9 @@ export default function Raids() {
                             fullWidth
                         >
                             <MenuItem value="">Tous les clubs</MenuItem>
-                            <MenuItem value="club1">Club 1</MenuItem>
-                            <MenuItem value="club2">Club 2</MenuItem>
+                            {uniqueClubs.map((c) => (
+                                <MenuItem key={c} value={c}>{c}</MenuItem>
+                            ))}
                         </TextField>
                     </Box>
                     <Box sx={{ flex: 1 }}>
@@ -125,9 +136,22 @@ export default function Raids() {
                         <Typography variant="body1">
                             Liste des raids disponibles à l&apos;exploration.
                         </Typography>
-                        <Typography variant="subtitle1" sx={{ mb: 2 }}>
-                            {filteredRaids.length} raids trouvés
-                        </Typography>
+                        {filteredRaids.length} raids trouvés
+
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<AddIcon />}
+                                onClick={() => navigate('/create-raid')}
+                                sx={{
+                                    bgcolor: '#1b5e20',
+                                    '&:hover': { bgcolor: '#144a19' }
+                                }}
+                            >
+                                CRÉER UN RAID
+                            </Button>
+                        </Box>
 
                         <Box
                             sx={{
@@ -138,11 +162,12 @@ export default function Raids() {
                                     sm: 'repeat(2, 1fr)',
                                     md: 'repeat(3, 1fr)',
                                     lg: 'repeat(4, 1fr)'
-                                }
+                                },
+                                alignItems: 'stretch'
                             }}
                         >
                             {filteredRaids.map((raid) => (
-                                <Box key={raid.RAI_ID}>
+                                <Box key={raid.RAI_ID} sx={{ display: 'flex' }}>
                                     <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
                                 </Box>
                             ))}
@@ -150,6 +175,6 @@ export default function Raids() {
                     </Box>
                 </Box>
             </Box>
-        </Container>
+        </Container >
     );
 }

@@ -1,9 +1,9 @@
-name: Mirror Main to GitLab Dev
+name: Mirror Main to GitLab Staging
 
 on:
   push:
     branches:
-      - main  # Se déclenche uniquement sur le push vers main
+      - main
 
 jobs:
   git-mirror:
@@ -22,11 +22,8 @@ jobs:
 
       - name: Push to GitLab
         run: |
-          # Ajout du serveur Unicaen aux hôtes connus
           ssh-keyscan git.unicaen.fr >> ~/.ssh/known_hosts
-          
-          # Configuration du remote GitLab
           git remote add gitlab git@git.unicaen.fr:iut-gon-info/sae5-2025/groupe13.git
           
-          # Pousse la branche locale 'main' vers la branche distante 'dev'
-          git push --force gitlab main:dev
+          # Pousser vers une branche non protégée (ex: github-sync ou staging)
+          git push --force gitlab main:github-sync
