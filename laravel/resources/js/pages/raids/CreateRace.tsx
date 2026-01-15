@@ -408,10 +408,23 @@ const CreateRace = () => {
                   required
                 >
                   <MenuItem value="" disabled>Sélectionner un responsable</MenuItem>
-                  {clubUsers.map(u => (
-                    <MenuItem key={u.USE_ID} value={u.USE_ID}>{u.USE_NAME} {u.USE_LAST_NAME}</MenuItem>
-                  ))}
+                  {clubUsers.map(u => {
+                    const hasLicense = !!u.USE_LICENCE_NUMBER;
+                    return (
+                      <MenuItem
+                        key={u.USE_ID}
+                        value={u.USE_ID}
+                        disabled={!hasLicense}
+                        sx={!hasLicense ? { color: 'text.disabled', fontStyle: 'italic' } : {}}
+                      >
+                        {u.USE_NAME} {u.USE_LAST_NAME} {!hasLicense && "(Pas de licence)"}
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
+                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                  Le responsable doit être membre du club organisateur et posséder un numéro de licence.
+                </Typography>
               </FormControl>
 
               {/* Race Name Input */}
@@ -811,8 +824,9 @@ const CreateRace = () => {
             </Box>
           </LocalizationProvider>
         </Paper>
-      )}
-    </Box>
+      )
+      }
+    </Box >
   );
 };
 
