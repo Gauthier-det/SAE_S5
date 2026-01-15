@@ -8,10 +8,17 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 use Laravel\Sanctum\Sanctum;
 use database\factories\UserFactory;
+use Database\Seeders\InitialDatabaseSeeder;
 
 class AuthControllerTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(InitialDatabaseSeeder::class);
+    }
 
     public function test_login_fails_with_invalid_credentials()
     {
@@ -48,17 +55,12 @@ class AuthControllerTest extends TestCase
     public function test_login_succeeds_with_valid_credentials()
     {
         // Arrange
-        $user = User::factory()->create([
-            'USE_MAIL' => 'test@example.com',
-            'USE_PASSWORD' => Hash::make('password123'),
-            'USE_NAME' => 'John',
-            'USE_LAST_NAME' => 'Doe',
-        ]);
+        $user = User::where('USE_MAIL', 'admin.site@example.com')->first();
 
         // Act
         $response = $this->postJson('/api/login', [
-            'mail' => 'test@example.com',
-            'password' => 'password123',
+            'mail' => 'admin.site@example.com',
+            'password' => 'pwd123',
         ]);
 
         // Assert
@@ -74,16 +76,15 @@ class AuthControllerTest extends TestCase
                     'user_address',
                     'user_club',
                     'user_licence',
-                    'user_pps',
                     'access_token',
                     'token_type'
                 ]
             ])
             ->assertJson([
                 'data' => [
-                    'user_name' => 'John',
-                    'user_last_name' => 'Doe',
-                    'user_mail' => 'test@example.com',
+                    'user_name' => 'Admin',
+                    'user_last_name' => 'Site',
+                    'user_mail' => 'admin.site@example.com',
                 ]
             ]);
     }
@@ -97,14 +98,11 @@ class AuthControllerTest extends TestCase
 
     public function test_logout_succeeds_with_valid_token()
     {
-        $user = User::factory()->create([
-            'USE_MAIL' => 'test@example.com',
-            'USE_PASSWORD' => Hash::make('password123'),
-        ]);
+        $user = User::where('USE_MAIL', 'admin.site@example.com')->first();
 
         $loginResponse = $this->postJson('/api/login', [
-            'mail' => 'test@example.com',
-            'password' => 'password123',
+            'mail' => 'admin.site@example.com',
+            'password' => 'pwd123',
         ]);
         $token = $loginResponse['data']['access_token'];
 
@@ -164,6 +162,7 @@ class AuthControllerTest extends TestCase
             'password' => 'password12345678',
             'name' => 'Jane',
             'last_name' => 'Smith',
+            'gender' => 'Homme',
         ]);
 
         // Assert

@@ -32,7 +32,7 @@ export interface RaceResponse {
 export interface RaceCreation {
     USE_ID: number;
     RAI_ID: number;
-    RAC_NAME: string;
+    RAC_NAME?: string;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
@@ -114,6 +114,7 @@ export interface TeamDetail {
     members_count: number;
     responsible: TeamResponsible | null;
     members: TeamMember[];
+    is_valid: boolean;
 }
 
 export interface RaceDetail extends Race {

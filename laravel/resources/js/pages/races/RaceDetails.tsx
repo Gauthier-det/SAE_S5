@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaceDetails, deleteRace } from '../../api/race';
+import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import dayjs from 'dayjs';
 import {
@@ -13,6 +14,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import RuleIcon from '@mui/icons-material/Rule';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -99,6 +102,33 @@ export default function RaceDetails() {
             showAlert("Erreur lors de la suppression de la course", "error");
         }
         setDeleteDialogOpen(false);
+    const handleValidateTeam = async (e: React.MouseEvent, teamId: number) => {
+        e.stopPropagation();
+        if (!race) return;
+        try {
+            await validateTeamForRace(teamId, race.RAC_ID);
+            // Refresh logic - ideally reload race details or update local state
+            const updatedRace = await getRaceDetails(race.RAC_ID);
+            setRace(updatedRace);
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la validation");
+        }
+    };
+
+    const handleUnvalidateTeam = async (e: React.MouseEvent, teamId: number) => {
+        e.stopPropagation();
+        if (!race) return;
+        if (!confirm("Voulez-vous vraiment dévalider cette équipe ?")) return;
+        try {
+            await unvalidateTeamForRace(teamId, race.RAC_ID);
+            // Refresh
+            const updatedRace = await getRaceDetails(race.RAC_ID);
+            setRace(updatedRace);
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la dévalidation");
+        }
     };
 
     if (!race) {
@@ -108,11 +138,26 @@ export default function RaceDetails() {
     const { stats, formatted_categories } = race;
     const isBelowMinParticipants = stats.participants_count < race.RAC_MIN_PARTICIPANTS;
 
+    // Check if current user is the Race Manager (using race.user linked in RaceController)
+    // In RaceController: 'user' relation is loaded. So race.user.USE_ID is the manager.
+    const isRaceManager = isAuthenticated && user && race && user.USE_ID === race.user.USE_ID;
+
     const renderTeamCard = (team: TeamDetail & { isResponsible?: boolean, isMember?: boolean }) => (
         <Card key={team.id} sx={{ p: 2, mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: team.isResponsible ? '2px solid #ed6c02' : (team.isMember ? '2px solid #1976d2' : 'none') }}>
             <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography fontWeight="bold">{team.name}</Typography>
+                    {/* Validation Status */}
+                    {team.is_valid ? (
+                        <Tooltip title="Équipe validée par le responsable">
+                            <CheckCircleIcon color="success" />
+                        </Tooltip>
+                    ) : (
+                        <Tooltip title="Équipe en attente de validation">
+                            <CancelIcon color="error" />
+                        </Tooltip>
+                    )}
+
                     {team.isResponsible && <Chip label="Responsable" size="small" color="warning" icon={<StarIcon />} />}
                     {team.isMember && !team.isResponsible && <Chip label="Membre" size="small" color="primary" />}
                 </Box>
@@ -120,13 +165,33 @@ export default function RaceDetails() {
                     Resp: {team.responsible?.name || 'N/A'} • {team.members_count} / {race.RAC_MAX_TEAM_MEMBERS} membres
                 </Typography>
             </Box>
-            <Tooltip title={isAuthenticated ? "Voir les membres" : "Connectez-vous pour voir les détails"}>
-                <span>
-                    <IconButton onClick={() => handleOpenTeamModal(team)} color="primary" disabled={!isAuthenticated}>
-                        {isAuthenticated ? <GroupsIcon /> : <LockIcon />}
-                    </IconButton>
-                </span>
-            </Tooltip>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                {isRaceManager && (
+                    <>
+                        {!team.is_valid ? (
+                            <Tooltip title="Valider l'équipe">
+                                <IconButton onClick={(e) => handleValidateTeam(e, team.id)} color="success">
+                                    <RuleIcon />
+                                </IconButton>
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="Invalider l'équipe">
+                                <IconButton onClick={(e) => handleUnvalidateTeam(e, team.id)} color="warning">
+                                    <CancelIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </>
+                )}
+
+                <Tooltip title={isAuthenticated ? "Voir les membres" : "Connectez-vous pour voir les détails"}>
+                    <span>
+                        <IconButton onClick={() => handleOpenTeamModal(team)} color="primary" disabled={!isAuthenticated}>
+                            {isAuthenticated ? <GroupsIcon /> : <LockIcon />}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </Box>
         </Card>
     );
 
@@ -430,7 +495,8 @@ export default function RaceDetails() {
                         ))}
                     </List>
                 </DialogContent>
-                {selectedTeam && user && selectedTeam.responsible?.id === user.USE_ID && (
+                {/* Allow Team Owner OR Race Manager to manage team */}
+                {selectedTeam && user && (selectedTeam.responsible?.id === user.USE_ID || isRaceManager) && (
                     <DialogActions>
                         <Button
                             variant="contained"
@@ -438,7 +504,7 @@ export default function RaceDetails() {
                             fullWidth
                             onClick={() => navigate(`/teams/${selectedTeam.id}/races/${race?.RAC_ID}/manage`)}
                         >
-                            Gérer l'équipe
+                            {isRaceManager ? "Gérer l'équipe (Admin)" : "Gérer l'équipe"}
                         </Button>
                     </DialogActions>
                 )}

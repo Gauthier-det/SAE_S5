@@ -10,7 +10,6 @@ import ProtectedRoute from './components/router/ProtectedRoute';
 import GuestRoute from './components/router/GuestRoute';
 import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
-import About from './pages/About';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
 import TeamRegistration from './pages/races/TeamRegistration';
@@ -18,6 +17,7 @@ import TeamRaceManagement from './pages/teams/TeamRaceManagement';
 import CreateRace from './pages/raids/CreateRace';
 import EditRace from './pages/races/EditRace';
 import CreateRaid from './pages/raids/CreateRaid';
+import EditRaid from './pages/raids/EditRaid';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
@@ -45,7 +45,6 @@ const AppRoutes = () => {
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
         <Route path="/races/:id" element={<RaceDetails />} />
-        <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}
         <Route element={<GuestRoute />}>
@@ -63,6 +62,7 @@ const AppRoutes = () => {
         {/* Protected Routes for Club Managers */}
         <Route element={<ProtectedRoute condition={isClubManager} />}>
           <Route path="/raid/create" element={<CreateRaid />} />
+          <Route path="/raids/:id/edit" element={<EditRaid />} />
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
           <Route path="/raids/:id/create" element={<CreateRace />} />

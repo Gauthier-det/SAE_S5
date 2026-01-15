@@ -392,7 +392,9 @@ class RaceController extends Controller
                 $query->withPivot('CAR_PRICE');
             },
             'teams.owner',
-            'teams.members'
+            'teams.members',
+            'user',
+            'raid'
         ])->find($id);
 
         if (!$race) {
@@ -446,6 +448,7 @@ class RaceController extends Controller
                         'email' => $member->USE_MAIL,
                     ];
                 }),
+                'is_valid' => (bool)$team->pivot->TER_IS_VALID,
             ];
         });
 
