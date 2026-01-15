@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider,CircularProgress,Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider, CircularProgress, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById, deleteRaid } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -267,12 +267,13 @@ const RaidDetails = () => {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
+                            <Stack direction="row" spacing={2} sx={{ mb: 3,justifyContent: 'Space-between' }}>
                             <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 3 }}>
                                 {raid.RAI_NAME}
                             </Typography>
-                            
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
-                                {user && raid && user.USE_ID === raid.user.USE_ID && (
+
+                            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                                {user && raid && (user.USE_ID === raid.user.USE_ID || isAdmin) && (
                                     <Button
                                         variant="contained"
                                         color="success"
@@ -282,29 +283,29 @@ const RaidDetails = () => {
                                         Créer une course
                                     </Button>
                                 )}
-                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
-                                    <Button
-                                        variant="contained"
-                                        color="warning"
-                                        sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
-                                        onClick={() => navigate(`/raids/${id}/edit`)}
-                                    >
-                                        MODIFIER le RAID
-                                    </Button>
-                                )}
-                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
-                                        onClick={handleDeleteClick}
-                                        disabled={isDeleting}
-                                    >
-                                        SUPPRIMER le RAID
-                                    </Button>
-                                )}
+                                {user && raid && raid.club && ((user.USE_ID === raid.club.USE_ID && isClubManager) || isAdmin) &&
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            color="warning"
+                                            sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
+                                            onClick={() => navigate(`/raids/${id}/edit`)}
+                                        >
+                                            MODIFIER le RAID
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                            onClick={handleDeleteClick}
+                                            disabled={isDeleting}
+                                        >
+                                            SUPPRIMER le RAID
+                                        </Button>
+                                    </>
+                                }
                             </Stack>
-
+                            </Stack>
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
                                 {raid.club && (

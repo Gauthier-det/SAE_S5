@@ -33,7 +33,7 @@ import { formatDateWithHour } from '../../utils/dateUtils';
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user, isAuthenticated, isRaidManager, isAdmin } = useUser();
+    const { user, isAuthenticated, isAdmin } = useUser();
     const { showAlert } = useAlert();
     const [race, setRace] = useState<RaceDetail | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -99,7 +99,7 @@ export default function RaceDetails() {
     }, [race, searchTerm, user, isAuthenticated]);
 
     // Check if registration deadline has passed
-    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_END)) : false;
 
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;
@@ -297,7 +297,7 @@ export default function RaceDetails() {
                 <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid?.RAI_ID}`)} sx={{ borderRadius: '8px' }}>
                     Retour au raid
                 </Button>
-                {user && (isAdmin || isRaidManager) && !disableEditing && (
+                {user && (isAdmin || race.raid?.user.USE_ID === user.USE_ID) && !disableEditing && (
                     <Stack direction="row" spacing={1}>
                         <Button
                             variant="contained"
@@ -335,7 +335,7 @@ export default function RaceDetails() {
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                     <Chip label={race.RAC_TYPE} color="success" size="small" />
                     <Chip label={race.RAC_DIFFICULTY} color="success" size="small" variant="outlined" />
-                    {race.user.USE_ID === user?.USE_ID && <Chip label="vous êtes l'organisateur" color="warning" size="small" variant="outlined" />}
+                    <Chip label={race.user.USE_ID === user?.USE_ID ? "vous êtes l'organisateur" : race.user.USE_NAME + " " + race.user.USE_LAST_NAME + " organise cette course"} color="warning" size="small" variant="outlined" />
                     <Chip label={race.RAC_GENDER || 'Mixte'} color="info" size="small" />
                     <Chip
                         label={new Date() < new Date(race.RAC_TIME_START) ? 'En attente' : new Date() < new Date(race.RAC_TIME_END) ? 'En cours' : 'Terminée'}
