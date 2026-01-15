@@ -269,7 +269,7 @@ const RaidDetails = () => {
                                         Créer une course
                                     </Button>
                                 )}
-                                {user && user.CLU_ID === raid.user.CLU_ID && (isAdmin || isClubManager) && (
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
                                     <Button
                                         variant="contained"
                                         color="warning"
@@ -279,7 +279,7 @@ const RaidDetails = () => {
                                         MODIFIER le RAID
                                     </Button>
                                 )}
-                                {user && user.CLU_ID === raid.user.CLU_ID && (isAdmin || isClubManager) && (
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
                                     <Button
                                         variant="contained"
                                         color="error"

@@ -89,7 +89,7 @@ const EditRaid = () => {
                     RAI_TIME_END: raidData.RAI_TIME_END,
                     RAI_REGISTRATION_START: raidData.RAI_REGISTRATION_START,
                     RAI_REGISTRATION_END: raidData.RAI_REGISTRATION_END,
-                    RAI_NB_RACES: 0 // Not editable
+                    RAI_NB_RACES: raidData.RAI_NB_RACES
                 });
 
                 // Populate address data
@@ -121,9 +121,11 @@ const EditRaid = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
         const { name, value } = e.target;
+        // Handle numeric fields
+        const numericValue = name === 'RAI_NB_RACES' ? parseInt(value as string) || 0 : value;
         setFormData((prev) => ({
             ...prev,
-            [name as string]: value
+            [name as string]: numericValue
         }));
     };
 
@@ -327,6 +329,22 @@ const EditRaid = () => {
                                         error={!!fieldErrors.RAI_IMAGE}
                                         helperText={fieldErrors.RAI_IMAGE?.[0]}
                                     />
+
+                                    <TextField
+                                        fullWidth
+                                        label="Nombre de courses"
+                                        name="RAI_NB_RACES"
+                                        type="number"
+                                        variant="standard"
+                                        value={formData.RAI_NB_RACES}
+                                        onChange={handleChange}
+                                        required
+                                        slotProps={{
+                                            htmlInput: { min: 1 }
+                                        }}
+                                        error={!!fieldErrors.RAI_NB_RACES}
+                                        helperText={fieldErrors.RAI_NB_RACES?.[0]}
+                                    />
                                 </Stack>
                             </Grid>
 
@@ -339,7 +357,7 @@ const EditRaid = () => {
                                         <DatePicker
                                             label="Début inscriptions"
                                             value={formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START) : null}
-                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_REGISTRATION_START: newValue ? newValue.toISOString() : null })}
+                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_REGISTRATION_START: newValue ? newValue.format('YYYY-MM-DD HH:mm:ss') : null })}
                                             slotProps={{
                                                 textField: {
                                                     variant: 'standard',
@@ -354,7 +372,7 @@ const EditRaid = () => {
                                         <DatePicker
                                             label="Fin inscriptions"
                                             value={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END) : null}
-                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_REGISTRATION_END: newValue ? newValue.toISOString() : null })}
+                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_REGISTRATION_END: newValue ? newValue.format('YYYY-MM-DD HH:mm:ss') : null })}
                                             slotProps={{
                                                 textField: {
                                                     variant: 'standard',
@@ -373,7 +391,7 @@ const EditRaid = () => {
                                         <DatePicker
                                             label="Date de début du raid"
                                             value={formData.RAI_TIME_START ? dayjs(formData.RAI_TIME_START) : null}
-                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_TIME_START: newValue ? newValue.toISOString() : null })}
+                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_TIME_START: newValue ? newValue.format('YYYY-MM-DD HH:mm:ss') : null })}
                                             slotProps={{
                                                 textField: {
                                                     variant: 'standard',
@@ -388,7 +406,7 @@ const EditRaid = () => {
                                         <DatePicker
                                             label="Date de fin du raid"
                                             value={formData.RAI_TIME_END ? dayjs(formData.RAI_TIME_END) : null}
-                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_TIME_END: newValue ? newValue.toISOString() : null })}
+                                            onChange={(newValue: Dayjs | null) => setFormData({ ...formData, RAI_TIME_END: newValue ? newValue.format('YYYY-MM-DD HH:mm:ss') : null })}
                                             slotProps={{
                                                 textField: {
                                                     variant: 'standard',

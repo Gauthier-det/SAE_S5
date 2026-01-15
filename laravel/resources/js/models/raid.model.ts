@@ -13,6 +13,7 @@ export interface Raid {
     RAI_TIME_END: string;
     RAI_REGISTRATION_START: string;
     RAI_REGISTRATION_END: string;
+    RAI_NB_RACES: number;
     club: Club;
     address: Address;
     user: User;
