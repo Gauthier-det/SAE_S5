@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRaceDetails } from '../../api/race';
+import { getRaceDetails, deleteRace } from '../../api/race';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
+import dayjs from 'dayjs';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
     TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
-    Tooltip
+    Tooltip, Stack
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -17,19 +18,25 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import LockIcon from '@mui/icons-material/Lock';
 import StarIcon from '@mui/icons-material/Star';
 
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user, isAuthenticated } = useUser();
+    const { user, isAuthenticated, isRaidManager, isAdmin } = useUser();
+    const { showAlert } = useAlert();
     const [race, setRace] = useState<RaceDetail | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<TeamDetail | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
     const [teamsListOpen, setTeamsListOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    
 
     useEffect(() => {
         if (id) {
@@ -64,6 +71,9 @@ export default function RaceDetails() {
         return { myTeams: my, otherTeams: others };
     }, [race, searchTerm, user, isAuthenticated]);
 
+    // Check if registration deadline has passed
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
+
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;
         setSelectedTeam(team);
@@ -73,6 +83,22 @@ export default function RaceDetails() {
     const handleCloseModal = () => {
         setModalOpen(false);
         setSelectedTeam(null);
+    };
+
+    const handleDeleteClick = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await deleteRace(parseInt(id || '0'));
+            showAlert("Course supprimée avec succès !", "success");
+            navigate(`/raids/${race?.raid.RAI_ID}`);
+        } catch (error: any) {
+            console.error('Error deleting race:', error);
+            showAlert("Erreur lors de la suppression de la course", "error");
+        }
+        setDeleteDialogOpen(false);
     };
 
     if (!race) {
@@ -107,10 +133,34 @@ export default function RaceDetails() {
     return (
         <Container maxWidth="md" sx={{ pb: 10 }}>
             {/* Header / Back */}
-            <Box sx={{ py: 2, display: 'flex', alignItems: 'center' }}>
-                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.RAI_ID}`)}>
+            <Box sx={{ py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid?.RAI_ID}`)} sx={{ borderRadius: '8px' }}>
                     Retour au raid
                 </Button>
+                {user && (isAdmin || isRaidManager) && !disableEditing && (
+                    <Stack direction="row" spacing={1}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<EditIcon />}
+                            onClick={() => navigate(`/races/${id}/edit`)}
+                            disabled={disableEditing}
+                            sx={{ borderRadius: '8px' }}
+                        >
+                            Modifier la Course
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={handleDeleteClick}
+                            disabled={disableEditing}
+                            sx={{ borderRadius: '8px' }}
+                        >
+                            Supprimer la Course
+                        </Button>
+                    </Stack>
+                )}
             </Box>
 
             {/* Title & Tags */}
@@ -392,6 +442,24 @@ export default function RaceDetails() {
                         </Button>
                     </DialogActions>
                 )}
+            </Dialog>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Êtes-vous sûr de vouloir supprimer cette course ? Cette action est irréversible.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+                        Annuler
+                    </Button>
+                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                        Supprimer
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Container>
     );

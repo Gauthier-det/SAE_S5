@@ -16,6 +16,7 @@ import RaceDetails from './pages/races/RaceDetails';
 import TeamRegistration from './pages/races/TeamRegistration';
 import TeamRaceManagement from './pages/teams/TeamRaceManagement';
 import CreateRace from './pages/raids/CreateRace';
+import EditRace from './pages/races/EditRace';
 import CreateRaid from './pages/raids/CreateRaid';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
@@ -65,6 +66,7 @@ const AppRoutes = () => {
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
           <Route path="/raids/:id/create" element={<CreateRace />} />
+          <Route path="/races/:id/edit" element={<EditRace />} />
         </Route>
 
         {/* Admin Routes */}
