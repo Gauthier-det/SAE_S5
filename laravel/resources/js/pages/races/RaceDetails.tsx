@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaceDetails, importRaceResults, deleteRaceResults, deleteRace } from '../../api/race';
-import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
+import { validateTeamForRace, unvalidateTeamForRace, deleteTeamFromRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import dayjs from 'dayjs';
 import {
@@ -215,17 +215,17 @@ export default function RaceDetails() {
         }
     };
 
-    const handleUnvalidateTeam = async (e: React.MouseEvent, teamId: number) => {
+    const handleDeleteTeam = async (e: React.MouseEvent, teamId: number) => {
         e.stopPropagation();
         if (!race) return;
-        if (!confirm("Voulez-vous vraiment dévalider cette équipe ?")) return;
+        if (!confirm("Voulez-vous vraiment supprimer cette équipe de la course ?")) return;
         try {
-            await unvalidateTeamForRace(teamId, race.RAC_ID);
+            await deleteTeamFromRace(race.RAC_ID, teamId);
             const updatedRace = await getRaceDetails(race.RAC_ID);
             setRace(updatedRace);
         } catch (err) {
             console.error(err);
-            alert("Erreur lors de la dévalidation");
+            alert("Erreur lors de la suppression");
         }
     };
 
@@ -271,9 +271,9 @@ export default function RaceDetails() {
                                 </IconButton>
                             </Tooltip>
                         ) : (
-                            <Tooltip title="Invalider l'équipe">
-                                <IconButton onClick={(e) => handleUnvalidateTeam(e, team.id)} color="warning">
-                                    <CancelIcon />
+                            <Tooltip title="Supprimer l'équipe">
+                                <IconButton onClick={(e) => handleDeleteTeam(e, team.id)} color="error">
+                                    <CloseIcon />
                                 </IconButton>
                             </Tooltip>
                         )}
@@ -439,7 +439,7 @@ export default function RaceDetails() {
                     <GroupsIcon />
                     <Box>
                         <Typography variant="subtitle2">Membres min et max par équipe</Typography>
-                        <Typography variant="h6">{race.RAC_MIN_TEAM_MEMBERS+" - "+race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
+                        <Typography variant="h6">{race.RAC_MIN_TEAM_MEMBERS + " - " + race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
                     </Box>
                 </Box>
             </Paper>

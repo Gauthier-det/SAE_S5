@@ -73,3 +73,9 @@ export const unvalidateTeamForRace = async (teamId: number, raceId: number): Pro
         body: JSON.stringify({ team_id: teamId, race_id: raceId })
     });
 };
+
+export const deleteTeamFromRace = async (raceId: number, teamId: number): Promise<void> => {
+    await apiClient(`/races/${raceId}/teams/${teamId}`, {
+        method: 'DELETE'
+    });
+};

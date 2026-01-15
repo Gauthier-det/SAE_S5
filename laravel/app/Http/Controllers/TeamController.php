@@ -30,12 +30,14 @@ class TeamController extends Controller
             'TEA_IMAGE' => $request->image,
         ]);
 
-        return response()->json(['data' => [
-            'team_id' => $team->TEA_ID,
-            'team_name' => $team->TEA_NAME,
-            'owner_id' => $team->USE_ID,
-            'message' => 'Team created successfully',
-        ]], 201);
+        return response()->json([
+            'data' => [
+                'team_id' => $team->TEA_ID,
+                'team_name' => $team->TEA_NAME,
+                'owner_id' => $team->USE_ID,
+                'message' => 'Team created successfully',
+            ]
+        ], 201);
     }
 
     public function addMember(Request $request)
@@ -48,8 +50,10 @@ class TeamController extends Controller
 
         // Check if user can access this team (owner check)
         $team = Team::findOrFail($request->team_id);
-        if ($team->USE_ID !== auth()->id()) {
-            return response()->json(['message' => 'Unauthorized - you did not create this team'], 403);
+        $race = Race::findOrFail($request->race_id);
+
+        if ($team->USE_ID !== auth()->id() && $race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized - you did not create this team nor handle this race'], 403);
         }
 
         // Prevent duplicate membership
@@ -104,12 +108,14 @@ class TeamController extends Controller
             'USR_TIME' => null,
         ]);
 
-        return response()->json(['data' => [
-            'team_id' => $request->team_id,
-            'user_id' => $request->user_id,
-            'race_id' => $request->race_id,
-            'message' => 'User added to team and race successfully',
-        ]], 201);
+        return response()->json([
+            'data' => [
+                'team_id' => $request->team_id,
+                'user_id' => $request->user_id,
+                'race_id' => $request->race_id,
+                'message' => 'User added to team and race successfully',
+            ]
+        ], 201);
     }
 
     /**
@@ -239,11 +245,13 @@ class TeamController extends Controller
             'TER_RACE_NUMBER' => $maxRaceNumber + 1,
         ]);
 
-        return response()->json(['data' => [
-            'team_id' => $teamId,
-            'race_id' => $request->race_id,
-            'message' => 'Team registered for race successfully',
-        ]], 201);
+        return response()->json([
+            'data' => [
+                'team_id' => $teamId,
+                'race_id' => $request->race_id,
+                'message' => 'Team registered for race successfully',
+            ]
+        ], 201);
     }
 
     /**
@@ -255,10 +263,13 @@ class TeamController extends Controller
 
         // Check ownership
         if ($team->USE_ID !== auth()->id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+            $race = Race::findOrFail($raceId);
+            if ($race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+        } else {
+            $race = Race::findOrFail($raceId);
         }
-
-        $race = Race::findOrFail($raceId);
 
         $teamRace = DB::table('SAN_TEAMS_RACES')
             ->where('TEA_ID', $teamId)
@@ -314,7 +325,9 @@ class TeamController extends Controller
         ]);
 
         $team = Team::findOrFail($request->team_id);
-        if ($team->USE_ID !== auth()->id()) {
+        $race = Race::findOrFail($request->race_id);
+
+        if ($team->USE_ID !== auth()->id() && $race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -354,8 +367,8 @@ class TeamController extends Controller
 
         $race = Race::findOrFail($request->race_id);
 
-        // Allow owner OR the user themselves OR the Race Manager to update
-        if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id && $race->USE_ID !== auth()->id()) {
+        // Allow owner OR the user themselves OR the Race Manager OR Admin to update
+        if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id && $race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -383,8 +396,8 @@ class TeamController extends Controller
         $team = Team::findOrFail($request->team_id);
         $race = Race::findOrFail($request->race_id);
 
-        // Allow Race Manager
-        if ($race->USE_ID !== auth()->id()) {
+        // Allow Race Manager OR Admin
+        if ($race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Seul le responsable de la course peut valider une équipe.'], 403);
         }
 
@@ -448,8 +461,8 @@ class TeamController extends Controller
         $team = Team::findOrFail($request->team_id);
         $race = Race::findOrFail($request->race_id);
 
-        // Allow Race Manager
-        if ($race->USE_ID !== auth()->id()) {
+        // Allow Race Manager OR Admin
+        if ($race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
             return response()->json(['message' => 'Seul le responsable de la course peut dévalider une équipe.'], 403);
         }
 
@@ -488,6 +501,70 @@ class TeamController extends Controller
         })->get();
 
         return response()->json(['data' => $teams], 200);
+    }
+
+    /**
+     * Delete a team from a race and remove associated data
+     */
+    public function deleteTeamFromRace($raceId, $teamId)
+    {
+        $race = Race::findOrFail($raceId);
+
+        // Authorization: Race Manager OR Admin
+        if ($race->USE_ID !== auth()->id() && !auth()->user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized. Only the race manager or admin can delete a team from a race.'], 403);
+        }
+
+        $team = Team::findOrFail($teamId);
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Get users in this team for this race context
+            // Note: Use SAN_USERS_TEAMS for membership, but we want to be careful.
+            // The prompt says "delete team from race and all around user race and user teams".
+            // Implementation Plan said:
+            // 1. Find all users in this team.
+            // 2. Delete entries in SAN_USERS_RACES for this race.
+            // 3. Delete entries in SAN_USERS_TEAMS for this team.
+
+            $userIds = DB::table('SAN_USERS_TEAMS')
+                ->where('TEA_ID', $teamId)
+                ->pluck('USE_ID');
+
+            // 2. Remove users from the race
+            if ($userIds->isNotEmpty()) {
+                DB::table('SAN_USERS_RACES')
+                    ->where('RAC_ID', $raceId)
+                    ->whereIn('USE_ID', $userIds)
+                    ->delete();
+            }
+
+            // 3. Remove users from the team
+            // WARNING: This empties the team completely. This fits the request but is destructive.
+            DB::table('SAN_USERS_TEAMS')
+                ->where('TEA_ID', $teamId)
+                ->delete();
+
+            // 4. Remove team from race
+            DB::table('SAN_TEAMS_RACES')
+                ->where('RAC_ID', $raceId)
+                ->where('TEA_ID', $teamId)
+                ->delete();
+
+            // Optional: If the team should be deleted entirely if empty, we could do that,
+            // but usually we just remove the registration.
+            // The user asked "supprimer la team de la course et tous ce qu'il y a autour user race et user teams".
+            // So removing memberships seems correct per instructions.
+
+            DB::commit();
+
+            return response()->json(['message' => 'Team deleted from race successfully']);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Error deleting team from race', 'error' => $e->getMessage()], 500);
+        }
     }
 
 }
