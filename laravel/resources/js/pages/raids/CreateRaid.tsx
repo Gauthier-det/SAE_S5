@@ -22,13 +22,17 @@ import type { RaidCreation } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import { getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
-import { createAddress, type Address } from '../../api/address';
+import { createAddress } from '../../api/address';
+import type { AddressCreation } from '../../models/address.model';
 
 const CreateRaid = () => {
     const { user } = useUser();
     const navigate = useNavigate();
+    const { showAlert } = useAlert();
+    const [name, setName] = useState('');
 
     // Form data for Raid
     const [formData, setFormData] = useState<RaidCreation>({
@@ -46,7 +50,7 @@ const CreateRaid = () => {
     });
 
     // Address Form Data
-    const [addressData, setAddressData] = useState<Address>({
+    const [addressData, setAddressData] = useState<AddressCreation>({
         ADD_STREET_NUMBER: '',
         ADD_STREET_NAME: '',
         ADD_CITY: '',
@@ -74,6 +78,7 @@ const CreateRaid = () => {
                     setClubUsers(users || []);
                 } catch (e) {
                     console.error("Failed to load club info", e);
+                    showAlert("Impossible de charger les informations du club", "error");
                 }
             }
         };
@@ -133,9 +138,11 @@ const CreateRaid = () => {
             // 3. Create Raid
             await createRaid(raidData);
             setErrors([]);
+            showAlert('Raid créé avec succès', 'success');
             navigate('/raids');
         } catch (error: any) {
             console.error('Error creating raid:', error);
+            showAlert('Erreur lors de la création du raid', 'error');
             if (error.body?.errors) {
                 const errorMessages = Object.values(error.body.errors).flat() as string[];
                 setErrors(errorMessages);

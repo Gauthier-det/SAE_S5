@@ -14,28 +14,37 @@ import {
   FormControlLabel
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../../contexts/AlertContext';
 import { createRace } from '../../api/race';
-import type { RaceCreation } from '../../models/race.model';
+import { RaceType, type RaceCreation } from '../../models/race.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 
 const CreateRace = () => {
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
+
+  // Temporary state for Date/Time pickers before merging into string
+  const [startDate, setStartDate] = useState<Dayjs | null>(null);
+  const [startTime, setStartTime] = useState<Dayjs | null>(null);
+  const [endDate, setEndDate] = useState<Dayjs | null>(null);
+  const [endTime, setEndTime] = useState<Dayjs | null>(null);
+
   const [formData, setFormData] = useState<RaceCreation>({
-    RAI_ID: 0,
+    RAI_ID: 1, // TODO: Should be selected or passed via props/URL
     RAC_TIME_START: '',
     RAC_TIME_END: '',
-    RAC_TYPE: 'Compétitif',
+    RAC_TYPE: RaceType.Competitive,
     RAC_DIFFICULTY: 'Moyen',
     RAC_MIN_PARTICIPANTS: 0,
     RAC_MAX_PARTICIPANTS: 0,
     RAC_MIN_TEAMS: 0,
     RAC_MAX_TEAMS: 0,
     RAC_TEAM_MEMBERS: 0,
-    RAC_AGE_MIN: 0,
-    RAC_AGE_MIDDLE: 0,
-    RAC_AGE_MAX: 0
+    RAC_AGE_MIN: 18,
+    RAC_AGE_MIDDLE: 30, // Default ?
+    RAC_AGE_MAX: 99
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
@@ -54,20 +63,37 @@ const CreateRace = () => {
     }));
   };
 
-  const handleCompetionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCompetitionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isComp = event.target.name === 'competition';
-    setFormData(prev => ({ ...prev, isCompetitive: isComp }));
+    setFormData(prev => ({ ...prev, RAC_TYPE: isComp ? RaceType.Competitive : RaceType.Hobby }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Merge dates and times
+    let startStr = '';
+    if (startDate && startTime) {
+      startStr = startDate.format('YYYY-MM-DD') + ' ' + startTime.format('HH:mm:ss');
+    }
+    let endStr = '';
+    if (endDate && endTime) {
+      endStr = endDate.format('YYYY-MM-DD') + ' ' + endTime.format('HH:mm:ss');
+    }
+
+    const payload = {
+      ...formData,
+      RAC_TIME_START: startStr,
+      RAC_TIME_END: endStr
+    };
+
     try {
-      await createRace(formData);
-      // navigate('/races'); // Route doesn't exist yet, navigating to raids or dashboard generic
-      alert("Course créée avec succès !");
-      navigate('/');
-    } catch (error) {
-      console.error('Error creating race:', error);
+      await createRace(payload);
+      showAlert("Course créée avec succès !", "success");
+      navigate('/raids'); // Redirect to raids list for now
+    } catch (e: any) {
+      console.error(e);
+      showAlert("Erreur lors de la création de la course", "error");
     }
   };
 
@@ -111,46 +137,20 @@ const CreateRace = () => {
         }}
       >
         <Typography component="h2" variant="h6" sx={{ mb: 4, fontWeight: 'bold', textTransform: 'uppercase' }}>
-          RAID - Le sanglier fou
+          Nouvelle épreuve
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-          {/* Nom de la course */}
-          <TextField
-            fullWidth
-            label="Nom de la course"
-            name="name"
-            variant="standard"
-            value={formData.name}
-            onChange={handleChange}
-            margin="normal"
-            required
-            placeholder="Course de Grimbosq"
-          />
 
-          {/* Responsable + Compétition/Loisir */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2, alignItems: 'flex-end' }}>
-            <FormControl fullWidth variant="standard" margin="normal">
-              <InputLabel shrink>Responsable de la course</InputLabel>
-              <Select
-                value={formData.manager}
-                onChange={handleSelectChange}
-                name="manager"
-                label="Responsable de la course"
-                displayEmpty
-              >
-                <MenuItem value="" disabled>Sélectionner</MenuItem>
-                <MenuItem value="Christelle M.">Christelle M.</MenuItem>
-                <MenuItem value="Other">Autre</MenuItem>
-              </Select>
-            </FormControl>
-
-            <Stack direction="row" spacing={2} sx={{ mb: 1, minWidth: '300px' }}>
+          {/* Type */}
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2, alignItems: 'center' }}>
+            <Typography variant="subtitle1">Type d'épreuve :</Typography>
+            <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={formData.isCompetitive}
-                    onChange={handleCompetionChange}
+                    checked={formData.RAC_TYPE === RaceType.Competitive}
+                    onChange={handleCompetitionChange}
                     name="competition"
                     color="success"
                   />
@@ -160,8 +160,8 @@ const CreateRace = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={!formData.isCompetitive}
-                    onChange={handleCompetionChange}
+                    checked={formData.RAC_TYPE === RaceType.Hobby}
+                    onChange={handleCompetitionChange}
                     name="loisir"
                     color="success"
                   />
@@ -171,95 +171,131 @@ const CreateRace = () => {
             </Stack>
           </Stack>
 
-          {/* Durée + Difficulté */}
+          {/* Difficulty + Raid ID (placeholder) */}
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
-            <TextField
-              fullWidth
-              label="Durée"
-              name="duration"
-              variant="standard"
-              value={formData.duration}
-              onChange={handleChange}
-              margin="normal"
-              placeholder="2h"
-            />
             <FormControl fullWidth variant="standard" margin="normal">
               <InputLabel shrink>Difficulté</InputLabel>
               <Select
-                value={formData.difficulty}
+                value={formData.RAC_DIFFICULTY}
                 onChange={handleSelectChange}
-                name="difficulty"
+                name="RAC_DIFFICULTY"
                 label="Difficulté"
                 displayEmpty
               >
-                <MenuItem value="" disabled>Sélectionner</MenuItem>
                 <MenuItem value="Facile">Facile</MenuItem>
                 <MenuItem value="Moyen">Moyen</MenuItem>
                 <MenuItem value="Difficile">Difficile</MenuItem>
               </Select>
             </FormControl>
-          </Stack>
-
-          {/* Prix Mineur + Prix Majeur */}
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
             <TextField
               fullWidth
-              label="Prix mineur"
-              name="minorPrice"
+              label="ID du Raid associé"
+              name="RAI_ID"
               type="number"
               variant="standard"
-              value={formData.minorPrice}
+              value={formData.RAI_ID}
               onChange={handleChange}
               margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Prix majeur"
-              name="majorPrice"
-              type="number"
-              variant="standard"
-              value={formData.majorPrice}
-              onChange={handleChange}
-              margin="normal"
+              helperText="ID du raid (temporaire)"
             />
           </Stack>
 
-          {/* Nb Participants + Illustration */}
+
+          {/* Participants */}
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
             <TextField
               fullWidth
-              label="Nombre de participant minimum"
-              name="minParticipants"
+              label="Nb. Min Participants"
+              name="RAC_MIN_PARTICIPANTS"
               type="number"
               variant="standard"
-              value={formData.minParticipants}
+              value={formData.RAC_MIN_PARTICIPANTS}
               onChange={handleChange}
               margin="normal"
             />
             <TextField
               fullWidth
-              label="Illustration"
-              name="illustration"
+              label="Nb. Max Participants"
+              name="RAC_MAX_PARTICIPANTS"
+              type="number"
               variant="standard"
-              value={formData.illustration}
+              value={formData.RAC_MAX_PARTICIPANTS}
               onChange={handleChange}
               margin="normal"
-              placeholder="course.png"
             />
           </Stack>
+
+          {/* Teams */}
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Nb. Min Équipes"
+              name="RAC_MIN_TEAMS"
+              type="number"
+              variant="standard"
+              value={formData.RAC_MIN_TEAMS}
+              onChange={handleChange}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Nb. Max Équipes"
+              name="RAC_MAX_TEAMS"
+              type="number"
+              variant="standard"
+              value={formData.RAC_MAX_TEAMS}
+              onChange={handleChange}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Membres par équipe"
+              name="RAC_TEAM_MEMBERS"
+              type="number"
+              variant="standard"
+              value={formData.RAC_TEAM_MEMBERS}
+              onChange={handleChange}
+              margin="normal"
+            />
+          </Stack>
+
+          {/* Age */}
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
+            <TextField
+              fullWidth
+              label="Age Min"
+              name="RAC_AGE_MIN"
+              type="number"
+              variant="standard"
+              value={formData.RAC_AGE_MIN}
+              onChange={handleChange}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              label="Age Max"
+              name="RAC_AGE_MAX"
+              type="number"
+              variant="standard"
+              value={formData.RAC_AGE_MAX}
+              onChange={handleChange}
+              margin="normal"
+            />
+          </Stack>
+
 
           {/* Start Date + Time */}
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 2 }}>
             <DatePicker
               label="Date de début"
-              value={formData.startDate ? dayjs(formData.startDate) : null}
-              onChange={(newValue: Dayjs | null) => setFormData({ ...formData, startDate: newValue ? newValue.format('YYYY-MM-DD') : '' })}
+              value={startDate}
+              onChange={(newValue) => setStartDate(newValue)}
               slotProps={{ textField: { variant: 'standard', fullWidth: true } }}
             />
             <TimePicker
               label="Heure de départ"
-              value={formData.startTime ? dayjs(formData.startTime, 'HH:mm') : null}
-              onChange={(newValue: Dayjs | null) => setFormData({ ...formData, startTime: newValue ? newValue.format('HH:mm') : '' })}
+              value={startTime}
+              onChange={(newValue) => setStartTime(newValue)}
               slotProps={{ textField: { variant: 'standard', fullWidth: true } }}
             />
           </Stack>
@@ -268,14 +304,14 @@ const CreateRace = () => {
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} sx={{ mt: 4 }}>
             <DatePicker
               label="Date de fin"
-              value={formData.endDate ? dayjs(formData.endDate) : null}
-              onChange={(newValue: Dayjs | null) => setFormData({ ...formData, endDate: newValue ? newValue.format('YYYY-MM-DD') : '' })}
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
               slotProps={{ textField: { variant: 'standard', fullWidth: true } }}
             />
             <TimePicker
               label="Heure de fin"
-              value={formData.endTime ? dayjs(formData.endTime, 'HH:mm') : null}
-              onChange={(newValue: Dayjs | null) => setFormData({ ...formData, endTime: newValue ? newValue.format('HH:mm') : '' })}
+              value={endTime}
+              onChange={(newValue) => setEndTime(newValue)}
               slotProps={{ textField: { variant: 'standard', fullWidth: true } }}
             />
           </Stack>

@@ -31,10 +31,10 @@ const settings = ['Profile', 'Logout'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, logout } = useUser();
+    const { user, isAdmin, logout } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
-
+    console.log("isAdmin", isAdmin);
     const avatarSvg = useMemo(() => {
         if (!user) return '';
         const avatar = createAvatar(thumbs, {
@@ -105,6 +105,25 @@ function Navbar() {
                                 {page.name}
                             </Button>
                         ))}
+                        {isAdmin && (
+                            <Button
+                                key="Admin"
+                                onClick={() => navigate('/admin')}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/admin' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                Admin
+                            </Button>
+                        )}
                     </Box>
 
                     <Box sx={{ flexGrow: 0 }}>

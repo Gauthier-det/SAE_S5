@@ -48,11 +48,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Auth User routes
     Route::get('/user', [UserController::class, 'getUserInfo']);
+    Route::get('/user/is-admin', [UserController::class, 'checkIsAdmin']);
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::put('/users/{id}', [UserController::class, 'updateUser']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
-  
+
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
@@ -78,7 +79,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/addresses', [AddressController::class, 'createAddress']);
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
     Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
-  
+
     // Admin User routes
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById'])->whereNumber('id');

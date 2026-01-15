@@ -4,11 +4,12 @@ import { getListOfRaids } from '../../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
 import { useNavigate } from 'react-router-dom';
+import { useAlert } from '../../contexts/AlertContext';
 import { parseDateToTs, getRaidStatus, getRegistrationStatus } from '../../utils/dateUtils';
 import { useUser } from '../../contexts/userContext';
 
@@ -23,8 +24,10 @@ export default function Raids() {
     const [registrationFilter, setRegistrationFilter] = React.useState('');
     const [sortField, setSortField] = React.useState('');
     const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
-    const [raids, setRaids] = React.useState<Raid[]>([]);
+    const [raids, setRaids] = useState<Raid[]>([]);
+    const [loading, setLoading] = useState(true);
     const { user, isClubManager } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,10 +37,14 @@ export default function Raids() {
                 setRaids(data);
             } catch (error) {
                 console.error("Failed to fetch raids", error);
+                showAlert("Impossible de charger la liste des raids", "error");
+            } finally {
+                setLoading(false);
             }
         };
+
         fetchRaids();
-    }, []);
+    }, [showAlert]); // Added dependency to suppress lint warning, though context is stable
 
     const filteredRaids = React.useMemo(() => {
 

@@ -1,23 +1,8 @@
+import type { AddressResponse, AddressCreation } from "../models";
 import { apiClient } from "../utils/apiClient";
 
-export interface Address {
-    ADD_STREET_NUMBER: string;
-    ADD_STREET_NAME: string;
-    ADD_CITY: string;
-    ADD_POSTAL_CODE: string;
-}
 
-export interface AddressResponse {
-    data: {
-        ADD_ID: number;
-        ADD_STREET_NUMBER: string;
-        ADD_STREET_NAME: string;
-        ADD_CITY: string;
-        ADD_POSTAL_CODE: number;
-    };
-}
-
-export const createAddress = async (address: Address): Promise<number> => {
+export const createAddress = async (address: AddressCreation): Promise<number> => {
     const payload = {
         ADD_STREET_NUMBER: address.ADD_STREET_NUMBER,
         ADD_STREET_NAME: address.ADD_STREET_NAME,

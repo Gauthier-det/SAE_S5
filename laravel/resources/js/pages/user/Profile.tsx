@@ -36,7 +36,7 @@ const mockHistory = [
 ];
 
 const Profile = () => {
-    const { user, isClubManager, isRaidManager, isRaceManager } = useUser();
+    const { user, isClubManager, isRaidManager, isRaceManager, isAdmin } = useUser();
 
     // Generate Avatar
     const avatarSvg = useMemo(() => {
@@ -86,6 +86,7 @@ const Profile = () => {
 
                             <Stack direction="row" spacing={1} useFlexGap sx={{ mb: 4, flexWrap: 'wrap' }}>
                                 <Chip label="Coureur" sx={{ bgcolor: '#2e7d32', color: 'white', fontWeight: 'bold' }} size="small" />
+                                {isAdmin && <Chip label="ADMIN" sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }} size="small" />}
                                 {isRaidManager && <Chip label="Responsable de RAID" color="primary" size="small" />}
                                 {isClubManager && <Chip label="Responsable de CLUB" color="secondary" size="small" />}
                                 {isRaceManager && <Chip label="Responsable de COURSE" color="success" size="small" />}

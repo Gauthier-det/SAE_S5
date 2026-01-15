@@ -1,3 +1,4 @@
+import type { Address } from './address.model';
 import type { Club } from './club.model';
 
 export interface User {
@@ -10,16 +11,9 @@ export interface User {
     USE_LICENCE_NUMBER?: string;
     USE_PPS_FORM?: string;
     USE_MEMBERSHIP_DATE?: string;
+    CLU_ID?: number;
     address?: Address;
     club?: Club;
-}
-
-export interface Address {
-    ADD_ID: number;
-    ADD_POSTAL_CODE: string;
-    ADD_CITY: string;
-    ADD_STREET_NAME: string;
-    ADD_STREET_NUMBER: string;
 }
 
 export interface UserResponse {

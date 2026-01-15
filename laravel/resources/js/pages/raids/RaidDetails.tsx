@@ -2,6 +2,7 @@ import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGro
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
+import { useAlert } from '../../contexts/AlertContext';
 import type { Raid } from '../../models/raid.model';
 import { RaceType, type Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
@@ -17,18 +18,34 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
 import { useUser } from '../../contexts/userContext';
 
-export default function InfoRaid() {
+const RaidDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [raid, setRaid] = useState<Raid | null>(null);
     const [allRaces, setAllRaces] = useState<Race[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { showAlert } = useAlert();
     const { user } = useUser();
+
     useEffect(() => {
-        if (!id) navigate('/raids');
-        const raidId = parseInt(id!);
-        getRaidById(raidId).then(setRaid).catch(console.error);
-        getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
-    }, [id]);
+        if (!id) return;
+
+        const raidId = parseInt(id);
+        setLoading(true);
+
+        Promise.all([
+            getRaidById(raidId),
+            getListOfRacesByRaidId(raidId)
+        ]).then(([raidData, racesData]) => {
+            setRaid(raidData);
+            setAllRaces(racesData);
+        }).catch(err => {
+            console.error(err);
+            showAlert("Impossible de charger les détails du raid", "error");
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
 
     // Calculate global min/max for the slider bounds
@@ -302,3 +319,5 @@ export default function InfoRaid() {
         </Container>
     );
 }
+
+export default RaidDetails;

@@ -28,7 +28,7 @@ class Club extends Model
         return $this->hasMany(self::class);
     }
 
-        public function address(): BelongsTo
+    public function address(): BelongsTo
     {
         return $this->belongsTo(Address::class, 'ADD_ID', 'ADD_ID');
     }
@@ -36,5 +36,10 @@ class Club extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'USE_ID', 'USE_ID');
+    }
+
+    public function users(): HasMany
+    {
+        return $this->hasMany(User::class, 'CLU_ID', 'CLU_ID');
     }
 }

@@ -11,6 +11,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../../assets/logo-color.png';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 
 const Register = () => {
     const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const Register = () => {
 
     const [error, setError] = useState('');
     const { register } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,21 +39,27 @@ const Register = () => {
         setError('');
 
         if (formData.password.length < 8) {
-            setError('Le mot de passe doit contenir au moins 8 caractères.');
+            const errorMessage = 'Le mot de passe doit contenir au moins 8 caractères.';
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
             return;
         }
 
         try {
             await register(formData);
+            showAlert('Inscription réussie !', 'success');
             navigate('/dashboard');
-        } catch (err: any) { 
+        } catch (err: any) {
             console.error(err);
+            let errorMessage = "Échec de l'inscription. Vérifiez vos informations.";
             if (err.name === 'ApiError' && err.data && err.data.errors) {
                 const messages = Object.values(err.data.errors).flat().join(' ');
-                setError(messages);
+                errorMessage = messages;
             } else {
-                setError(err.message || "Échec de l'inscription. Vérifiez vos informations.");
+                errorMessage = err.message || errorMessage;
             }
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
         }
     };
 
@@ -164,7 +172,7 @@ const Register = () => {
                             <Button
                                 variant="contained"
                                 color="warning"
-                                sx={{color: 'white', borderRadius: '10px', fontSize: '12px'}}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
                                 onClick={() => navigate('/login')}
                             >
                                 Se connecter

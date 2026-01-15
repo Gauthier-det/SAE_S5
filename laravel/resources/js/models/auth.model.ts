@@ -1,4 +1,4 @@
-import type { Address } from "./user.model";
+import type { Address } from "./address.model";
 import type { Club } from "./club.model";
 
 export interface Login {
