@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { User } from '../models/user.model';
 import type { Login, Register } from '../models/auth.model';
-import { getUser, isAdmin, isClubManager, isRaceManager, isRaidManager } from '../api/user';
+import { getUser, isAdmin, isRaceManager, isRaidManager } from '../api/user';
 import { apiLogin, apiLogout, apiRegister } from '../api/auth';
 
 interface UserContextType {
@@ -31,22 +31,35 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 
     const updateRoles = async (userData: User) => {
+        // 1. Club Manager (Safe)
+        const clubMgr = !!userData.is_club_manager;
+        setIsClubManagerUser(clubMgr);
+
+        // 2. Raid Manager (Independent)
         try {
-            const clubMgr = await isClubManager(userData.USE_ID);
             const raidMgr = await isRaidManager(userData.USE_ID);
-            const raceMgr = await isRaceManager(userData.USE_ID);
-            const admin = await isAdmin();
-            setIsClubManagerUser(clubMgr);
             setIsRaidManagerUser(raidMgr);
+        } catch (e) {
+            console.error("Failed to check Raid Manager status", e);
+            setIsRaidManagerUser(false);
+        }
+
+        // 3. Race Manager (Independent)
+        try {
+            const raceMgr = await isRaceManager(userData.USE_ID);
             setIsRaceManagerUser(raceMgr);
+        } catch (e) {
+            console.error("Failed to check Race Manager status", e);
+            setIsRaceManagerUser(false);
+        }
+
+        // 4. Admin (Independent)
+        try {
+            const admin = await isAdmin();
             setIsAdminUser(admin);
         } catch (e) {
-            console.error("Failed to fetch roles", e);
-            setIsClubManagerUser(false);
-            setIsRaidManagerUser(false);
-            setIsRaceManagerUser(false);
+            console.error("Failed to check Admin status", e);
             setIsAdminUser(false);
-
         }
     }
 

@@ -18,6 +18,7 @@ export interface User {
     address?: Address;
     club?: Club;
     races?: Race[];
+    is_club_manager?: boolean;
 }
 
 export interface UserResponse {

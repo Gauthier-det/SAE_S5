@@ -4,6 +4,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Navbar from './components/common/Navbar';
 import Profile from './pages/user/Profile';
+import Club from './pages/Club';
 import { UserProvider, useUser } from './contexts/userContext';
 import { AlertProvider } from './contexts/AlertContext';
 import ProtectedRoute from './components/router/ProtectedRoute';
@@ -56,6 +57,7 @@ const AppRoutes = () => {
         </Route>
         {/* Protected Routes for Club Managers */}
         <Route element={<ProtectedRoute condition={isClubManager} />}>
+          <Route path="/club" element={<Club />} />
           <Route path="/raid/create" element={<CreateRaid />} />
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>

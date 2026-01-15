@@ -17,7 +17,14 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request)
     {
-        return $request->user()->load('address')->load('club')->load('races');
+        $user = $request->user()->load(['address', 'club', 'races']);
+        
+        $isClubManager = \App\Models\Club::where('USE_ID', $user->USE_ID)->exists();
+        
+        $userData = $user->toArray();
+        $userData['is_club_manager'] = $isClubManager;
+        
+        return response()->json($userData);
     }
 
     public function getUserById($id)

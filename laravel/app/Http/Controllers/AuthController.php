@@ -43,6 +43,7 @@ class AuthController extends Controller
                 'user_address' => $user->address,
                 'user_club' => $user->club,
                 'user_licence' => $user->USE_LICENCE_NUMBER,
+                'user_is_club_manager' => $user->clubsCreated()->exists(),
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
@@ -96,6 +97,7 @@ class AuthController extends Controller
                 'user_address' => null,
                 'user_club' => null,
                 'user_licence' => null,
+                'user_is_club_manager' => false,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]

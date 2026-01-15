@@ -29,6 +29,7 @@ export interface AuthAPIResponse {
         user_clubs_managed: Club[] | null;
         user_licence: string | null;
         user_pps: string | null;
+        user_is_club_manager: boolean;
         access_token: string;
         token_type: string;
     }

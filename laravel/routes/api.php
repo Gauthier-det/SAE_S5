@@ -58,6 +58,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
 
+    // Club Manager routes
+    Route::get('/clubs/my-club', [ClubController::class, 'getMyClub']);
+    Route::get('/clubs/{clubId}/manager', [ClubController::class, 'getClubForManager'])->whereNumber('clubId');
+    Route::post('/clubs/{clubId}/add-member', [ClubController::class, 'addUserToClub'])->whereNumber('clubId');
+    Route::delete('/clubs/{clubId}/remove-member/{userId}', [ClubController::class, 'removeUserFromClub'])->whereNumber('clubId')->whereNumber('userId');
+
     // Address routes
     Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
     Route::post('/addresses', [AddressController::class, 'createAddress']);

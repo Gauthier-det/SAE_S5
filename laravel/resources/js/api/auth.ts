@@ -25,7 +25,8 @@ export const apiLogin = async (login: Login): Promise<AuthResponse> => {
             USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
             USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
             address: response.data.user_address || undefined,
-            club: response.data.user_club || undefined
+            club: response.data.user_club || undefined,
+            is_club_manager: response.data.user_is_club_manager
         }
     };
 }
@@ -48,7 +49,8 @@ export const apiRegister = async (register: Register): Promise<AuthResponse> => 
             USE_BIRTHDATE: response.data.user_birthdate ?? undefined,
             USE_LICENCE_NUMBER: response.data.user_licence ?? undefined,
             address: response.data.user_address || undefined,
-            club: response.data.user_club || undefined
+            club: response.data.user_club || undefined,
+            is_club_manager: response.data.user_is_club_manager
         }
     };
 }

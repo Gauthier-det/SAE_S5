@@ -176,4 +176,127 @@ class ClubController extends Controller
         $club->delete();
         return response()->json(['message' => 'Club deleted successfully'], 200);
     }
+
+    public function getClubForManager($clubId)
+    {
+        $club = Club::find($clubId);
+        if (!$club) {
+            return response()->json([
+                'message' => 'Club not found',
+            ], 404);
+        }
+
+        // Verify the authenticated user is the club manager
+        if (auth()->user()->CLU_ID !== $club->CLU_ID || auth()->user()->USE_ID !== $club->USE_ID) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only manage your own club.',
+            ], 403);
+        }
+
+        $club->load(['address', 'user', 'users']);
+        return response()->json(['data' => $club], 200);
+    }
+
+    public function getMyClub(Request $request)
+    {
+        $user = $request->user();
+        $club = Club::where('USE_ID', $user->USE_ID)->with(['address', 'user', 'users'])->first();
+
+        if (!$club) {
+            return response()->json([
+                'message' => 'You do not manage any club.',
+            ], 404);
+        }
+
+        return response()->json(['data' => $club], 200);
+    }
+
+    public function addUserToClub(Request $request, $clubId)
+    {
+        $club = Club::find($clubId);
+        if (!$club) {
+            return response()->json([
+                'message' => 'Club not found',
+            ], 404);
+        }
+
+        // Verify the authenticated user is the club manager
+        if (auth()->user()->CLU_ID !== $club->CLU_ID || auth()->user()->USE_ID !== $club->USE_ID) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only manage your own club.',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = User::find($request->input('USE_ID'));
+
+        // Check if user is already in a club
+        if ($user->CLU_ID !== null && $user->CLU_ID !== $club->CLU_ID) {
+            return response()->json([
+                'message' => 'This user is already in another club.',
+            ], 409);
+        }
+
+        // Add user to club
+        $user->CLU_ID = $club->CLU_ID;
+        $user->save();
+
+        return response()->json([
+            'message' => 'User added to club successfully',
+            'data' => $user,
+        ], 200);
+    }
+
+    public function removeUserFromClub($clubId, $userId)
+    {
+        $club = Club::find($clubId);
+        if (!$club) {
+            return response()->json([
+                'message' => 'Club not found',
+            ], 404);
+        }
+
+        // Verify the authenticated user is the club manager
+        if (auth()->user()->CLU_ID !== $club->CLU_ID || auth()->user()->USE_ID !== $club->USE_ID) {
+            return response()->json([
+                'message' => 'Unauthorized. You can only manage your own club.',
+            ], 403);
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Check if user is in this club
+        if ($user->CLU_ID !== $club->CLU_ID) {
+            return response()->json([
+                'message' => 'This user is not in your club.',
+            ], 404);
+        }
+
+        // Cannot remove the club manager
+        if ($user->USE_ID === $club->USE_ID) {
+            return response()->json([
+                'message' => 'You cannot remove the club manager from the club.',
+            ], 403);
+        }
+
+        // Remove user from club
+        $user->CLU_ID = null;
+        $user->save();
+
+        return response()->json([
+            'message' => 'User removed from club successfully',
+        ], 200);
+    }
 }

@@ -31,7 +31,7 @@ const settings = ['Profile', 'Logout'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, isAdmin, logout } = useUser();
+    const { user, isAdmin, isClubManager, logout } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
     console.log("isAdmin", isAdmin);
@@ -105,6 +105,25 @@ function Navbar() {
                                 {page.name}
                             </Button>
                         ))}
+                        {isClubManager && (
+                            <Button
+                                key="Club"
+                                onClick={() => navigate('/club')}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/club' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                MON CLUB
+                            </Button>
+                        )}
                         {isAdmin && (
                             <Button
                                 key="Admin"
@@ -122,6 +141,25 @@ function Navbar() {
                                 }}
                             >
                                 Admin
+                            </Button>
+                        )}
+                        {isClubManager && (
+                            <Button
+                                key="Club"
+                                onClick={() => navigate('/club')}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/club' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                MON CLUB
                             </Button>
                         )}
                     </Box>

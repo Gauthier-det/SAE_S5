@@ -66,3 +66,31 @@ export const deleteClub = async (id: number): Promise<void> => {
         method: 'DELETE'
     });
 }
+
+export const getClubForManager = async (clubId: number): Promise<Club & { users: User[] }> => {
+    const response = await apiClient<{ data: Club & { users: User[] } }>(`/clubs/${clubId}/manager`, {
+        method: 'GET'
+    });
+    return response.data;
+}
+
+export const getMyManagedClub = async (): Promise<Club & { users: User[] }> => {
+    const response = await apiClient<{ data: Club & { users: User[] } }>('/clubs/my-club', {
+        method: 'GET'
+    });
+    return response.data;
+}
+
+export const addUserToClub = async (clubId: number, userId: number): Promise<User> => {
+    const response = await apiClient<{ data: User }>(`/clubs/${clubId}/add-member`, {
+        method: 'POST',
+        body: JSON.stringify({ USE_ID: userId })
+    });
+    return response.data;
+}
+
+export const removeUserFromClub = async (clubId: number, userId: number): Promise<void> => {
+    await apiClient(`/clubs/${clubId}/remove-member/${userId}`, {
+        method: 'DELETE'
+    });
+}
