@@ -16,6 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../../assets/logo-color.png';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import type { Gender } from '../../models/user.model';
 
 const Register = () => {
@@ -35,6 +36,7 @@ const Register = () => {
 
     const [error, setError] = useState('');
     const { register } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +59,9 @@ const Register = () => {
         setError('');
 
         if (formData.password.length < 8) {
-            setError('Le mot de passe doit contenir au moins 8 caractères.');
+            const errorMessage = 'Le mot de passe doit contenir au moins 8 caractères.';
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
             return;
         }
 
@@ -67,16 +71,20 @@ const Register = () => {
         }
 
         try {
-            await register(formData as any); // Cast to any because we know gender is valid now
+            await register(formData as any); 
+            showAlert('Inscription réussie !', 'success');
             navigate('/dashboard');
         } catch (err: any) {
             console.error(err);
+            let errorMessage = "Échec de l'inscription. Vérifiez vos informations.";
             if (err.name === 'ApiError' && err.data && err.data.errors) {
                 const messages = Object.values(err.data.errors).flat().join(' ');
-                setError(messages);
+                errorMessage = messages;
             } else {
-                setError(err.message || "Échec de l'inscription. Vérifiez vos informations.");
+                errorMessage = err.message || errorMessage;
             }
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
         }
     };
 

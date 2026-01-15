@@ -46,6 +46,11 @@ class Race extends Model
         return $this->belongsTo(User::class, 'USE_ID', 'USE_ID');
     }
 
+    public function raid(): BelongsTo
+    {
+        return $this->belongsTo(Raid::class, 'RAI_ID', 'RAI_ID');
+    }
+
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(

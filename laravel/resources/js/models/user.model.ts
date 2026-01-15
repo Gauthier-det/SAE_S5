@@ -1,3 +1,4 @@
+import type { Address } from './address.model';
 import type { Club } from './club.model';
 import type { Race } from './race.model';
 
@@ -13,17 +14,10 @@ export interface User {
     USE_PHONE_NUMBER?: string;
     USE_LICENCE_NUMBER?: string;
     USE_MEMBERSHIP_DATE?: string;
+    CLU_ID?: number;
     address?: Address;
     club?: Club;
     races?: Race[];
-}
-
-export interface Address {
-    ADD_ID: number;
-    ADD_POSTAL_CODE: string;
-    ADD_CITY: string;
-    ADD_STREET_NAME: string;
-    ADD_STREET_NUMBER: string;
 }
 
 export interface UserResponse {

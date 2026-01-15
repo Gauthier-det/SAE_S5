@@ -1,21 +1,8 @@
-export interface RaidClub {
-    CLU_ID: number;
-    CLU_NAME: string;
-}
-
-export interface RaidAddress {
-    ADD_ID: number;
-    ADD_CITY: string;
-    ADD_POSTAL_CODE: number;
-    ADD_STREET_NAME: string;
-    ADD_STREET_NUMBER: string;
-}
+import type { Club } from "./club.model";
+import type { Address, User } from "./user.model";
 
 export interface Raid {
     RAI_ID: number;
-    CLU_ID: number;
-    ADD_ID: number;
-    USE_ID: number;
     RAI_NAME: string;
     RAI_MAIL: string;
     RAI_PHONE_NUMBER: string | null;
@@ -25,8 +12,9 @@ export interface Raid {
     RAI_TIME_END: string;
     RAI_REGISTRATION_START: string;
     RAI_REGISTRATION_END: string;
-    club?: RaidClub;
-    address?: RaidAddress;
+    club: Club;
+    address: Address;
+    user: User;
 }
 
 export interface RaidResponse {

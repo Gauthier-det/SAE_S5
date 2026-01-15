@@ -1,4 +1,5 @@
-import type { Address, Gender } from "./user.model";
+import type { Address } from "./address.model";
+import type { Gender } from "./user.model";
 import type { Club } from "./club.model";
 
 export interface Login {

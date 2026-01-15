@@ -1,7 +1,10 @@
+import type { User } from "./user.model";
+import type { Raid } from "./raid.model";
+
 export interface Race {
     RAC_ID: number;
-    USE_ID: number;
-    RAI_ID: number;
+    user: User;
+    raid: Raid;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
