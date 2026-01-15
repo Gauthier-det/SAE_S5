@@ -144,6 +144,18 @@ class RaidControllerTest extends TestCase
 
         $response = $this->putJson("/api/raids/{$raid->RAI_ID}", [
             'RAI_NAME' => 'Nouveau Nom',
+            'CLU_ID' => $raid->CLU_ID,
+            'ADD_ID' => $raid->ADD_ID,
+            'USE_ID' => $raid->USE_ID,
+            'RAI_MAIL' => 'test@example.com',
+            'RAI_PHONE_NUMBER' => $raid->RAI_PHONE_NUMBER,
+            'RAI_WEB_SITE' => $raid->RAI_WEB_SITE,
+            'RAI_IMAGE' => $raid->RAI_IMAGE,
+            'RAI_TIME_START' => $raid->RAI_TIME_START,
+            'RAI_TIME_END' => $raid->RAI_TIME_END,
+            'RAI_REGISTRATION_START' => $raid->RAI_REGISTRATION_START,
+            'RAI_REGISTRATION_END' => $raid->RAI_REGISTRATION_END,
+            'RAI_NB_RACES' => $raid->RAI_NB_RACES,
         ]);
 
         $response->assertStatus(200)
