@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Race } from '../../models/race.model';
 import { formatDate } from '../../utils/dateUtils';
 import { useUser } from '../../contexts/userContext';
-import { Card, CardContent, Typography, Button, Box, Grid, Stack, Chip, Divider } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Stack, Chip, Divider } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
@@ -26,7 +26,7 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
             onDetailsClick(race.RAC_ID);
         }
     };
-        
+
 
     return (
         <Card

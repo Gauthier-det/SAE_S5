@@ -1,13 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRaceDetails, deleteRace } from '../../api/race';
+import { getRaceDetails, importRaceResults, deleteRaceResults, deleteRace } from '../../api/race';
 import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import dayjs from 'dayjs';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
     TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
-    Tooltip, Stack
+    Tooltip, Stack, CircularProgress
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -27,6 +27,8 @@ import { useUser } from '../../contexts/userContext';
 import { useAlert } from '../../contexts/AlertContext';
 import LockIcon from '@mui/icons-material/Lock';
 import StarIcon from '@mui/icons-material/Star';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { formatDateWithHour } from '../../utils/dateUtils';
 
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
@@ -37,15 +39,37 @@ export default function RaceDetails() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<TeamDetail | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [resultsModalOpen, setResultsModalOpen] = useState(false);
+    const [resultFile, setResultFile] = useState<File | null>(null);
+    const [importing, setImporting] = useState(false);
+    const [importError, setImportError] = useState<string | null>(null);
+    const [importSuccess, setImportSuccess] = useState<string | null>(null);
     const [teamsListOpen, setTeamsListOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (id) {
-            getRaceDetails(parseInt(id)).then(setRace).catch(console.error);
+            setLoading(true);
+            getRaceDetails(parseInt(id))
+                .then(setRace)
+                .catch(console.error)
+                .finally(() => setLoading(false));
         }
     }, [id]);
+
+    const handleDeleteResults = async () => {
+        if (!race) return;
+        try {
+            await deleteRaceResults(race.RAC_ID);
+            setDeleteModalOpen(false);
+            // Refresh details
+            getRaceDetails(race.RAC_ID).then(setRace).catch(console.error);
+        } catch (error) {
+            console.error("Failed to delete results", error);
+        }
+    };
 
     const { myTeams, otherTeams } = useMemo(() => {
         if (!race || !race.teams_list) return { myTeams: [], otherTeams: [] };
@@ -87,6 +111,67 @@ export default function RaceDetails() {
         setModalOpen(false);
         setSelectedTeam(null);
     };
+
+    const handleCloseResultsModal = () => {
+        setResultsModalOpen(false);
+        setResultFile(null);
+        setImportError(null);
+        setImportSuccess(null);
+    };
+
+    const getButton = (race: RaceDetail) => {
+        if (new Date() < new Date(race.RAC_TIME_START)) {
+            return null;
+        }
+        if (race.user.USE_ID === user?.USE_ID) {
+            if (new Date(race.RAC_TIME_START) < new Date() && new Date() < new Date(race.RAC_TIME_END)) {
+                return (
+                    <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => navigate('/')}>
+                        pointer les participants
+                    </Button>
+                );
+            }
+            if (race.has_results) {
+                return (
+                    <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => setDeleteModalOpen(true)}>
+                        supprimer les resultats
+                    </Button>
+                );
+            } else {
+                return (
+                    <Button variant="contained" color="warning" sx={{ borderRadius: 2 }} onClick={() => setResultsModalOpen(true)}>
+                        ajouter les resultats
+                    </Button>
+                );
+            }
+        }
+    };
+
+    const handleImportResults = async () => {
+        if (!race || !resultFile) return;
+        setImporting(true);
+        setImportError(null);
+        setImportSuccess(null);
+
+        try {
+            const result = await importRaceResults(race.RAC_ID, resultFile);
+            setImportSuccess(result.message || 'Résultats importés avec succès');
+            getRaceDetails(race.RAC_ID).then(setRace).catch(console.error);
+        } catch (error: any) {
+            console.error(error);
+            setImportError(error.response?.data?.message || 'Erreur lors de l\'import');
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
 
     const handleDeleteClick = () => {
         setDeleteDialogOpen(true);
@@ -134,7 +219,7 @@ export default function RaceDetails() {
     };
 
     if (!race) {
-        return <Typography>Chargement...</Typography>;
+        return <Typography>Course introuvable</Typography>;
     }
 
     const { stats, formatted_categories } = race;
@@ -229,12 +314,20 @@ export default function RaceDetails() {
                     </Stack>
                 )}
             </Box>
-
+            <Box sx={{ py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Stack direction="column" spacing={2}>
+                    {race.has_results && <Button variant="contained" color="success" sx={{ borderRadius: 2 }} onClick={() => navigate(`/races/${race.RAC_ID}/results`)}>
+                        voir les résultats
+                    </Button>}
+                    {getButton(race)}
+                </Stack>
+            </Box>
             {/* Title & Tags */}
             <Box sx={{ mb: 3 }}>
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                     <Chip label={race.RAC_TYPE} color="success" size="small" />
                     <Chip label={race.RAC_DIFFICULTY} color="success" size="small" variant="outlined" />
+                    {race.user.USE_ID === user?.USE_ID && <Chip label="vous êtes l'organisateur" color="warning" size="small" variant="outlined" />}
                     <Chip label={race.RAC_GENDER || 'Mixte'} color="info" size="small" />
                 </Box>
             </Box>
@@ -271,11 +364,11 @@ export default function RaceDetails() {
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1, borderBottom: '1px solid #eee' }}>
                     <Typography>Début</Typography>
-                    <Typography fontWeight="bold">{new Date(race.RAC_TIME_START).toLocaleString('fr-FR')}</Typography>
+                    <Typography fontWeight="bold">{formatDateWithHour(race.RAC_TIME_START)}</Typography>
                 </Box>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', py: 1 }}>
                     <Typography>Fin</Typography>
-                    <Typography fontWeight="bold">{new Date(race.RAC_TIME_END).toLocaleString('fr-FR')}</Typography>
+                    <Typography fontWeight="bold">{formatDateWithHour(race.RAC_TIME_END)}</Typography>
                 </Box>
             </Paper>
 
@@ -510,6 +603,83 @@ export default function RaceDetails() {
                         </Button>
                     </DialogActions>
                 )}
+            </Dialog>
+
+            {/* Results Import Modal */}
+            <Dialog open={resultsModalOpen} onClose={handleCloseResultsModal} fullWidth maxWidth="sm">
+                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    Importer les résultats
+                    <IconButton onClick={handleCloseResultsModal}>
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent dividers>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', py: 2 }}>
+                        <Typography variant="body2" color="text.secondary" textAlign="center">
+                            Sélectionnez un fichier CSV contenant les colonnes suivantes :<br />
+                            <strong>CLT</strong>, <strong>équipe</strong> (ou equipe), <strong>pts bonus</strong>, <strong>temps</strong>
+                        </Typography>
+
+                        <Button
+                            component="label"
+                            variant="outlined"
+                            startIcon={<CloudUploadIcon />}
+                            sx={{ mt: 1 }}
+                        >
+                            {resultFile ? resultFile.name : "Choisir un fichier"}
+                            <input
+                                type="file"
+                                hidden
+                                accept=".csv,.txt"
+                                onChange={(e) => setResultFile(e.target.files ? e.target.files[0] : null)}
+                            />
+                        </Button>
+
+                        {importError && (
+                            <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                                {importError}
+                            </Typography>
+                        )}
+                        {importSuccess && (
+                            <Typography color="success.main" variant="body2" sx={{ mt: 1 }}>
+                                {importSuccess}
+                            </Typography>
+                        )}
+
+                        <Box sx={{ display: 'flex', gap: 2, mt: 2, width: '100%' }}>
+                            <Button onClick={handleCloseResultsModal} fullWidth color="inherit">
+                                Annuler
+                            </Button>
+                            <Button
+                                onClick={handleImportResults}
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                disabled={!resultFile || importing}
+                            >
+                                {importing ? "Importation..." : "Importer"}
+                            </Button>
+                        </Box>
+                    </Box>
+                </DialogContent>
+            </Dialog>
+
+            {/* Delete Results Confirmation Modal */}
+            <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
+                <DialogTitle>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Êtes-vous sûr de vouloir supprimer tous les résultats de cette course ? Cette action est irréversible.
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'flex-end' }}>
+                        <Button onClick={() => setDeleteModalOpen(false)} color="inherit">
+                            Annuler
+                        </Button>
+                        <Button onClick={handleDeleteResults} variant="contained" color="error" startIcon={<DeleteIcon />}>
+                            Supprimer
+                        </Button>
+                    </Box>
+                </DialogContent>
             </Dialog>
 
             {/* Delete Confirmation Dialog */}

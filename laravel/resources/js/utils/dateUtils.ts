@@ -63,3 +63,11 @@ export const parseDateToTs = (str: string): number => {
     if (Number.isNaN(day) || Number.isNaN(year) || month === undefined) return NaN;
     return new Date(year, month, day).getTime();
 };
+
+export const formatDateWithHour = (dateStr: string): string => {
+    if (!dateStr) return 'N/A';
+    const date = new Date(dateStr);
+    const day = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    const time = date.toLocaleTimeString('fr-FR', { hour: 'numeric', minute: '2-digit' }).replace(':', 'h');
+    return `${day} à ${time}`;
+};

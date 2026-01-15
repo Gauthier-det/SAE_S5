@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider,CircularProgress,Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById, deleteRaid } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -26,13 +26,14 @@ const RaidDetails = () => {
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const { showAlert } = useAlert();
+    const [loading, setLoading] = useState(true);
     const { user, isClubManager, isAdmin } = useUser();
 
     useEffect(() => {
         if (!id) return;
 
         const raidId = parseInt(id);
-
+        setLoading(true);
         Promise.all([
             getRaidById(raidId),
             getListOfRacesByRaidId(raidId)
@@ -41,7 +42,10 @@ const RaidDetails = () => {
             setAllRaces(racesData);
         }).catch(err => {
             console.error(err);
+            setLoading(false);
             showAlert("Impossible de charger les détails du raid", "error");
+        }).finally(() => {
+            setLoading(false);
         });
     }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
@@ -105,6 +109,15 @@ const RaidDetails = () => {
         });
     }, [allRaces, raceType, raceGender, ageRange]);
 
+
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
 
     if (!raid) {
         return (

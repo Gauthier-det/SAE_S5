@@ -57,6 +57,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/races/{raceId}/team-results', [RaceController::class, 'storeTeamRaceResult'])->whereNumber('raceId');
     Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
     Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
+    Route::post('/races/{id}/import-results', [RaceController::class, 'importResults'])->whereNumber('id');
+    Route::delete('/races/{id}/results', [RaceController::class, 'deleteResults'])->whereNumber('id');
     Route::get('/races/{raceId}/teams', [TeamController::class, 'getTeamsByRace'])->whereNumber('raceId');
 
     // Auth User routes
@@ -120,7 +122,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById'])->whereNumber('id');
     Route::post('/users/{id}', [UserController::class, 'createUser'])->whereNumber('id');
-    
+
     // Admin Address routes (Delete/GetAll remain admin only)
     Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
     Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');

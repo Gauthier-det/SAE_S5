@@ -22,7 +22,7 @@ export interface Race {
     CAT_1_PRICE?: number;
     CAT_2_PRICE?: number;
     CAT_3_PRICE?: number;
-    RAC_CHIP_MANDATORY?: boolean;
+    RAC_CHIP_MANDATORY?: number;
 }
 
 export interface RaceResponse {
@@ -49,7 +49,7 @@ export interface RaceCreation {
     CAT_1_PRICE: number;
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
-    RAC_CHIP_MANDATORY?: boolean;
+    RAC_CHIP_MANDATORY?: number;
 }
 
 export interface RaceUpdate {
@@ -72,7 +72,7 @@ export interface RaceUpdate {
     CAT_1_PRICE: number;
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
-    RAC_CHIP_MANDATORY?: boolean;
+    RAC_CHIP_MANDATORY?: number;
 }
 
 
@@ -121,7 +121,10 @@ export interface RaceDetail extends Race {
     stats: RaceStats;
     formatted_categories: FormattedCategory[];
     teams_list: TeamDetail[];
+    has_results: boolean;
 }
+
+export interface RaceResultPage extends RaceDetail { }
 
 export interface RaceDetailResponse {
     data: RaceDetail;

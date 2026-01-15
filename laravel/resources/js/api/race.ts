@@ -34,6 +34,30 @@ export const getRaceById = async (id: number): Promise<Race> => {
     return response.data;
 };
 
+export const importRaceResults = async (raceId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return await apiClient<{ message: string; details: any[] }>(`/races/${raceId}/import-results`, {
+        method: 'POST',
+        body: formData,
+    });
+};
+
+export const deleteRaceResults = async (raceId: number) => {
+    return await apiClient<{ message: string; }>(`/races/${raceId}/results`, {
+        method: 'DELETE',
+    });
+};
+
+export const updateRace = async (raceId: number, race: Partial<RaceCreation>): Promise<Race> => {
+    const response = await apiClient<{ data: Race }>(`/races/${raceId}`, {
+        method: 'PUT',
+        body: JSON.stringify(race)
+    });
+    return response.data;
+}
+
 export const getRaceByIdWithPrice = async (id: number): Promise<Race> => {
     const response = await apiClient<{ data: Race }>(`/races/${id}/with-price`);
     return response.data;

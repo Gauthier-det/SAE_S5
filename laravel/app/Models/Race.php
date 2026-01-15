@@ -60,7 +60,7 @@ class Race extends Model
             'SAN_TEAMS_RACES',
             'RAC_ID',
             'TEA_ID'
-        )->withPivot('TER_TIME', 'TER_IS_VALID', 'TER_RACE_NUMBER');
+        )->withPivot('TER_TIME', 'TER_IS_VALID', 'TER_RACE_NUMBER', 'TER_RANK', 'TER_BONUS_POINTS');
     }
 
     public function categories(): BelongsToMany

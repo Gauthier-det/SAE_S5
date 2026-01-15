@@ -148,16 +148,14 @@ class InitialDatabaseSeeder extends Seeder
         ]);
 
         DB::table('SAN_TEAMS_RACES')->insert([
-            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => '02:45:30', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 101],
-            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => '01:55:00', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 402],
-            ['TEA_ID' => 2, 'RAC_ID' => 2, 'TER_TIME' => '02:50:10', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 102],
-            ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => '02:45:12', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 501],
-            ['TEA_ID' => 1, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 103],
-            ['TEA_ID' => 3, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 502],
-            ['TEA_ID' => 2, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 201],
-            ['TEA_ID' => 4, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 601],
-            ['TEA_ID' => 5, 'RAC_ID' => 5, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 301],
-            ['TEA_ID' => 6, 'RAC_ID' => 5, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 302],
+            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => '02:45:30', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 101, 'TER_RANK' => 2, 'TER_BONUS_POINTS' => 0],
+            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => '01:55:00', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 402, 'TER_RANK' => 1, 'TER_BONUS_POINTS' => 10],
+            ['TEA_ID' => 2, 'RAC_ID' => 2, 'TER_TIME' => '02:50:10', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 102, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
+            ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => '02:45:12', 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 501, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
+            ['TEA_ID' => 1, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 103, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
+            ['TEA_ID' => 3, 'RAC_ID' => 3, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 502, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
+            ['TEA_ID' => 2, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 201, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
+            ['TEA_ID' => 4, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 601, 'TER_RANK' => null, 'TER_BONUS_POINTS' => null],
         ]);
 
         DB::table('SAN_USERS_RACES')->insert([

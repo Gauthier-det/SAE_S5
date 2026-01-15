@@ -12,6 +12,7 @@ import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
+import RaceResults from './pages/races/RaceResults';
 import TeamRegistration from './pages/races/TeamRegistration';
 import TeamRaceManagement from './pages/teams/TeamRaceManagement';
 import CreateRace from './pages/raids/CreateRace';
@@ -45,6 +46,7 @@ const AppRoutes = () => {
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
         <Route path="/races/:id" element={<RaceDetails />} />
+        <Route path="/races/:id/results" element={<RaceResults />} />
 
         {/* non auth Routes */}
         <Route element={<GuestRoute />}>
