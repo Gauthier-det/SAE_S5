@@ -11,7 +11,7 @@ export interface User {
     USE_MAIL: string;
     USE_GENDER: Gender;
     USE_BIRTHDATE?: string;
-    USE_PHONE_NUMBER?: string;
+    USE_PHONE_NUMBER?: number;
     USE_LICENCE_NUMBER?: string;
     USE_MEMBERSHIP_DATE?: string;
     CLU_ID?: number;
@@ -22,4 +22,13 @@ export interface User {
 
 export interface UserResponse {
     data: User;
+}
+
+export interface UserUpdate {
+    USE_NAME?: string;
+    USE_LAST_NAME?: string;
+    USE_BIRTHDATE?: string;
+    USE_PHONE_NUMBER?: number;
+    USE_LICENCE_NUMBER?: string;
+    address?: Address;
 }

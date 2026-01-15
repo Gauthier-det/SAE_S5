@@ -50,6 +50,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Auth User routes
     Route::get('/user', [UserController::class, 'getUserInfo']);
     Route::get('/user/is-admin', [UserController::class, 'checkIsAdmin']);
+    Route::get('/user/stats/{id}', [UserController::class, 'getUserStats'])->whereNumber('id');
+    Route::get('/user/history/{id}', [UserController::class, 'getUserHistory'])->whereNumber('id');
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::put('/users/{id}', [UserController::class, 'updateUser']);

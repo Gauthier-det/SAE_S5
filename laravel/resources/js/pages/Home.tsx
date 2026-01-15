@@ -229,7 +229,7 @@ function Home() {
                 <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3, maxWidth: '1280px', mx: 'auto' }}>
                     <Box
                         component="a"
-                        href="#inscription"
+                        href="#register"
                         sx={{
                             p: 3,
                             borderRadius: '12px',
