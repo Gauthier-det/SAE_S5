@@ -1,19 +1,13 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRaceDetails, importRaceResults, deleteRaceResults } from '../../api/race';
-import { getRaceDetails, deleteRace } from '../../api/race';
+import { getRaceDetails, importRaceResults, deleteRaceResults, deleteRace } from '../../api/race';
 import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import dayjs from 'dayjs';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
-    TextField, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
-    Tooltip,
-    Stack,
-    CircularProgress,
-    DialogActions
     TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
-    Tooltip, Stack
+    Tooltip, Stack, CircularProgress
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -35,7 +29,6 @@ import LockIcon from '@mui/icons-material/Lock';
 import StarIcon from '@mui/icons-material/Star';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { formatDateWithHour } from '../../utils/dateUtils';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
@@ -53,6 +46,7 @@ export default function RaceDetails() {
     const [importSuccess, setImportSuccess] = useState<string | null>(null);
     const [teamsListOpen, setTeamsListOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -131,9 +125,11 @@ export default function RaceDetails() {
         }
         if (race.user.USE_ID === user?.USE_ID) {
             if (new Date(race.RAC_TIME_START) < new Date() && new Date() < new Date(race.RAC_TIME_END)) {
-                <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => navigate('/')}>
-                    pointer les participants
-                </Button>
+                return (
+                    <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => navigate('/')}>
+                        pointer les participants
+                    </Button>
+                );
             }
             if (race.has_results) {
                 return (
@@ -191,6 +187,8 @@ export default function RaceDetails() {
             showAlert("Erreur lors de la suppression de la course", "error");
         }
         setDeleteDialogOpen(false);
+    };
+
     const handleValidateTeam = async (e: React.MouseEvent, teamId: number) => {
         e.stopPropagation();
         if (!race) return;
@@ -319,7 +317,7 @@ export default function RaceDetails() {
             <Box sx={{ py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Stack direction="column" spacing={2}>
                     {race.has_results && <Button variant="contained" color="success" sx={{ borderRadius: 2 }} onClick={() => navigate(`/races/${race.RAC_ID}/results`)}>
-                        voir les resultat
+                        voir les résultats
                     </Button>}
                     {getButton(race)}
                 </Stack>
@@ -682,6 +680,8 @@ export default function RaceDetails() {
                         </Button>
                     </Box>
                 </DialogContent>
+            </Dialog>
+
             {/* Delete Confirmation Dialog */}
             <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
                 <DialogTitle sx={{ fontWeight: 'bold' }}>Confirmer la suppression</DialogTitle>

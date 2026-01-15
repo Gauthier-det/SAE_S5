@@ -5,9 +5,6 @@ import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import GroupsIcon from '@mui/icons-material/Groups';
-import AddIcon from '@mui/icons-material/Add';
-import React from 'react';
-
 export default function Dashboard() {
     const { user, isAuthenticated, isClubManager, isAdmin } = useUser();
     const navigate = useNavigate();

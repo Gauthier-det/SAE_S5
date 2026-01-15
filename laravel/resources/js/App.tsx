@@ -47,7 +47,6 @@ const AppRoutes = () => {
         <Route path="/raids/:id" element={<RaidDetails />} />
         <Route path="/races/:id" element={<RaceDetails />} />
         <Route path="/races/:id/results" element={<RaceResults />} />
-        <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}
         <Route element={<GuestRoute />}>

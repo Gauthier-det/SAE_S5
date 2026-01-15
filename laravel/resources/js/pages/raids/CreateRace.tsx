@@ -86,7 +86,7 @@ const CreateRace = () => {
     CAT_1_PRICE: 0,
     CAT_2_PRICE: 0,
     CAT_3_PRICE: 0,
-    RAC_CHIP_MANDATORY: false
+    RAC_CHIP_MANDATORY: 0
   });
 
   /**
@@ -140,6 +140,11 @@ const CreateRace = () => {
    */
   const validateForm = (data: RaceCreation) => {
     const newErrors: Record<string, string> = {};
+
+    // Validation Name
+    if (!data.RAC_NAME?.trim()) {
+      newErrors.RAC_NAME = "Le nom de la course est requis";
+    }
 
     // Validation Participants
     if (data.RAC_MAX_PARTICIPANTS < data.RAC_MIN_PARTICIPANTS) {
@@ -207,6 +212,7 @@ const CreateRace = () => {
    */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
+    // Check if checks for RAC_NAME
     const numValue = ['RAC_MIN_PARTICIPANTS', 'RAC_MAX_PARTICIPANTS', 'RAC_MIN_TEAMS', 'RAC_MAX_TEAMS', 'RAC_MAX_TEAM_MEMBERS', 'RAC_AGE_MIN', 'RAC_AGE_MIDDLE', 'RAC_AGE_MAX', 'CAT_1_PRICE', 'CAT_2_PRICE', 'CAT_3_PRICE'].includes(name as string)
       ? (value === '' ? 0 : parseFloat(value as string))
       : value;
@@ -271,7 +277,7 @@ const CreateRace = () => {
         ...raceData,
         RAI_ID: parseInt(id || '0'),
         USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 0),
-        RAC_CHIP_MANDATORY: raceData.RAC_CHIP_MANDATORY ? 1 : 0,
+        RAC_CHIP_MANDATORY: raceData.RAC_CHIP_MANDATORY || 0,
       };
       await createRaceWithPrices(racePayload as any);
       await refreshUser();
@@ -408,6 +414,20 @@ const CreateRace = () => {
                 </Select>
               </FormControl>
 
+              {/* Race Name Input */}
+              <TextField
+                fullWidth
+                label="Nom de la course"
+                name="RAC_NAME"
+                variant="standard"
+                value={formData.RAC_NAME}
+                onChange={handleChange}
+                margin="normal"
+                required
+                error={!!errors.RAC_NAME}
+                helperText={errors.RAC_NAME}
+              />
+
               {/* Race Type + Chip Requirement */}
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 1 }}>
                 <Box sx={{ flex: 1 }}>
@@ -434,8 +454,8 @@ const CreateRace = () => {
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={formData.RAC_CHIP_MANDATORY || false}
-                          onChange={(e) => setFormData({ ...formData, RAC_CHIP_MANDATORY: e.target.checked })}
+                          checked={formData.RAC_CHIP_MANDATORY === 1}
+                          onChange={(e) => setFormData({ ...formData, RAC_CHIP_MANDATORY: e.target.checked ? 1 : 0 })}
                           name="RAC_CHIP_MANDATORY"
                         />
                       }

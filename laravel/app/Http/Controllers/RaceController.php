@@ -462,7 +462,7 @@ class RaceController extends Controller
                     'rank' => $team->pivot->TER_RANK,
                     'time' => $team->pivot->TER_TIME,
                     'bonus' => $team->pivot->TER_BONUS_POINTS,
-                ]
+                ],
                 'is_valid' => (bool)$team->pivot->TER_IS_VALID,
             ];
         });

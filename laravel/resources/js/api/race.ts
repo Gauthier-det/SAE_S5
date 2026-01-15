@@ -49,8 +49,15 @@ export const deleteRaceResults = async (raceId: number) => {
         method: 'DELETE',
     });
 };
+
 export const updateRace = async (raceId: number, race: Partial<RaceCreation>): Promise<Race> => {
     const response = await apiClient<{ data: Race }>(`/races/${raceId}`, {
+        method: 'PUT',
+        body: JSON.stringify(race)
+    });
+    return response.data;
+}
+
 export const getRaceByIdWithPrice = async (id: number): Promise<Race> => {
     const response = await apiClient<{ data: Race }>(`/races/${id}/with-price`);
     return response.data;
