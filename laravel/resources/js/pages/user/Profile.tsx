@@ -24,6 +24,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 import { formatDate } from '../../utils/dateUtils';
@@ -46,9 +47,11 @@ const mockHistory = [
 
 const Profile = () => {
     const navigate = useNavigate();
-    const { user, isClubManager, isRaidManager, isRaceManager, isAdmin, refreshUser } = useUser();
+    const { user, isClubManager, isRaidManager, isRaceManager, isAdmin, refreshUser, logout } = useUser();
+    const { showAlert } = useAlert();
     const [isEditMode, setIsEditMode] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [isUpdateConfirmOpen, setIsUpdateConfirmOpen] = useState(false);
     const [formData, setFormData] = useState({
         firstName: user?.USE_NAME || '',
         lastName: user?.USE_LAST_NAME || '',
@@ -124,7 +127,12 @@ const Profile = () => {
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = () => {
+        // Afficher la dialog de confirmation
+        setIsUpdateConfirmOpen(true);
+    };
+
+    const handleUpdateConfirm = async () => {
         if (!user) return;
         try {
             // Mise à jour de l'utilisateur
@@ -155,12 +163,17 @@ const Profile = () => {
                 await updateAddress(user.address.ADD_ID, addressData);
             }
 
+            setIsUpdateConfirmOpen(false);
             setIsEditMode(false);
             // Recharger les données utilisateur depuis l'API
             await refreshUser();
+            // Afficher le message de succès
+            showAlert('Profil mis à jour avec succès', 'success');
             navigate('/profile');
         } catch (error: any) {
             console.error('Erreur lors de la mise à jour:', error);
+            setIsUpdateConfirmOpen(false);
+            showAlert('Erreur lors de la mise à jour du profil', 'error');
             // Affiche les détails de l'erreur si disponibles
             if (error.response?.data?.errors) {
                 console.error('Erreurs de validation:', error.response.data.errors);
@@ -173,11 +186,17 @@ const Profile = () => {
         try {
             await deleteUser(user.USE_ID);
             setIsDeleteConfirmOpen(false);
-            // Rediriger vers la page de login après suppression
-            navigate('/login');
+            // Afficher le message de succès
+            showAlert('Votre compte a été supprimé avec succès', 'success');
+            // Redirection après 2 secondes
+            setTimeout(() => {
+                logout();
+                navigate('/');
+            }, 2000);
         } catch (error) {
             console.error('Erreur lors de la suppression:', error);
             setIsDeleteConfirmOpen(false);
+            showAlert('Erreur lors de la suppression du compte', 'error');
         }
     };
     return (
@@ -552,6 +571,35 @@ const Profile = () => {
                         }}
                     >
                         Enregistrer
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Dialog de confirmation de mise à jour */}
+            <Dialog open={isUpdateConfirmOpen} onClose={() => setIsUpdateConfirmOpen(false)}>
+                <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
+                    Confirmer les modifications
+                </DialogTitle>
+                <DialogContent sx={{ pt: 3 }}>
+                    <Typography variant="body1">
+                        Êtes-vous sûr de vouloir mettre à jour votre profil ?
+                    </Typography>
+                </DialogContent>
+                <DialogActions sx={{ p: 2 }}>
+                    <Button onClick={() => setIsUpdateConfirmOpen(false)} sx={{ color: '#666' }}>
+                        Annuler
+                    </Button>
+                    <Button
+                        onClick={handleUpdateConfirm}
+                        variant="contained"
+                        sx={{
+                            bgcolor: '#ff6d00',
+                            color: 'white',
+                            fontWeight: 'bold',
+                            '&:hover': { bgcolor: '#e65100' }
+                        }}
+                    >
+                        Confirmer
                     </Button>
                 </DialogActions>
             </Dialog>
