@@ -6,6 +6,8 @@ import { formatDate, getRaidStatus, getRegistrationStatus } from '../../utils/da
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ImageIcon from '@mui/icons-material/Image';
+import DirectionsRunIcon from '@mui/icons-material/DirectionsRun';
+import { useUser } from '../../contexts/userContext';
 
 interface RaidCardProps {
     raid: Raid
@@ -15,7 +17,7 @@ interface RaidCardProps {
 function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
-
+    const { user, isRaidManager } = useUser();
     const handleClick = () => {
         navigate(`/raids/${raid.RAI_ID}`);
         if (onDetailsClick) {
@@ -26,12 +28,15 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     const registrationStatus = getRegistrationStatus(raid.RAI_REGISTRATION_START, raid.RAI_REGISTRATION_END);
     const raidStatus = getRaidStatus(raid.RAI_TIME_START, raid.RAI_TIME_END);
 
-    const getStatusColor = (status: string) => {
-        if (status.includes('Ouvert') || status.includes('En cours')) return 'success';
-        if (status.includes('Fermé') || status.includes('Terminé')) return 'error';
+    const getStatusColor = (date: string) => {
+        if (date.includes('Ouvert') || date.includes('En cours')) return 'success';
+        if (date.includes('Fermé') || date.includes('Terminé')) return 'error';
         return 'warning';
     };
-    console.log("image" + raid.RAI_IMAGE)
+
+    console.log("isRaidManager : "+isRaidManager);
+    console.log("user : "+user?.USE_ID);
+    console.log("raid.user : "+raid.user?.USE_ID);
     return (
         <Card
             sx={{
@@ -78,6 +83,14 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
             )}
 
             <CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {raid.user?.USE_ID === user?.USE_ID && <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    <Chip
+                        label="Vous êtes manager de ce raid"
+                        size="small"
+                        color="info"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
+                </Box>}
                 {/* Status Chips */}
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                     <Chip
@@ -133,10 +146,16 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
                         </Typography>
                     </Box>
                 )}
-
-                {/* Dates */}
+                {/* Registration */}
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
                     <CalendarTodayIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
+                    <Typography variant="body2" sx={{ color: '#64748b' }}>
+                        {formatDate(raid.RAI_REGISTRATION_START)} - {formatDate(raid.RAI_REGISTRATION_END)}
+                    </Typography>
+                </Box>
+                {/* Dates */}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 2 }}>
+                    <DirectionsRunIcon sx={{ fontSize: 16, color: '#3b82f6' }} />
                     <Typography variant="body2" sx={{ color: '#64748b' }}>
                         {formatDate(raid.RAI_TIME_START)} - {formatDate(raid.RAI_TIME_END)}
                     </Typography>

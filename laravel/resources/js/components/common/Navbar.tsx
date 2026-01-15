@@ -22,7 +22,7 @@ import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 
 const pages = [
-    { name: 'DASHBOARD', path: '/dashboard' },
+    { name: 'TABLEAU DE BORD', path: '/dashboard' },
     { name: 'LES RAIDS', path: '/raids' },
     { name: 'A PROPOS', path: '/about' },
 ];
@@ -31,10 +31,10 @@ const settings = ['Profile', 'Logout'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, logout } = useUser();
+    const { user, isAdmin, logout } = useUser();
     const navigate = useNavigate();
     const location = useLocation();
-
+    console.log("isAdmin", isAdmin);
     const avatarSvg = useMemo(() => {
         if (!user) return '';
         const avatar = createAvatar(thumbs, {
@@ -105,6 +105,25 @@ function Navbar() {
                                 {page.name}
                             </Button>
                         ))}
+                        {isAdmin && (
+                            <Button
+                                key="Admin"
+                                onClick={() => navigate('/admin')}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/admin' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                Admin
+                            </Button>
+                        )}
                     </Box>
 
                     <Box sx={{ flexGrow: 0 }}>
@@ -118,19 +137,19 @@ function Navbar() {
                                     <Stack direction="row" spacing={2} alignItems="center">
                                         <Box
                                             sx={{
-                                                width: "5vh",
-                                                height: "5vh",
+                                                width: "50px",
+                                                height: "auto",
                                                 mb: 2,
                                                 borderRadius: '50%',
                                                 overflow: 'hidden',
-                                                border: '4px solid #2D5A27',
+                                                border: '2px solid #2D5A27',
                                                 boxShadow: '0 4px 14px 0 rgba(0,0,0,0.1)'
                                             }}
                                         >
                                             <img src={avatarSvg} alt="Avatar" style={{ width: '100%', height: '100%' }} />
                                         </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                            {user.USE_LAST_NAME + ' ' + user.USE_NAME}
+                                            {user.USE_NAME + ' ' + user.USE_LAST_NAME}
                                         </Typography>
                                     </Stack>
                                 </Button>

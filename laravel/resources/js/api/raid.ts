@@ -21,6 +21,6 @@ export const getRaidById = async (id: number): Promise<Raid> => {
 
 export const getListOfRaidManagers = async () => {
     const raidList = await getListOfRaids()
-    const raidManagers = raidList.map((raid) => raid.USE_ID);
+    const raidManagers = raidList.map((raid) => raid.user.USE_ID);
     return raidManagers;
 }

@@ -11,13 +11,13 @@ class RaidController extends Controller
 {
     public function getAllRaids()
     {
-        $raids = Raid::all();
+        $raids = Raid::with(['club', 'address', 'user'])->get();
         return response()->json(['data' => $raids]);
     }
 
     public function getRaidById($id)
     {
-        $raid = Raid::with(['club', 'address'])->find($id);
+        $raid = Raid::with(['club', 'address', 'user'])->find($id);
         if (!$raid) {
             return response()->json([
                 'message' => 'Raid not found',

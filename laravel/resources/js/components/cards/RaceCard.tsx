@@ -1,6 +1,8 @@
-import { Card, CardContent, Typography, Button, Box, Grid, Stack, Chip, Divider } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import type { Race } from '../../models/race.model';
+import { formatDate } from '../../utils/dateUtils';
+import { useUser } from '../../contexts/userContext';
+import { Card, CardContent, Typography, Button, Box, Grid, Stack, Chip, Divider } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
@@ -16,6 +18,7 @@ interface RaceCardProps {
 
 function RaceCard({ race, onDetailsClick }: RaceCardProps) {
     const navigate = useNavigate();
+    const { user } = useUser();
 
     const handleClick = () => {
         navigate(`/races/${race.RAC_ID}`);
@@ -75,6 +78,27 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
             </Box>
 
             <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {race.user.USE_ID === user?.USE_ID && <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    <Chip
+                        label="Vous êtes manager de cette course"
+                        size="small"
+                        color="info"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
+                </Box>}
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    <strong>Début:</strong> {formatDate(race.RAC_TIME_START)}
+                    <br />
+                    <strong>Fin:</strong> {formatDate(race.RAC_TIME_END)}
+                    <br />
+                    <strong>Participants total:</strong> {race.RAC_MIN_PARTICIPANTS} - {race.RAC_MAX_PARTICIPANTS}
+                    <br />
+                    <strong>Équipes:</strong> {race.RAC_MIN_TEAMS} - {race.RAC_MAX_TEAMS} équipes
+                    <br />
+                    <strong>Participants max/équipe:</strong> {race.RAC_MAX_TEAM_MEMBERS}
+                    <br />
+                    <strong>Age:</strong> {race.RAC_AGE_MIN} - {race.RAC_AGE_MAX} ans
+                </Typography>
 
                 {/* Dates */}
                 <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center' }}>

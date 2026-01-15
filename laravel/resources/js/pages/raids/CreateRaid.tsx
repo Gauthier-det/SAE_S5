@@ -23,13 +23,16 @@ import type { RaidCreation } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import { getClubUsers } from '../../api/club';
-import type { User, Address } from '../../models/user.model';
+import type { User } from '../../models/user.model';
 import { createAddress } from '../../api/address';
+import type { AddressCreation } from '../../models/address.model';
 
 const CreateRaid = () => {
     const { user } = useUser();
     const navigate = useNavigate();
+    const { showAlert } = useAlert();
 
     // Form data for Raid
     const [formData, setFormData] = useState<RaidCreation>({
@@ -48,8 +51,7 @@ const CreateRaid = () => {
     });
 
     // Address Form Data
-    const [addressData, setAddressData] = useState<Address>({
-        ADD_ID: 0,
+    const [addressData, setAddressData] = useState<AddressCreation>({
         ADD_STREET_NUMBER: '',
         ADD_STREET_NAME: '',
         ADD_CITY: '',
@@ -78,6 +80,7 @@ const CreateRaid = () => {
                     setClubUsers(users || []);
                 } catch (e) {
                     console.error("Failed to load club info", e);
+                    showAlert("Impossible de charger les informations du club", "error");
                 }
             }
         };
@@ -105,7 +108,7 @@ const CreateRaid = () => {
         try {
             // 1. Create Address
             const createdAddress = await createAddress(addressData);
-            const addId = createdAddress.ADD_ID;
+            const addId = createdAddress;
 
             console.log('Address ID:', addId);
             // Format dates to YYYY-MM-DD HH:mm:ss for Laravel
@@ -138,10 +141,11 @@ const CreateRaid = () => {
             // 3. Create Raid
             await createRaid(raidData);
             setErrors([]);
+            showAlert('Raid créé avec succès', 'success');
             navigate('/raids');
         } catch (error: any) {
             console.error('Error creating raid:', error);
-            // ApiError stores response data in 'data' property, not 'body'
+            showAlert('Erreur lors de la création du raid', 'error');
             const errorData = error.data || error.body;
             if (errorData?.errors) {
                 setFieldErrors(errorData.errors);
