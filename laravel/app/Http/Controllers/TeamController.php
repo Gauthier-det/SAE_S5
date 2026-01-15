@@ -430,4 +430,27 @@ class TeamController extends Controller
 
         return response()->json(['message' => 'Team unvalidated successfully']);
     }
+
+
+    public function getTeamById($id)
+    {
+        $team = Team::find($id);
+        if (!$team) {
+            return response()->json([
+                'message' => 'Team not found',
+            ], 404);
+        }
+        return response()->json(['data' => $team], 200);
+    }
+
+
+    public function getTeamsByRace($raceId)
+    {
+        $teams = Team::whereHas('races', function ($q) use ($raceId) {
+            $q->where('SAN_TEAMS_RACES.RAC_ID', $raceId);
+        })->get();
+
+        return response()->json(['data' => $teams], 200);
+    }
+
 }
