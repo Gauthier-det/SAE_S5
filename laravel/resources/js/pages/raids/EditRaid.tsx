@@ -11,14 +11,18 @@ import {
     Select,
     MenuItem,
     Alert,
-    FormHelperText
+    FormHelperText,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/fr';
 import { useNavigate, useParams } from 'react-router-dom';
-import { updateRaid, getRaidById } from '../../api/raid';
+import { updateRaid, getRaidById, deleteRaid } from '../../api/raid';
 import type { RaidCreation, Raid } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
@@ -28,6 +32,7 @@ import { getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
 import { updateAddress } from '../../api/address';
 import type { AddressCreation } from '../../models/address.model';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const EditRaid = () => {
     const { id } = useParams<{ id: string }>();
@@ -66,6 +71,7 @@ const EditRaid = () => {
     const [errors, setErrors] = useState<string[]>([]);
     const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
     const [loading, setLoading] = useState(true);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // USE_ID in Raid editing is the responsible person selected from club users.
 
@@ -195,6 +201,22 @@ const EditRaid = () => {
                 setErrors([error.message || 'Une erreur est survenue']);
             }
         }
+    };
+
+    const handleDeleteClick = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await deleteRaid(parseInt(id || '0'));
+            showAlert('Raid supprimé avec succès', 'success');
+            navigate('/raids');
+        } catch (error: any) {
+            console.error('Error deleting raid:', error);
+            showAlert('Erreur lors de la suppression du raid', 'error');
+        }
+        setDeleteDialogOpen(false);
     };
 
     if (loading) {
@@ -470,10 +492,12 @@ const EditRaid = () => {
                                     </Box>
                                 </Stack>
 
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 8 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 8 }}>
                                     <Button
-                                        variant="outlined"
-                                        onClick={() => navigate(`/raids/${id}`)}
+                                        variant="contained"
+                                        color="error"
+                                        startIcon={<DeleteIcon />}
+                                        onClick={handleDeleteClick}
                                         sx={{
                                             px: 4,
                                             py: 1.5,
@@ -481,25 +505,39 @@ const EditRaid = () => {
                                             fontWeight: 'bold'
                                         }}
                                     >
-                                        ANNULER
+                                        SUPPRIMER
                                     </Button>
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        color="success"
-                                        sx={{
-                                            px: 6,
-                                            py: 1.5,
-                                            bgcolor: '#1b5e20',
-                                            borderRadius: 1,
-                                            fontWeight: 'bold',
-                                            '&:hover': {
-                                                bgcolor: '#144a19'
-                                            }
-                                        }}
-                                    >
-                                        ENREGISTRER
-                                    </Button>
+                                    <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Button
+                                            variant="outlined"
+                                            onClick={() => navigate(`/raids/${id}`)}
+                                            sx={{
+                                                px: 4,
+                                                py: 1.5,
+                                                borderRadius: 1,
+                                                fontWeight: 'bold'
+                                            }}
+                                        >
+                                            ANNULER
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            color="success"
+                                            sx={{
+                                                px: 6,
+                                                py: 1.5,
+                                                bgcolor: '#1b5e20',
+                                                borderRadius: 1,
+                                                fontWeight: 'bold',
+                                                '&:hover': {
+                                                    bgcolor: '#144a19'
+                                                }
+                                            }}
+                                        >
+                                            ENREGISTRER
+                                        </Button>
+                                    </Box>
                                 </Box>
                             </Grid>
 
@@ -507,6 +545,24 @@ const EditRaid = () => {
                     </LocalizationProvider>
                 </Box>
             </Paper >
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Êtes-vous sûr de vouloir supprimer ce raid ? Cette action est irréversible.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+                        Annuler
+                    </Button>
+                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                        Supprimer
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box >
     );
 };

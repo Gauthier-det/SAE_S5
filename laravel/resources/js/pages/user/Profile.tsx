@@ -23,14 +23,23 @@ import {
 
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import BadgeIcon from '@mui/icons-material/Badge';
+import CakeIcon from '@mui/icons-material/Cake';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CloseIcon from '@mui/icons-material/Close';
 import { useUser } from '../../contexts/userContext';
 import { useAlert } from '../../contexts/AlertContext';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 import { formatDate } from '../../utils/dateUtils';
 import { updateUser, deleteUser, getUserStats, getUserHistory } from '../../api/user';
-import { updateAddress } from '../../api/address';
+import { saveOrUpdateAddress } from '../../api/address';
 import type { UserUpdate } from '../../models/user.model';
+import type { AddressCreation } from '../../models';
 import type { UserStats, UserHistoryItem } from '../../api/user';
 
 const Profile = () => {
@@ -42,16 +51,18 @@ const Profile = () => {
     const [isUpdateConfirmOpen, setIsUpdateConfirmOpen] = useState(false);
     const [stats, setStats] = useState<UserStats | null>(null);
     const [history, setHistory] = useState<UserHistoryItem[]>([]);
+
     const [formData, setFormData] = useState({
         firstName: user?.USE_NAME || '',
         lastName: user?.USE_LAST_NAME || '',
         email: user?.USE_MAIL || '',
-        phone: user?.USE_PHONE_NUMBER || '',
+        phone: (user?.USE_PHONE_NUMBER || '').toString(),
         birthDate: user?.USE_BIRTHDATE || '',
+        licenceNumber: (user?.USE_LICENCE_NUMBER || '').toString(),
         city: user?.address?.ADD_CITY || '',
-        postalCode: user?.address?.ADD_POSTAL_CODE || '',
+        postalCode: (user?.address?.ADD_POSTAL_CODE || '').toString(),
         street: user?.address?.ADD_STREET_NAME || '',
-        streetNumber: user?.address?.ADD_STREET_NUMBER || '',
+        streetNumber: (user?.address?.ADD_STREET_NUMBER || '').toString(),
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -91,12 +102,13 @@ const Profile = () => {
             firstName: user.USE_NAME || '',
             lastName: user.USE_LAST_NAME || '',
             email: user.USE_MAIL || '',
-            phone: user.USE_PHONE_NUMBER || '',
+            phone: (user.USE_PHONE_NUMBER || '').toString(),
             birthDate: user.USE_BIRTHDATE || '',
+            licenceNumber: (user.USE_LICENCE_NUMBER || '').toString(),
             city: user.address?.ADD_CITY || '',
-            postalCode: user.address?.ADD_POSTAL_CODE || '',
+            postalCode: (user.address?.ADD_POSTAL_CODE || '').toString(),
             street: user.address?.ADD_STREET_NAME || '',
-            streetNumber: user.address?.ADD_STREET_NUMBER || '',
+            streetNumber: (user.address?.ADD_STREET_NUMBER || '').toString(),
         });
         setIsEditMode(true);
     };
@@ -144,32 +156,36 @@ const Profile = () => {
     const handleUpdateConfirm = async () => {
         if (!user) return;
         try {
+            // Validation du code postal
+            const postalCode = parseInt(formData.postalCode);
+            if (isNaN(postalCode) || postalCode > 99999) {
+                throw new Error('Code postal invalide: ' + formData.postalCode);
+            }
+
             // Mise à jour de l'utilisateur
             const updateData: UserUpdate = {
                 USE_NAME: formData.firstName,
                 USE_LAST_NAME: formData.lastName,
-                USE_PHONE_NUMBER: formData.phone as number,
-                USE_BIRTHDATE: formData.birthDate,
+                USE_PHONE_NUMBER: formData.phone ? parseInt(formData.phone as string) : undefined,
+                USE_BIRTHDATE: formData.birthDate || undefined,
+                USE_LICENCE_NUMBER: formData.licenceNumber || undefined,
             };
             
             await updateUser(user.USE_ID, updateData);
 
-            // Mise à jour de l'adresse si elle existe
-            if (user.address?.ADD_ID) {
-                const postalCode = parseInt(formData.postalCode);
-                if (isNaN(postalCode) || postalCode > 99999) {
-                    console.error('Code postal invalide:', formData.postalCode);
-                    return;
-                }
-                
-                const addressData = {
-                    ADD_CITY: formData.city,
-                    ADD_POSTAL_CODE: formData.postalCode,
-                    ADD_STREET_NAME: formData.street || undefined,
-                    ADD_STREET_NUMBER: formData.streetNumber || undefined,
-                };
-                console.log('Données adresse à envoyer:', addressData);
-                await updateAddress(user.address.ADD_ID, addressData);
+            // Mise à jour ou création de l'adresse
+            const addressData: AddressCreation = {
+                ADD_CITY: formData.city,
+                ADD_POSTAL_CODE: formData.postalCode,
+                ADD_STREET_NAME: formData.street || '',
+                ADD_STREET_NUMBER: formData.streetNumber || '',
+            };
+            
+            const savedAddress = await saveOrUpdateAddress(user.address?.ADD_ID, addressData);
+            
+            // Si création d'une nouvelle adresse, lier l'utilisateur à l'adresse
+            if (!user.address?.ADD_ID && savedAddress.ADD_ID) {
+                await updateUser(user.USE_ID, { ADD_ID: savedAddress.ADD_ID } as any);
             }
 
             setIsUpdateConfirmOpen(false);
@@ -182,10 +198,18 @@ const Profile = () => {
         } catch (error: any) {
             console.error('Erreur lors de la mise à jour:', error);
             setIsUpdateConfirmOpen(false);
-            showAlert('Erreur lors de la mise à jour du profil', 'error');
+            
             // Affiche les détails de l'erreur si disponibles
-            if (error.response?.data?.errors) {
-                console.error('Erreurs de validation:', error.response.data.errors);
+            if (error?.data?.errors) {
+                console.error('Erreurs de validation:', error.data.errors);
+                const errorMessages = Object.entries(error.data.errors)
+                    .map(([field, msgs]: [string, any]) => `${field}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`)
+                    .join('\n');
+                showAlert(`Erreur de validation:\n${errorMessages}`, 'error');
+            } else if (error?.message) {
+                showAlert(`Erreur: ${error.message}`, 'error');
+            } else {
+                showAlert('Erreur lors de la mise à jour du profil', 'error');
             }
         }
     };
@@ -456,117 +480,222 @@ const Profile = () => {
             </Container>
 
             {/* Dialog de modification */}
-            <Dialog open={isEditMode} onClose={handleEditClose} maxWidth="sm" fullWidth>
-                <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
-                    Modifier mon profil
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
-                    <Stack spacing={3}>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                            <TextField
-                                fullWidth
-                                label="Prénom"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Nom"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                            />
-                        </Stack>
+            <Dialog open={isEditMode} onClose={handleEditClose} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: '20px' } }}>
+                <Box sx={{ background: 'linear-gradient(135deg, #2D5A27 0%, #1b5e20 100%)', p: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EditIcon /> Modifier mon profil
+                    </Typography>
+                    <Button onClick={handleEditClose} sx={{ color: 'white', minWidth: 'auto', p: 0 }}>
+                        <CloseIcon />
+                    </Button>
+                </Box>
+                
+                <DialogContent sx={{ pt: 4, pb: 2 }}>
+                    <Stack spacing={4}>
+                        {/* Informations personnelles */}
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#2D5A27', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <PersonIcon fontSize="small" /> Informations personnelles
+                            </Typography>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Prénom"
+                                    name="firstName"
+                                    value={formData.firstName}
+                                    onChange={handleFormChange}
+                                    variant="outlined"
+                                    InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1, color: '#2D5A27' }} /> }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: '12px',
+                                            '&:hover fieldset': { borderColor: '#ff6d00' }
+                                        }
+                                    }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Nom"
+                                    name="lastName"
+                                    value={formData.lastName}
+                                    onChange={handleFormChange}
+                                    variant="outlined"
+                                    InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1, color: '#2D5A27' }} /> }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: '12px',
+                                            '&:hover fieldset': { borderColor: '#ff6d00' }
+                                        }
+                                    }}
+                                />
+                            </Stack>
+                        </Box>
 
-                        <TextField
-                            fullWidth
-                            label="Email"
-                            name="email"
-                            type="email"
-                            value={formData.email}
-                            onChange={handleFormChange}
-                            variant="outlined"
-                            disabled
-                        />
+                        {/* Coordonnées */}
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#2D5A27', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <PhoneIcon fontSize="small" /> Coordonnées
+                            </Typography>
+                            <Stack spacing={2}>
+                                <TextField
+                                    fullWidth
+                                    label="Email"
+                                    name="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={handleFormChange}
+                                    variant="outlined"
+                                    disabled
+                                    InputProps={{ startAdornment: <EmailIcon sx={{ mr: 1, color: '#999' }} /> }}
+                                    sx={{
+                                        '& .MuiOutlinedInput-root': {
+                                            borderRadius: '12px',
+                                            bgcolor: '#f5f5f5'
+                                        }
+                                    }}
+                                />
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                    <TextField
+                                        fullWidth
+                                        label="Téléphone"
+                                        name="phone"
+                                        value={formData.phone}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        InputProps={{ startAdornment: <PhoneIcon sx={{ mr: 1, color: '#2D5A27' }} /> }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        label="Date de naissance"
+                                        name="birthDate"
+                                        type="date"
+                                        value={formData.birthDate}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        InputLabelProps={{ shrink: true }}
+                                        InputProps={{ startAdornment: <CakeIcon sx={{ mr: 1, color: '#2D5A27' }} /> }}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+                            </Stack>
+                        </Box>
 
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        {/* Données de courses */}
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#2D5A27', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <BadgeIcon fontSize="small" /> Données de courses
+                            </Typography>
                             <TextField
                                 fullWidth
-                                label="Téléphone"
-                                name="phone"
-                                value={formData.phone}
+                                label="Numéro de licence"
+                                name="licenceNumber"
+                                value={formData.licenceNumber}
                                 onChange={handleFormChange}
                                 variant="outlined"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Date de naissance"
-                                name="birthDate"
-                                type="date"
-                                value={formData.birthDate}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                                InputLabelProps={{ shrink: true }}
-                            />
-                        </Stack>
-
-                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mt: 2 }}>
-                            Adresse
-                        </Typography>
-
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                            <TextField
-                                fullWidth
-                                label="Numéro"
-                                name="streetNumber"
-                                value={formData.streetNumber}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Rue"
-                                name="street"
-                                value={formData.street}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                            />
-                        </Stack>
-
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                            <TextField
-                                fullWidth
-                                label="Ville"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                            />
-                            <TextField
-                                fullWidth
-                                label="Code postal"
-                                name="postalCode"
-                                value={formData.postalCode}
-                                onChange={handleFormChange}
-                                variant="outlined"
-                                error={!!errors.postalCode}
-                                helperText={errors.postalCode}
+                                InputProps={{ startAdornment: <BadgeIcon sx={{ mr: 1, color: '#2D5A27' }} /> }}
                                 sx={{
                                     '& .MuiOutlinedInput-root': {
-                                        '&.Mui-error': {
-                                            color: '#d32f2f'
-                                        }
+                                        borderRadius: '12px',
+                                        '&:hover fieldset': { borderColor: '#ff6d00' }
                                     }
                                 }}
                             />
-                        </Stack>
+                        </Box>
+
+                        {/* Adresse */}
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', color: '#2D5A27', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <LocationOnIcon fontSize="small" /> Adresse
+                            </Typography>
+                            <Stack spacing={2}>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                    <TextField
+                                        fullWidth
+                                        label="Numéro"
+                                        name="streetNumber"
+                                        value={formData.streetNumber}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        label="Rue"
+                                        name="street"
+                                        value={formData.street}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                    <TextField
+                                        fullWidth
+                                        label="Ville"
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                    <TextField
+                                        fullWidth
+                                        label="Code postal"
+                                        name="postalCode"
+                                        value={formData.postalCode}
+                                        onChange={handleFormChange}
+                                        variant="outlined"
+                                        error={!!errors.postalCode}
+                                        helperText={errors.postalCode}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                                '&:hover fieldset': { borderColor: '#ff6d00' }
+                                            }
+                                        }}
+                                    />
+                                </Stack>
+                            </Stack>
+                        </Box>
                     </Stack>
                 </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={handleEditClose} sx={{ color: '#666' }}>
+                
+                <DialogActions sx={{ p: 2, gap: 1, background: '#f5f5f5', borderTop: '1px solid #e0e0e0', borderRadius: '0 0 20px 20px' }}>
+                    <Button 
+                        onClick={handleEditClose} 
+                        sx={{ 
+                            color: '#666',
+                            borderRadius: '12px',
+                            '&:hover': { bgcolor: '#e0e0e0' }
+                        }}
+                        startIcon={<CloseIcon />}
+                    >
                         Annuler
                     </Button>
                     <Button
@@ -576,8 +705,10 @@ const Profile = () => {
                             bgcolor: '#ff6d00',
                             color: 'white',
                             fontWeight: 'bold',
+                            borderRadius: '12px',
                             '&:hover': { bgcolor: '#e65100' }
                         }}
+                        startIcon={<CheckCircleIcon />}
                     >
                         Enregistrer
                     </Button>
@@ -585,17 +716,26 @@ const Profile = () => {
             </Dialog>
 
             {/* Dialog de confirmation de mise à jour */}
-            <Dialog open={isUpdateConfirmOpen} onClose={() => setIsUpdateConfirmOpen(false)}>
-                <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
-                    Confirmer les modifications
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
-                    <Typography variant="body1">
-                        Êtes-vous sûr de vouloir mettre à jour votre profil ?
+            <Dialog open={isUpdateConfirmOpen} onClose={() => setIsUpdateConfirmOpen(false)} PaperProps={{ sx: { borderRadius: '20px' } }}>
+                <Box sx={{ background: 'linear-gradient(135deg, #ff6d00 0%, #e65100 100%)', p: 3, borderRadius: '20px 20px 0 0' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <CheckCircleIcon /> Confirmer les modifications
                     </Typography>
+                </Box>
+                <DialogContent sx={{ pt: 4, pb: 2 }}>
+                    <Stack spacing={2}>
+                        <Typography variant="body1">
+                            Êtes-vous sûr de vouloir mettre à jour votre profil ?
+                        </Typography>
+                        <Box sx={{ bgcolor: '#f5f5f5', p: 2, borderRadius: '12px', borderLeft: '4px solid #ff6d00' }}>
+                            <Typography variant="body2" color="textSecondary">
+                                Vos informations personnelles, adresse et données de course seront mises à jour.
+                            </Typography>
+                        </Box>
+                    </Stack>
                 </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setIsUpdateConfirmOpen(false)} sx={{ color: '#666' }}>
+                <DialogActions sx={{ p: 2, gap: 1, background: '#f5f5f5', borderTop: '1px solid #e0e0e0', borderRadius: '0 0 20px 20px' }}>
+                    <Button onClick={() => setIsUpdateConfirmOpen(false)} sx={{ color: '#666', borderRadius: '12px' }} startIcon={<CloseIcon />}>
                         Annuler
                     </Button>
                     <Button
@@ -605,8 +745,10 @@ const Profile = () => {
                             bgcolor: '#ff6d00',
                             color: 'white',
                             fontWeight: 'bold',
+                            borderRadius: '12px',
                             '&:hover': { bgcolor: '#e65100' }
                         }}
+                        startIcon={<CheckCircleIcon />}
                     >
                         Confirmer
                     </Button>
@@ -614,27 +756,38 @@ const Profile = () => {
             </Dialog>
 
             {/* Dialog de confirmation de suppression */}
-            <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)}>
-                <DialogTitle sx={{ fontWeight: 'bold', fontSize: '1.25rem', color: '#d32f2f' }}>
-                    Supprimer mon compte
-                </DialogTitle>
-                <DialogContent sx={{ pt: 3 }}>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.
+            <Dialog open={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} PaperProps={{ sx: { borderRadius: '20px' } }}>
+                <Box sx={{ background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)', p: 3, borderRadius: '20px 20px 0 0' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <DeleteIcon /> Supprimer mon compte
                     </Typography>
-                    <Typography variant="body2" color="error" sx={{ fontWeight: 'bold' }}>
-                        Toutes vos données seront supprimées définitivement.
-                    </Typography>
+                </Box>
+                <DialogContent sx={{ pt: 4, pb: 2 }}>
+                    <Stack spacing={2}>
+                        <Typography variant="body1">
+                            Êtes-vous sûr de vouloir supprimer votre compte ? <strong>Cette action est irréversible.</strong>
+                        </Typography>
+                        <Box sx={{ bgcolor: '#ffebee', p: 2, borderRadius: '12px', borderLeft: '4px solid #d32f2f' }}>
+                            <Typography variant="body2" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
+                                Toutes vos données seront supprimées définitivement, y compris vos courses, statistiques et adresse.
+                            </Typography>
+                        </Box>
+                    </Stack>
                 </DialogContent>
-                <DialogActions sx={{ p: 2 }}>
-                    <Button onClick={() => setIsDeleteConfirmOpen(false)} sx={{ color: '#666' }}>
+                <DialogActions sx={{ p: 2, gap: 1, background: '#f5f5f5', borderTop: '1px solid #e0e0e0', borderRadius: '0 0 20px 20px' }}>
+                    <Button onClick={() => setIsDeleteConfirmOpen(false)} sx={{ color: '#666', borderRadius: '12px' }} startIcon={<CloseIcon />}>
                         Annuler
                     </Button>
                     <Button
                         onClick={handleDeleteConfirm}
                         variant="contained"
                         color="error"
-                        sx={{ fontWeight: 'bold' }}
+                        sx={{ 
+                            fontWeight: 'bold',
+                            borderRadius: '12px',
+                            '&:hover': { bgcolor: '#b71c1c' }
+                        }}
+                        startIcon={<DeleteIcon />}
                     >
                         Supprimer définitivement
                     </Button>
