@@ -26,7 +26,7 @@ const pages = [
     { name: 'LES RAIDS', path: '/raids' },
 ];
 
-const settings = ['Profile', 'Logout'];
+const settings = ['Profil', 'Déconnexion'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -53,9 +53,9 @@ function Navbar() {
     };
 
     const handleMenuClick = (setting: string) => {
-        if (setting === 'Logout') {
+        if (setting === 'Déconnexion') {
             logout();
-        } else if (setting === 'Profile') {
+        } else if (setting === 'Profil') {
             navigate('/profile');
         }
         handleCloseUserMenu();
