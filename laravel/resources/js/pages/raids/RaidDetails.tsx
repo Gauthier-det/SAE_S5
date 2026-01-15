@@ -25,8 +25,8 @@ const RaidDetails = () => {
     const [allRaces, setAllRaces] = useState<Race[]>([]);
     const [loading, setLoading] = useState(true);
     const { showAlert } = useAlert();
-    const { user,isRaidManager } = useUser();
-    
+    const { user, isRaidManager, isAdmin } = useUser();
+    const {showModal} = useAlert();
 
     useEffect(() => {
         if (!id) return;
@@ -240,7 +240,7 @@ const RaidDetails = () => {
                                 <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
                                     {raid.RAI_NAME}
                                 </Typography>
-                                {user && raid && user.USE_ID === raid.user.USE_ID && isRaidManager && (
+                                {user && raid && user.USE_ID === raid.user.USE_ID && (
                                     <Button
                                         variant="contained"
                                         color="success"
@@ -250,6 +250,14 @@ const RaidDetails = () => {
                                         Créer une course
                                     </Button>
                                 )}
+                                {user && (isAdmin || isRaidManager) && <Button
+                                    variant="contained"
+                                    color="warning"
+                                    sx={{ color: 'white', borderRadius: '10px', fontSize: '1rem', mr: 2 }}
+                                >
+                                    SUPPRIMER le RAID
+                                </Button>
+                                }
                             </Box>
 
                             {/* Club and Location Row */}
