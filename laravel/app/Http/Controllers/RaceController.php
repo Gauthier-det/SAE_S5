@@ -282,62 +282,65 @@ class RaceController extends Controller
     }
 
     public function updateRace(Request $request, $id)
-    {
-        $race = Race::with('raid')->find($id);
-        if (!$race) {
-            return response()->json(['message' => 'Race not found'], 404);
-        }
+{
+    $race = Race::with('raid')->find($id);
+    if (!$race) {
+        return response()->json(['message' => 'Race not found'], 404);
+    }
 
-        if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
+    if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
+        return response()->json([
+            'message' => 'Unauthorized. Only the raid Manager can update races.',
+        ], 403);
+    }
+
+    $dataForValidation = array_merge($race->toArray(), $request->all());
+
+    $validator = Validator::make($dataForValidation, [
+        'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
+        'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
+        'RAC_NAME' => 'sometimes|string|max:255',
+        'RAC_TIME_START' => 'sometimes|date_format:Y-m-d H:i:s',
+        'RAC_TIME_END' => 'sometimes|date_format:Y-m-d H:i:s|after_or_equal:RAC_TIME_START',
+        'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
+        'RAC_TYPE' => 'sometimes|string|max:255',
+        'RAC_DIFFICULTY' => 'sometimes|string|max:255',
+        'RAC_MIN_PARTICIPANTS' => 'sometimes|integer|min:0',
+        'RAC_MAX_PARTICIPANTS' => 'sometimes|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
+        'RAC_MIN_TEAMS' => 'sometimes|integer|min:0',
+        'RAC_MAX_TEAMS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAMS',
+        'RAC_MIN_TEAM_MEMBERS' => 'sometimes|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
+        'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
+        'RAC_AGE_MIN' => 'sometimes|integer|min:0|lte:RAC_AGE_MIDDLE',
+        'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
+        'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
+        'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
+        'CAT_1_PRICE' => 'sometimes|numeric|min:0',
+        'CAT_2_PRICE' => 'sometimes|numeric|min:0',
+        'CAT_3_PRICE' => 'sometimes|numeric|min:0',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    if ($request->has('USE_ID')) {
+        $raid = Raid::find($race->RAI_ID);
+        $raceManager = User::find($request->USE_ID);
+        if ($raceManager->CLU_ID !== $raid->CLU_ID) {
             return response()->json([
-                'message' => 'Unauthorized. Only the raid Manager can update races.',
+                'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
             ], 403);
         }
-
-        $dataForValidation = array_merge($race->toArray(), $request->all());
-
-        $validator = Validator::make($dataForValidation, [
-            'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
-            'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
-            'RAC_NAME' => 'sometimes|string|max:255',
-            'RAC_TIME_START' => 'sometimes|date_format:Y-m-d H:i:s',
-            'RAC_TIME_END' => 'sometimes|date_format:Y-m-d H:i:s|after_or_equal:RAC_TIME_START',
-            'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
-            'RAC_TYPE' => 'sometimes|string|max:255',
-            'RAC_DIFFICULTY' => 'sometimes|string|max:255',
-            'RAC_MIN_PARTICIPANTS' => 'sometimes|integer|min:0',
-            'RAC_MAX_PARTICIPANTS' => 'sometimes|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
-            'RAC_MIN_TEAMS' => 'sometimes|integer|min:0',
-            'RAC_MAX_TEAMS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS' => 'sometimes|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
-            'RAC_AGE_MIN' => 'sometimes|integer|min:0|lte:RAC_AGE_MIDDLE',
-            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
-            'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
-            'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
-            'CAT_1_PRICE' => 'sometimes|numeric|min:0',
-            'CAT_2_PRICE' => 'sometimes|numeric|min:0',
-            'CAT_3_PRICE' => 'sometimes|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+        if ($raceManager->USE_LICENCE_NUMBER === null) {
+            return response()->json([
+                'message' => 'Unauthorized. The race manager must have a valid licence number.',
+            ], 403);
         }
+    }
 
-        if ($request->has('USE_ID')) {
-            $raid = Raid::find($race->RAI_ID);
-            $raceManager = User::find($request->USE_ID);
-            if ($raceManager->CLU_ID !== $raid->CLU_ID) {
-                return response()->json([
-                    'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
-                ], 403);
-            }
-            if ($raceManager->USE_LICENCE_NUMBER === null) {
-                return response()->json([
-                    'message' => 'Unauthorized. The race manager must have a valid licence number.',
-                ], 403);
-            }
-        }
+    try {
+        DB::beginTransaction();
 
         $race->update($request->only([
             'USE_ID',
@@ -360,36 +363,36 @@ class RaceController extends Controller
             'RAC_CHIP_MANDATORY',
         ]));
 
-            // Update prices if provided
-            if ($request->has('CAT_1_PRICE') || $request->has('CAT_2_PRICE') || $request->has('CAT_3_PRICE')) {
-                for ($catId = 1; $catId <= 3; $catId++) {
-                    if ($request->has('CAT_' . $catId . '_PRICE')) {
-                        DB::table('SAN_CATEGORIES_RACES')
-                            ->where('RAC_ID', $race->RAC_ID)
-                            ->where('CAT_ID', $catId)
-                            ->update([
-                                'CAR_PRICE' => $request->input('CAT_' . $catId . '_PRICE'),
-                            ]);
-                    }
+        if ($request->has('CAT_1_PRICE') || $request->has('CAT_2_PRICE') || $request->has('CAT_3_PRICE')) {
+            for ($catId = 1; $catId <= 3; $catId++) {
+                if ($request->has('CAT_' . $catId . '_PRICE')) {
+                    DB::table('SAN_CATEGORIES_RACES')
+                        ->where('RAC_ID', $race->RAC_ID)
+                        ->where('CAT_ID', $catId)
+                        ->update([
+                            'CAR_PRICE' => $request->input('CAT_' . $catId . '_PRICE'),
+                        ]);
                 }
             }
-
-            DB::commit();
-
-            $race->load('categories');
-
-            return response()->json(['data' => $race], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Race update error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
-            return response()->json([
-                'message' => 'Error updating race',
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ], 500);
         }
+
+        DB::commit();
+
+        $race->load('categories');
+
+        return response()->json(['data' => $race], 200);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        \Log::error('Race update error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+        return response()->json([
+            'message' => 'Error updating race',
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
     }
+}
+
 
     public function deleteRace($id)
     {

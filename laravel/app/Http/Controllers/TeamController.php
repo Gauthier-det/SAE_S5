@@ -7,6 +7,7 @@ use App\Models\Team;
 use App\Models\Race;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class TeamController extends Controller
 {
@@ -38,68 +39,108 @@ class TeamController extends Controller
         ]], 201);
     }
 
-    public function addMember(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|integer|exists:SAN_USERS,USE_ID',
-            'team_id' => 'required|integer|exists:SAN_TEAMS,TEA_ID',
-            'race_id' => 'required|integer|exists:SAN_RACES,RAC_ID',
-        ]);
+public function addMember(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'user_id' => 'required|integer|exists:SAN_USERS,USE_ID',
+        'team_id' => 'required|integer|exists:SAN_TEAMS,TEA_ID',
+        'race_id' => 'required|integer|exists:SAN_RACES,RAC_ID',
+    ]);
 
-        // Check if user can access this team (owner check)
-        $team = Team::findOrFail($request->team_id);
-        if ($team->USE_ID !== auth()->id()) {
-            return response()->json(['message' => 'Unauthorized - you did not create this team'], 403);
-        }
-
-        // Prevent duplicate membership
-        $exists = DB::table('SAN_USERS_TEAMS')
-            ->where('USE_ID', $request->user_id)
-            ->where('TEA_ID', $request->team_id)
-            ->exists();
-
-        if ($exists) {
-            return response()->json(['message' => 'User is already part of the team'], 409);
-        }
-
-        // Check for race time conflicts
-        $race = Race::findOrFail($request->race_id);
-        $conflictingRace = DB::table('SAN_USERS_RACES')
-            ->join('SAN_RACES', 'SAN_USERS_RACES.RAC_ID', '=', 'SAN_RACES.RAC_ID')
-            ->where('SAN_USERS_RACES.USE_ID', $request->user_id)
-            ->where(function ($query) use ($race) {
-                $query->where(function ($q) use ($race) {
-                    $q->where('SAN_RACES.RAC_TIME_START', '<', $race->RAC_TIME_END)
-                      ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
-                });
-            })
-            ->exists();
-
-        if ($conflictingRace) {
-            return response()->json(['message' => 'User already registered for a race with overlapping time'], 409);
-        }
-
-        // Add user to team
-        DB::table('SAN_USERS_TEAMS')->insert([
-            'USE_ID' => $request->user_id,
-            'TEA_ID' => $request->team_id,
-        ]);
-
-        // Add user to race with empty chip and time
-        DB::table('SAN_USERS_RACES')->insert([
-            'USE_ID' => $request->user_id,
-            'RAC_ID' => $request->race_id,
-            'USR_CHIP_NUMBER' => null,
-            'USR_TIME' => null,
-        ]);
-
-        return response()->json(['data' => [
-            'team_id' => $request->team_id,
-            'user_id' => $request->user_id,
-            'race_id' => $request->race_id,
-            'message' => 'User added to team and race successfully',
-        ]], 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
+
+    $team = Team::findOrFail($request->team_id);
+    if ($team->USE_ID !== auth()->id()) {
+        return response()->json(['message' => 'Unauthorized - you did not create this team'], 403);
+    }
+
+    $race = Race::findOrFail($request->race_id);
+    $user = User::findOrFail($request->user_id);
+
+    // Check if user is old enough for the race
+    if ($user->USE_BIRTHDATE) {
+        $birthDate = \Carbon\Carbon::parse($user->USE_BIRTHDATE);
+        $age = $birthDate->age;
+        if ($age < $race->RAC_AGE_MIN) {
+            return response()->json([
+                'message' => "User is too young for this race. Minimum age required: {$race->RAC_AGE_MIN}, user age: {$age}"
+            ], 422);
+        }
+    }
+
+    // Check for race time conflicts
+    $conflictingRace = DB::table('SAN_USERS_RACES')
+        ->join('SAN_RACES', 'SAN_USERS_RACES.RAC_ID', '=', 'SAN_RACES.RAC_ID')
+        ->where('SAN_USERS_RACES.USE_ID', $request->user_id)
+        ->where('SAN_RACES.RAC_ID', '!=', $request->race_id) 
+        ->where(function ($query) use ($race) {
+            $query->where('SAN_RACES.RAC_TIME_START', '<', $race->RAC_TIME_END)
+                  ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
+        })
+        ->exists();
+
+    if ($conflictingRace) {
+        return response()->json(['message' => 'User already registered for a race with overlapping time'], 409);
+    }
+
+    // Check if user is already part of the team
+    $exists = DB::table('SAN_USERS_TEAMS')
+        ->where('USE_ID', $request->user_id)
+        ->where('TEA_ID', $request->team_id)
+        ->exists();
+
+    if ($exists) {
+        return response()->json(['message' => 'User is already part of the team'], 409);
+    }
+
+    // Check if team is registered for this race, if not, register it
+    $teamRaceExists = DB::table('SAN_TEAMS_RACES')
+        ->where('TEA_ID', $request->team_id)
+        ->where('RAC_ID', $request->race_id)
+        ->exists();
+
+    if (!$teamRaceExists) {
+        // Get the next race number for this race
+        $maxRaceNumber = DB::table('SAN_TEAMS_RACES')
+            ->where('RAC_ID', $request->race_id)
+            ->max('TER_RACE_NUMBER') ?? 0;
+
+        // Register team to race
+        DB::table('SAN_TEAMS_RACES')->insert([
+            'TEA_ID' => $request->team_id,
+            'RAC_ID' => $request->race_id,
+            'TER_TIME' => null,
+            'TER_POINTS' => null,
+            'TER_IS_VALID' => 0,
+            'TER_RACE_NUMBER' => $maxRaceNumber + 1,
+        ]);
+    }
+
+    // Add user to team
+    DB::table('SAN_USERS_TEAMS')->insert([
+        'USE_ID' => $request->user_id,
+        'TEA_ID' => $request->team_id,
+    ]);
+
+    // Add user to race
+    DB::table('SAN_USERS_RACES')->insert([
+        'USE_ID' => $request->user_id,
+        'RAC_ID' => $request->race_id,
+        'USR_CHIP_NUMBER' => null,
+        'USR_TIME' => null,
+        'USR_PPS_FORM' => null,
+    ]);
+
+    return response()->json(['data' => [
+        'team_id' => $request->team_id,
+        'user_id' => $request->user_id,
+        'race_id' => $request->race_id,
+        'message' => 'User added to team and race successfully',
+    ]], 201);
+}
+
 
     /**
      * Get users for a specific race with availability status
@@ -370,14 +411,14 @@ class TeamController extends Controller
         $isCompetitive = stripos($race->RAC_TYPE, 'Compétition') !== false || stripos($race->RAC_TYPE, 'Competitif') !== false; // Adjust check based on exact string
 
         // Get all members
-         $members = DB::table('SAN_USERS_TEAMS')
+        $members = DB::table('SAN_USERS_TEAMS')
             ->join('SAN_USERS', 'SAN_USERS_TEAMS.USE_ID', '=', 'SAN_USERS.USE_ID')
             ->join('SAN_USERS_RACES', function($join) use ($request) {
                 $join->on('SAN_USERS.USE_ID', '=', 'SAN_USERS_RACES.USE_ID')
-                     ->where('SAN_USERS_RACES.RAC_ID', '=', $request->race_id);
+                    ->where('SAN_USERS_RACES.RAC_ID', '=', $request->race_id);
             })
             ->where('SAN_USERS_TEAMS.TEA_ID', $request->team_id)
-            ->select('SAN_USERS.*', 'SAN_USERS_RACES.USR_CHIP_NUMBER', 'SAN_USERS_RACES.USR_PPS_FORM' ?? null) // Handle PPS if column exists
+            ->select('SAN_USERS.*', 'SAN_USERS_RACES.USR_CHIP_NUMBER', 'SAN_USERS_RACES.USR_PPS_FORM')
             ->get();
 
         foreach ($members as $member) {
@@ -395,15 +436,6 @@ class TeamController extends Controller
                 return response()->json(['message' => "Member {$member->USE_NAME} {$member->USE_LAST_NAME} needs a chip number for competitive race"], 422);
             }
         }
-
-        // Generate Team Race Number
-        // "Genere un dossart (race_number) dans team races unique de la team pour la course."
-        // We already did race number on registration ($max + 1). Should we just confirm it or regenerate?
-        // The prompt says "Genere un dossart... unique...".
-        // In registerTeamToRace we effectively reserved one. Let's keep that or finalize it here.
-        // If we strictly follow "Genere un dossart... si tous est ok ... alors le responsable d'équipe peut valider",
-        // maybe we only assign it now? But registerTeamToRace assigned one.
-        // Let's assume validation just sets the boolean flag and confirms the number exists.
 
         DB::table('SAN_TEAMS_RACES')
             ->where('TEA_ID', $request->team_id)
@@ -432,8 +464,7 @@ class TeamController extends Controller
         }
 
         // Check if race has started
-        $raceStart = \Carbon\Carbon::parse($race->RAC_DATE . ' ' . ($race->RAC_TIME_START ?? '00:00:00'));
-        
+        $raceStart = \Carbon\Carbon::parse($race->RAC_TIME_START);
         if (now()->greaterThanOrEqualTo($raceStart)) {
             return response()->json(['message' => 'Impossible de dévalider l\'équipe après le début de la course'], 422);
         }

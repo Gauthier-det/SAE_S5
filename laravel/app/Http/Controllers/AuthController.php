@@ -86,9 +86,7 @@ class AuthController extends Controller
             'USE_PASSWORD' => $request->password,
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
-            'USE_GENDER' => $request->gender,
-            'USE_VALIDITY' => \Carbon\Carbon::now()->addYear(),
-            'USE_MEMBERSHIP_DATE' => \Carbon\Carbon::now(),
+            'USE_GENDER' => $request->gender
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
