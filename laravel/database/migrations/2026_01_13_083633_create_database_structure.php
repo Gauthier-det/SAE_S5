@@ -39,16 +39,15 @@ return new class extends Migration
             $table->string('USE_PASSWORD', 255);
             $table->string('USE_NAME', 255);
             $table->string('USE_LAST_NAME', 255);
-            $table->string('USE_GENDER', 16); 
+            $table->string('USE_GENDER', 16);
             $table->date('USE_BIRTHDATE')->nullable();
             $table->string('USE_PHONE_NUMBER', 255)->nullable();
             $table->integer('USE_LICENCE_NUMBER')->nullable();
             $table->date('USE_MEMBERSHIP_DATE')->nullable();
             $table->date('USE_VALIDITY')->nullable();
 
-            $table->index('ADD_ID', 'I_FK_SAN_USERS_SAN_ADDRESSES');
             $table->index('CLU_ID', 'I_FK_SAN_USERS_SAN_CLUBS');
-            
+
             // SET NULL because address is optional
             $table->foreign('ADD_ID')->references('ADD_ID')->on('SAN_ADDRESSES')->onDelete('set null');
         });
@@ -63,7 +62,7 @@ return new class extends Migration
 
             $table->index('USE_ID', 'I_FK_SAN_CLUBS_SAN_USERS');
             $table->index('ADD_ID', 'I_FK_SAN_CLUBS_SAN_ADDRESSES');
-            
+
             // CASCADE: if the manager user is deleted, delete the club
             $table->foreign('USE_ID')->references('USE_ID')->on('SAN_USERS')->onDelete('cascade');
             // RESTRICT: prevent deletion of address used by a club
@@ -108,7 +107,7 @@ return new class extends Migration
             $table->index('CLU_ID', 'I_FK_SAN_RAIDS_SAN_CLUBS');
             $table->index('ADD_ID', 'I_FK_SAN_RAIDS_SAN_ADDRESSES');
             $table->index('USE_ID', 'I_FK_SAN_RAIDS_SAN_USERS');
-            
+
             // CASCADE: if the club is deleted, delete its raids
             $table->foreign('CLU_ID')->references('CLU_ID')->on('SAN_CLUBS')->onDelete('cascade');
             // RESTRICT: prevent deletion of address in use
@@ -141,7 +140,7 @@ return new class extends Migration
 
             $table->index('USE_ID', 'I_FK_SAN_RACES_SAN_USERS');
             $table->index('RAI_ID', 'I_FK_SAN_RACES_SAN_RAIDS');
-            
+
             // CASCADE: if the creator is deleted, delete the race
             $table->foreign('USE_ID')->references('USE_ID')->on('SAN_USERS')->onDelete('cascade');
             // CASCADE: if the raid is deleted, delete its races
@@ -156,7 +155,7 @@ return new class extends Migration
 
             $table->index('USE_ID', 'I_FK_SAN_USERS_TEAMS_SAN_USERS');
             $table->index('TEA_ID', 'I_FK_SAN_USERS_TEAMS_SAN_TEAMS');
-            
+
             // CASCADE: if user is deleted, remove team memberships
             $table->foreign('USE_ID')->references('USE_ID')->on('SAN_USERS')->onDelete('cascade');
             // CASCADE: if team is deleted, remove all members
@@ -175,7 +174,7 @@ return new class extends Migration
 
             $table->index('TEA_ID', 'I_FK_SAN_TEAMS_RACES_SAN_TEAMS');
             $table->index('RAC_ID', 'I_FK_SAN_TEAMS_RACES_SAN_RACES');
-            
+
             // CASCADE: if team is deleted, remove registrations
             $table->foreign('TEA_ID')->references('TEA_ID')->on('SAN_TEAMS')->onDelete('cascade');
             // CASCADE: if race is deleted, remove all registrations
@@ -190,7 +189,7 @@ return new class extends Migration
 
             $table->index('USE_ID', 'I_FK_SAN_ROLES_USERS_SAN_USERS');
             $table->index('ROL_ID', 'I_FK_SAN_ROLES_USERS_SAN_ROLES');
-            
+
             // CASCADE: if user is deleted, remove their roles
             $table->foreign('USE_ID')->references('USE_ID')->on('SAN_USERS')->onDelete('cascade');
             // CASCADE: if role is deleted, remove all users with that role
@@ -206,7 +205,7 @@ return new class extends Migration
 
             $table->index('RAC_ID', 'I_FK_SAN_CATEGORIES_RACES_SAN_RACES');
             $table->index('CAT_ID', 'I_FK_SAN_CATEGORIES_RACES_SAN_CATEGORIES');
-            
+
             // CASCADE: if race is deleted, remove category prices
             $table->foreign('RAC_ID')->references('RAC_ID')->on('SAN_RACES')->onDelete('cascade');
             // CASCADE: if category is deleted, remove all prices
@@ -221,10 +220,10 @@ return new class extends Migration
             $table->integer('USR_CHIP_NUMBER')->nullable();
             $table->string('USR_PPS_FORM', 255)->nullable();
             $table->primary(['USE_ID', 'RAC_ID']);
-            
+
             $table->index('USE_ID', 'I_FK_SAN_USERS_RACES_SAN_USERS');
             $table->index('RAC_ID', 'I_FK_SAN_USERS_RACES_SAN_RACES');
-            
+
             // CASCADE: if user is deleted, remove their registrations
             $table->foreign('USE_ID')->references('USE_ID')->on('SAN_USERS')->onDelete('cascade');
             // CASCADE: if race is deleted, remove all registrations

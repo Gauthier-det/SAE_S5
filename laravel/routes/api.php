@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
+use App\Models\User;
 
 
 // Authentication routes
@@ -45,7 +47,44 @@ Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('
 Route::get('/clubs/{clubId}/users', [UserController::class, 'getUsersByClub'])->whereNumber('clubId');
 Route::get('/users/free', [UserController::class, 'getFreeRunners']);
 
+
+
+//mail
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    // Find user by custom ID
+    $user = User::findOrFail($id);
+
+    // Verify hash matches email
+    if (hash('sha1', $user->USE_MAIL) !== $hash) {
+        return response()->json(['error' => 'Lien invalide'], 400);
+    }
+
+    // Mark as verified
+    $user->USE_VALIDITY = now();
+    $user->save();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Email vérifié avec succès !',
+        'user_id' => $user->USE_ID
+    ]);
+})->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+
+// Resend (also outside - needs auth:sanctum but after verify route)
+Route::post('/email/verification-notification', function (Request $request) {
+    $request->user()->sendEmailVerificationNotification();
+    return response()->json(['message' => 'Lien de vérification envoyé !']);
+})->middleware(['auth:sanctum', 'throttle:6,1'])->name('verification.send');
+
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Notice page (web browser)
+    Route::get('/email/verify', function () {
+        return inertia('Auth/Verify')
+        ->with('status', session('status'));
+    })->name('verification.notice');
+
+
     // Auth Raid routes
     Route::post('/raids', [RaidController::class, 'createRaid']);
     Route::put('/raids/{id}', [RaidController::class, 'updateRaid'])->whereNumber('id');
@@ -77,7 +116,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
     Route::get('/races/{raceId}/available-users', [TeamController::class, 'getAvailableUsersForRace'])->whereNumber('raceId');
     Route::post('/teams/{teamId}/register-race', [TeamController::class, 'registerTeamToRace']);
-    
+
     // Team Management
     Route::get('/teams/{teamId}/races/{raceId}', [TeamController::class, 'getTeamRaceDetails']);
     Route::post('/teams/member/remove', [TeamController::class, 'removeMember']);
@@ -92,11 +131,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/addresses', [AddressController::class, 'createAddress']);
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
-    
+
     // Club Member Management
     Route::post('/clubs/{id}/members/add', [ClubController::class, 'addMember'])->whereNumber('id');
     Route::post('/clubs/{id}/members/remove', [ClubController::class, 'removeMember'])->whereNumber('id');
 });
+
+
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Admin Role routes
@@ -111,7 +152,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/clubs/with-address', [ClubController::class, 'createClubWithAddress']);
     Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
-    
+
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
 
     // Admin Addresse routes
