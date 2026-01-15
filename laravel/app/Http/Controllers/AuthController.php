@@ -48,8 +48,8 @@ class AuthController extends Controller
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
                 'user_licence' => $user->USE_LICENCE_NUMBER ? $user->USE_LICENCE_NUMBER : null,
-                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : null,
-                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : null,
+                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : now()->format('Y-m-d'),
+                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : now()->format('Y-m-d'),
                 'user_address' => $user->address,
                 'user_club' => $user->club,
                 'access_token' => $token,
@@ -90,6 +90,8 @@ class AuthController extends Controller
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
             'USE_GENDER' => $request->gender,
+            'USE_MEMBERSHIP_DATE' => now(),
+            'USE_VALIDITY' => now(),
         ]);
 
         $verificationUrl = URL::temporarySignedRoute(
@@ -102,7 +104,7 @@ class AuthController extends Controller
         );
 
         // send verification email
-        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function($message) use ($user) {
+        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function ($message) use ($user) {
             $message->to($user->USE_MAIL)
                 ->subject('Vérification de votre adresse e-mail');
         });
@@ -119,8 +121,8 @@ class AuthController extends Controller
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
                 'user_licence' => null,
-                'user_membership_date' => null,
-                'user_validity' => null,
+                'user_membership_date' => now()->format('Y-m-d'),
+                'user_validity' => now()->format('Y-m-d'),
                 'user_address' => null,
                 'user_club' => null,
                 'access_token' => $token,

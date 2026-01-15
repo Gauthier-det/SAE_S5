@@ -70,13 +70,24 @@ class TeamController extends Controller
             ->where(function ($query) use ($race) {
                 $query->where(function ($q) use ($race) {
                     $q->where('SAN_RACES.RAC_TIME_START', '<', $race->RAC_TIME_END)
-                      ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
+                        ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
                 });
             })
             ->exists();
 
         if ($conflictingRace) {
             return response()->json(['message' => 'User already registered for a race with overlapping time'], 409);
+        }
+
+        // Check user age against race requirements
+        $user = User::findOrFail($request->user_id);
+        if ($user->USE_BIRTHDATE) {
+            $userAge = \Carbon\Carbon::parse($user->USE_BIRTHDATE)->age;
+            if ($userAge < $race->RAC_AGE_MIN) {
+                return response()->json([
+                    'message' => "L'utilisateur n'a pas l'âge requis (min: {$race->RAC_AGE_MIN} ans, âge: {$userAge} ans)"
+                ], 422);
+            }
         }
 
         // Add user to team
@@ -117,7 +128,7 @@ class TeamController extends Controller
             ->join('SAN_RACES', 'SAN_USERS_RACES.RAC_ID', '=', 'SAN_RACES.RAC_ID')
             ->where(function ($query) use ($race) {
                 $query->where('SAN_RACES.RAC_TIME_START', '<', $race->RAC_TIME_END)
-                      ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
+                    ->where('SAN_RACES.RAC_TIME_END', '>', $race->RAC_TIME_START);
             })
             ->pluck('SAN_USERS_RACES.USE_ID')
             ->toArray();
@@ -139,27 +150,38 @@ class TeamController extends Controller
         $unavailableByTeam = array_unique(array_merge($unavailableByTeam, $teamOwners));
 
         // Build query for users matching gender
-        $query = User::select('USE_ID', 'USE_NAME', 'USE_LAST_NAME', 'USE_MAIL', 'USE_GENDER');
+        $query = User::select('USE_ID', 'USE_NAME', 'USE_LAST_NAME', 'USE_MAIL', 'USE_GENDER', 'USE_BIRTHDATE');
 
         // Filter by gender if race is not mixed
         if ($race->RAC_GENDER && $race->RAC_GENDER !== 'Mixte') {
             $query->where('USE_GENDER', $race->RAC_GENDER);
         }
 
-        $users = $query->get()->map(function ($user) use ($unavailableByRaceTime, $unavailableByTeam) {
+        $users = $query->get()->map(function ($user) use ($unavailableByRaceTime, $unavailableByTeam, $race) {
             $inTeamForRace = in_array($user->USE_ID, $unavailableByTeam);
             $hasOverlappingRace = in_array($user->USE_ID, $unavailableByRaceTime);
-            
+
+            // Check age eligibility
+            $invalidAge = false;
+            $userAge = null;
+            if ($user->USE_BIRTHDATE) {
+                $userAge = \Carbon\Carbon::parse($user->USE_BIRTHDATE)->age;
+                // Check only Min age. Max age is used for Team composition rules (C threshold), not individual exclusion.
+                $invalidAge = ($userAge < $race->RAC_AGE_MIN);
+            }
+
             return [
                 'USE_ID' => $user->USE_ID,
                 'USE_NAME' => $user->USE_NAME,
                 'USE_LAST_NAME' => $user->USE_LAST_NAME,
                 'USE_MAIL' => $user->USE_MAIL,
                 'USE_GENDER' => $user->USE_GENDER,
+                'user_age' => $userAge,
                 'is_self' => $user->USE_ID === auth()->id(),
                 'already_in_team' => $inTeamForRace,
                 'has_overlapping_race' => $hasOverlappingRace,
-                'is_available' => !$inTeamForRace && !$hasOverlappingRace,
+                'invalid_age' => $invalidAge,
+                'is_available' => !$inTeamForRace && !$hasOverlappingRace && !$invalidAge,
             ];
         });
 
@@ -180,7 +202,7 @@ class TeamController extends Controller
 
         // Check registration deadline
         if ($raid && $raid->RAI_REGISTRATION_END && now()->greaterThan($raid->RAI_REGISTRATION_END)) {
-             return response()->json(['message' => 'Les inscriptions pour ce raid sont closes.'], 422);
+            return response()->json(['message' => 'Les inscriptions pour ce raid sont closes.'], 422);
         }
 
         $team = Team::find($teamId);
@@ -237,7 +259,7 @@ class TeamController extends Controller
         }
 
         $race = Race::findOrFail($raceId);
-        
+
         $teamRace = DB::table('SAN_TEAMS_RACES')
             ->where('TEA_ID', $teamId)
             ->where('RAC_ID', $raceId)
@@ -249,15 +271,15 @@ class TeamController extends Controller
 
         $members = DB::table('SAN_USERS_TEAMS')
             ->join('SAN_USERS', 'SAN_USERS_TEAMS.USE_ID', '=', 'SAN_USERS.USE_ID')
-            ->join('SAN_USERS_RACES', function($join) use ($raceId) {
+            ->join('SAN_USERS_RACES', function ($join) use ($raceId) {
                 $join->on('SAN_USERS.USE_ID', '=', 'SAN_USERS_RACES.USE_ID')
-                     ->where('SAN_USERS_RACES.RAC_ID', '=', $raceId);
+                    ->where('SAN_USERS_RACES.RAC_ID', '=', $raceId);
             })
             ->where('SAN_USERS_TEAMS.TEA_ID', $teamId)
             ->select(
-                'SAN_USERS.USE_ID', 
-                'SAN_USERS.USE_NAME', 
-                'SAN_USERS.USE_LAST_NAME', 
+                'SAN_USERS.USE_ID',
+                'SAN_USERS.USE_NAME',
+                'SAN_USERS.USE_LAST_NAME',
                 'SAN_USERS.USE_MAIL',
                 'SAN_USERS.USE_LICENCE_NUMBER',
                 'SAN_USERS_RACES.USR_CHIP_NUMBER',
@@ -269,7 +291,7 @@ class TeamController extends Controller
             'team' => [
                 'id' => $team->TEA_ID,
                 'name' => $team->TEA_NAME,
-                'is_valid' => (bool)$teamRace->TER_IS_VALID,
+                'is_valid' => (bool) $teamRace->TER_IS_VALID,
                 'race_number' => $teamRace->TER_RACE_NUMBER,
             ],
             'race' => [
@@ -310,7 +332,7 @@ class TeamController extends Controller
             ->where('RAC_ID', $request->race_id)
             ->where('USE_ID', $request->user_id)
             ->delete();
-            
+
         return response()->json(['message' => 'Member removed successfully']);
     }
 
@@ -328,13 +350,13 @@ class TeamController extends Controller
         ]);
 
         $team = Team::findOrFail($request->team_id);
-        
-        
+
+
         $race = Race::findOrFail($request->race_id);
 
         // Allow owner OR the user themselves OR the Race Manager to update
         if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id && $race->USE_ID !== auth()->id()) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         DB::table('SAN_USERS_RACES')
@@ -342,9 +364,9 @@ class TeamController extends Controller
             ->where('USE_ID', $request->user_id)
             ->update([
                 'USR_CHIP_NUMBER' => $request->chip_number,
-                'USR_PPS_FORM' => $request->pps 
+                'USR_PPS_FORM' => $request->pps
             ]);
-            
+
         return response()->json(['message' => 'Member info updated']);
     }
 
@@ -363,18 +385,18 @@ class TeamController extends Controller
 
         // Allow Race Manager
         if ($race->USE_ID !== auth()->id()) {
-             return response()->json(['message' => 'Seul le responsable de la course peut valider une équipe.'], 403);
+            return response()->json(['message' => 'Seul le responsable de la course peut valider une équipe.'], 403);
         }
-        
+
         $race = Race::findOrFail($request->race_id);
         $isCompetitive = stripos($race->RAC_TYPE, 'Compétition') !== false || stripos($race->RAC_TYPE, 'Competitif') !== false; // Adjust check based on exact string
 
         // Get all members
-         $members = DB::table('SAN_USERS_TEAMS')
+        $members = DB::table('SAN_USERS_TEAMS')
             ->join('SAN_USERS', 'SAN_USERS_TEAMS.USE_ID', '=', 'SAN_USERS.USE_ID')
-            ->join('SAN_USERS_RACES', function($join) use ($request) {
+            ->join('SAN_USERS_RACES', function ($join) use ($request) {
                 $join->on('SAN_USERS.USE_ID', '=', 'SAN_USERS_RACES.USE_ID')
-                     ->where('SAN_USERS_RACES.RAC_ID', '=', $request->race_id);
+                    ->where('SAN_USERS_RACES.RAC_ID', '=', $request->race_id);
             })
             ->where('SAN_USERS_TEAMS.TEA_ID', $request->team_id)
             ->select('SAN_USERS.*', 'SAN_USERS_RACES.USR_CHIP_NUMBER', 'SAN_USERS_RACES.USR_PPS_FORM' ?? null) // Handle PPS if column exists
@@ -384,7 +406,7 @@ class TeamController extends Controller
             // Check License or PPS
             $hasLicense = !empty($member->USE_LICENCE_NUMBER);
             $hasPPS = !empty($member->USR_PPS_FORM);
-            
+
             // "Si la personne a une licence number alors pas besoin de mettre un pps sinon obligatoire"
             if (!$hasLicense && !$hasPPS) {
                 return response()->json(['message' => "Le membre {$member->USE_NAME} {$member->USE_LAST_NAME} doit avoir une licence ou un PPS validé."], 422);
@@ -428,12 +450,12 @@ class TeamController extends Controller
 
         // Allow Race Manager
         if ($race->USE_ID !== auth()->id()) {
-             return response()->json(['message' => 'Seul le responsable de la course peut dévalider une équipe.'], 403);
+            return response()->json(['message' => 'Seul le responsable de la course peut dévalider une équipe.'], 403);
         }
 
         // Check if race has started
         $raceStart = \Carbon\Carbon::parse($race->RAC_DATE . ' ' . ($race->RAC_TIME_START ?? '00:00:00'));
-        
+
         if (now()->greaterThanOrEqualTo($raceStart)) {
             return response()->json(['message' => 'Impossible de dévalider l\'équipe après le début de la course'], 422);
         }
