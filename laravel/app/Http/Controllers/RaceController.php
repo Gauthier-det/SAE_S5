@@ -416,6 +416,7 @@ class RaceController extends Controller
         $race = Race::with([
             'user',
             'raid',
+            'raid.user',
             'categories' => function ($query) {
                 $query->withPivot('CAR_PRICE');
             },

@@ -14,7 +14,6 @@ export interface User {
     USE_PHONE_NUMBER?: number;
     USE_LICENCE_NUMBER?: string;
     USE_MEMBERSHIP_DATE?: string;
-    CLU_ID?: number;
     address?: Address;
     club?: Club;
     races?: Race[];
