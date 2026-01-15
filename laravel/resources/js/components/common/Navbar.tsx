@@ -24,7 +24,6 @@ import { thumbs } from '@dicebear/collection';
 const pages = [
     { name: 'TABLEAU DE BORD', path: '/dashboard' },
     { name: 'LES RAIDS', path: '/raids' },
-    { name: 'A PROPOS', path: '/about' },
 ];
 
 const settings = ['Profile', 'Logout'];
@@ -65,7 +64,7 @@ function Navbar() {
     const handlePageClick = (path: string) => {
         navigate(path);
     };
-console.log("user", user);
+    console.log("user", user);
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
             <Container maxWidth={false} disableGutters>
@@ -125,7 +124,7 @@ console.log("user", user);
                                 Admin
                             </Button>
                         )}
-                        {user && user.club && isClubManager&& (
+                        {user && user.club && isClubManager && (
                             <Button
                                 key="Club"
                                 onClick={() => navigate('/club/' + user?.club!.CLU_ID)}

@@ -62,7 +62,7 @@ class UserController extends Controller
         }
 
         $data = $request->all();
-        $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']);
+        // $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']); // Removed double hashing
 
         $user = User::create($data);
 
@@ -113,7 +113,7 @@ class UserController extends Controller
         $data = $request->all();
 
         if (isset($data['USE_PASSWORD'])) {
-            $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']);
+            // $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']); // Removed double hashing
         }
 
         $user->update($data);
