@@ -32,27 +32,27 @@ class RaceController extends Controller
     {
         $race = Race::with('categories')
             ->find($id);
-            
+
         if (!$race) {
             return response()->json([
                 'message' => 'Race not found',
             ], 404);
         }
-        
+
         // Map prices from categories relationship
         $priceMap = [
             1 => 'CAT_1_PRICE',
             2 => 'CAT_2_PRICE',
             3 => 'CAT_3_PRICE',
         ];
-        
+
         foreach ($race->categories as $category) {
             $catId = $category->CAT_ID;
             if (isset($priceMap[$catId])) {
                 $race[$priceMap[$catId]] = $category->pivot->CAR_PRICE ?? 0;
             }
         }
-        
+
         return response()->json(['data' => $race], 200);
     }
 
@@ -101,7 +101,7 @@ class RaceController extends Controller
 
         return response()->json(['data' => $prices], 200);
     }
-    
+
 
     public function storeTeamRaceResult(Request $request, $raceId)
     {
@@ -339,26 +339,29 @@ class RaceController extends Controller
             }
         }
 
-        $race->update($request->only([
-            'USE_ID',
-            'RAI_ID',
-            'RAC_NAME',
-            'RAC_TIME_START',
-            'RAC_TIME_END',
-            'RAC_GENDER',
-            'RAC_TYPE',
-            'RAC_DIFFICULTY',
-            'RAC_MIN_PARTICIPANTS',
-            'RAC_MAX_PARTICIPANTS',
-            'RAC_MIN_TEAMS',
-            'RAC_MAX_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS',
-            'RAC_AGE_MIN',
-            'RAC_AGE_MIDDLE',
-            'RAC_AGE_MAX',
-            'RAC_CHIP_MANDATORY',
-        ]));
+        try {
+            DB::beginTransaction();
+
+            $race->update($request->only([
+                'USE_ID',
+                'RAI_ID',
+                'RAC_NAME',
+                'RAC_TIME_START',
+                'RAC_TIME_END',
+                'RAC_GENDER',
+                'RAC_TYPE',
+                'RAC_DIFFICULTY',
+                'RAC_MIN_PARTICIPANTS',
+                'RAC_MAX_PARTICIPANTS',
+                'RAC_MIN_TEAMS',
+                'RAC_MAX_TEAMS',
+                'RAC_MIN_TEAM_MEMBERS',
+                'RAC_MAX_TEAM_MEMBERS',
+                'RAC_AGE_MIN',
+                'RAC_AGE_MIDDLE',
+                'RAC_AGE_MAX',
+                'RAC_CHIP_MANDATORY',
+            ]));
 
             // Update prices if provided
             if ($request->has('CAT_1_PRICE') || $request->has('CAT_2_PRICE') || $request->has('CAT_3_PRICE')) {
@@ -488,7 +491,7 @@ class RaceController extends Controller
                     'time' => $team->pivot->TER_TIME,
                     'bonus' => $team->pivot->TER_BONUS_POINTS,
                 ],
-                'is_valid' => (bool)$team->pivot->TER_IS_VALID,
+                'is_valid' => (bool) $team->pivot->TER_IS_VALID,
             ];
         });
 
@@ -516,10 +519,10 @@ class RaceController extends Controller
         DB::table('SAN_TEAMS_RACES')
             ->where('RAC_ID', $raceId)
             ->update([
-                    'TER_RANK' => null,
-                    'TER_TIME' => null,
-                    'TER_BONUS_POINTS' => null,
-                ]);
+                'TER_RANK' => null,
+                'TER_TIME' => null,
+                'TER_BONUS_POINTS' => null,
+            ]);
 
         return response()->json(['message' => 'Results deleted successfully'], 200);
     }
