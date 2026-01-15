@@ -108,7 +108,7 @@ export default function RaceDetails() {
         <Container maxWidth="md" sx={{ pb: 10 }}>
             {/* Header / Back */}
             <Box sx={{ py: 2, display: 'flex', alignItems: 'center' }}>
-                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.RAI_ID}`)}>
+                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid.RAI_ID}`)}>
                     Retour au raid
                 </Button>
             </Box>
