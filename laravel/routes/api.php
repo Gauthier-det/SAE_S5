@@ -71,6 +71,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/teams/validate-race', [TeamController::class, 'validateTeamForRace']);
     Route::post('/teams/unvalidate-race', [TeamController::class, 'unvalidateTeamForRace']);
     Route::get('/teams/{id}', [TeamController::class, 'getTeamById'])->whereNumber('id');
+    Route::get('/teams/{teamId}/users', [UserController::class, 'getUsersByTeam'])->whereNumber('teamId');
 
     // Address routes
     Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
