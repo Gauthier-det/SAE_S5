@@ -56,6 +56,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::put('/users/{id}', [UserController::class, 'updateUser']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
+    Route::post('/users/races/register', [UserController::class, 'registerUserToRace']); //Create an entry in SAN_USERS_RACES
 
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
