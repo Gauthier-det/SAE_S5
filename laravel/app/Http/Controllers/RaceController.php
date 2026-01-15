@@ -72,6 +72,7 @@ class RaceController extends Controller
 
         return response()->json(['data' => $prices], 200);
     }
+    
 
     public function storeTeamRaceResult(Request $request, $raceId)
     {
