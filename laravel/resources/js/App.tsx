@@ -10,7 +10,6 @@ import ProtectedRoute from './components/router/ProtectedRoute';
 import GuestRoute from './components/router/GuestRoute';
 import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
-import About from './pages/About';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
 import TeamRegistration from './pages/races/TeamRegistration';
@@ -44,7 +43,6 @@ const AppRoutes = () => {
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
         <Route path="/races/:id" element={<RaceDetails />} />
-        <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}
         <Route element={<GuestRoute />}>

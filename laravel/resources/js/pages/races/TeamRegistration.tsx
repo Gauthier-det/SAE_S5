@@ -141,6 +141,13 @@ export default function TeamRegistration() {
                 </Typography>
             </Box>
 
+            {/* Registration Closed Warning */}
+            {new Date(race.raid.RAI_REGISTRATION_END) < new Date() && (
+                <Alert severity="warning" sx={{ mb: 3 }}>
+                    Les inscriptions pour ce raid sont closes depuis le {new Date(race.raid.RAI_REGISTRATION_END).toLocaleString('fr-FR')}.
+                </Alert>
+            )}
+
             {/* Race Info Card */}
             <Paper
                 sx={{
@@ -346,7 +353,7 @@ export default function TeamRegistration() {
                 fullWidth
                 size="large"
                 onClick={handleSubmit}
-                disabled={submitting || success || !teamName.trim() || selectedMembers.length === 0}
+                disabled={submitting || success || !teamName.trim() || selectedMembers.length === 0 || new Date(race.raid.RAI_REGISTRATION_END) < new Date()}
                 sx={{
                     bgcolor: '#198754',
                     '&:hover': { bgcolor: '#157347' },

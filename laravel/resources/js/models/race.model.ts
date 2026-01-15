@@ -88,6 +88,7 @@ export interface TeamDetail {
     members_count: number;
     responsible: TeamResponsible | null;
     members: TeamMember[];
+    is_valid: boolean;
 }
 
 export interface RaceDetail extends Race {

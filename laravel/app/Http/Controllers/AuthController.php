@@ -83,10 +83,12 @@ class AuthController extends Controller
 
         $user = User::create([
             'USE_MAIL' => $request->mail,
-            'USE_PASSWORD' => Hash::make($request->password),
+            'USE_PASSWORD' => $request->password,
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
             'USE_GENDER' => $request->gender,
+            'USE_VALIDITY' => \Carbon\Carbon::now()->addYear(),
+            'USE_MEMBERSHIP_DATE' => \Carbon\Carbon::now(),
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
