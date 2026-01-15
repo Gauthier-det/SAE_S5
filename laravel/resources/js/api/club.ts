@@ -66,3 +66,17 @@ export const deleteClub = async (id: number): Promise<void> => {
         method: 'DELETE'
     });
 }
+
+export const addMemberToClub = async (clubId: number, userId: number): Promise<void> => {
+    await apiClient(`/clubs/${clubId}/members/add`, {
+        method: 'POST',
+        body: JSON.stringify({ userId })
+    });
+}
+
+export const removeMemberFromClub = async (clubId: number, userId: number): Promise<void> => {
+    await apiClient(`/clubs/${clubId}/members/remove`, {
+        method: 'POST',
+        body: JSON.stringify({ userId })
+    });
+}

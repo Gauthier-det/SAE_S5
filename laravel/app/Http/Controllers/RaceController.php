@@ -72,12 +72,49 @@ class RaceController extends Controller
 
         return response()->json(['data' => $prices], 200);
     }
+    
+
+    public function storeTeamRaceResult(Request $request, $raceId)
+    {
+        $race = Race::find($raceId);
+        if (!$race) {
+            return response()->json([
+                'message' => 'Race not found',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'TEA_ID' => 'required|integer|exists:SAN_TEAMS,TEA_ID',
+            'TER_TIME' => 'nullable|date_format:H:i:s',
+            'TER_IS_VALID' => 'nullable|integer|in:0,1',
+            'TER_RACE_NUMBER' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try {
+            DB::table('SAN_TEAMS_RACES')->insert([
+                'RAC_ID' => $raceId,
+                'TEA_ID' => $request->input('TEA_ID'),
+                'TER_TIME' => $request->input('TER_TIME'),
+                'TER_IS_VALID' => $request->input('TER_IS_VALID'),
+                'TER_RACE_NUMBER' => $request->input('TER_RACE_NUMBER'),
+            ]);
+
+            return response()->json(['message' => 'Team race result created successfully'], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Error creating team race result', 'error' => $e->getMessage()], 500);
+        }
+    }
 
     public function createRace(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'required|string|max:255',
             'RAC_TIME_START' => 'required|date',
             'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
@@ -91,6 +128,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'required|integer|min:0',
             'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -107,6 +145,7 @@ class RaceController extends Controller
         $race = Race::create($request->only([
             'USE_ID',
             'RAI_ID',
+            'RAC_NAME',
             'RAC_TIME_START',
             'RAC_TIME_END',
             'RAC_GENDER',
@@ -120,6 +159,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
             'RAC_AGE_MAX',
+            'RAC_CHIP_MANDATORY',
         ]));
 
         return response()->json(['data' => $race], 201);
@@ -130,6 +170,7 @@ class RaceController extends Controller
         $validator = Validator::make($request->all(), [
             'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'required|string|max:255',
             'RAC_TIME_START' => 'required|date',
             'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
@@ -143,6 +184,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'required|integer|min:0',
             'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
             'CAT_1_PRICE' => 'required|numeric|min:0',
             'CAT_2_PRICE' => 'required|numeric|min:0',
             'CAT_3_PRICE' => 'required|numeric|min:0',
@@ -158,6 +200,7 @@ class RaceController extends Controller
             $race = Race::create($request->only([
                 'USE_ID',
                 'RAI_ID',
+                'RAC_NAME',
                 'RAC_TIME_START',
                 'RAC_TIME_END',
                 'RAC_GENDER',
@@ -171,6 +214,7 @@ class RaceController extends Controller
                 'RAC_AGE_MIN',
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
+                'RAC_CHIP_MANDATORY',
             ]));
 
             for ($catId = 1; $catId <= 3; $catId++) {
@@ -207,6 +251,7 @@ class RaceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'sometimes|string|max:255',
             'RAC_TIME_START' => 'sometimes|date',
             'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
@@ -220,6 +265,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'sometimes|integer|min:0',
             'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -228,6 +274,7 @@ class RaceController extends Controller
 
         $race->update($request->only([
             'RAI_ID',
+            'RAC_NAME',
             'RAC_TIME_START',
             'RAC_TIME_END',
             'RAC_GENDER',
@@ -241,6 +288,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
             'RAC_AGE_MAX',
+            'RAC_CHIP_MANDATORY',
         ]));
 
         return response()->json(['data' => $race], 200);

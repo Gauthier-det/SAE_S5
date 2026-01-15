@@ -14,12 +14,16 @@ import About from './pages/About';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
 import RaceResults from './pages/races/RaceResults';
+import TeamRegistration from './pages/races/TeamRegistration';
+import TeamRaceManagement from './pages/teams/TeamRaceManagement';
 import CreateRace from './pages/raids/CreateRace';
 import CreateRaid from './pages/raids/CreateRaid';
+import EditRaid from './pages/raids/EditRaid';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import AdminDashboard from './pages/AdminDashboard';
+import Club from './pages/club/Club';
 
 
 const MainLayout = () => {
@@ -55,10 +59,13 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/races/:id/register" element={<TeamRegistration />} />
+          <Route path="/teams/:teamId/races/:raceId/manage" element={<TeamRaceManagement />} />
         </Route>
         {/* Protected Routes for Club Managers */}
         <Route element={<ProtectedRoute condition={isClubManager} />}>
           <Route path="/raid/create" element={<CreateRaid />} />
+          <Route path="/raids/:id/edit" element={<EditRaid />} />
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
           <Route path="/raids/:id/create" element={<CreateRace />} />
@@ -67,6 +74,9 @@ const AppRoutes = () => {
         {/* Admin Routes */}
         <Route element={<ProtectedRoute condition={isAdmin} />}>
           <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
+        <Route element={<ProtectedRoute condition={isClubManager} />}>
+          <Route path="/club/:id" element={<Club />} />
         </Route>
       </Route>
     </Routes>

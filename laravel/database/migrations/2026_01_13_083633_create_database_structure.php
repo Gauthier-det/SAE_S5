@@ -44,6 +44,7 @@ return new class extends Migration
             $table->integer('USE_PHONE_NUMBER')->nullable();
             $table->integer('USE_LICENCE_NUMBER')->nullable();
             $table->date('USE_MEMBERSHIP_DATE')->nullable();
+            $table->date('USE_VALIDITY')->nullable();
 
             $table->index('ADD_ID', 'I_FK_SAN_USERS_SAN_ADDRESSES');
             $table->index('CLU_ID', 'I_FK_SAN_USERS_SAN_CLUBS');
@@ -120,6 +121,7 @@ return new class extends Migration
             $table->increments('RAC_ID');
             $table->unsignedInteger('USE_ID');
             $table->unsignedInteger('RAI_ID');
+            $table->string('RAC_NAME', 255);
             $table->dateTime('RAC_TIME_START');
             $table->dateTime('RAC_TIME_END');
             $table->string('RAC_GENDER', 16);
@@ -133,6 +135,7 @@ return new class extends Migration
             $table->bigInteger('RAC_AGE_MIN');
             $table->bigInteger('RAC_AGE_MIDDLE');
             $table->bigInteger('RAC_AGE_MAX');
+            $table->integer('RAC_CHIP_MANDATORY');
 
             $table->index('USE_ID', 'I_FK_SAN_RACES_SAN_USERS');
             $table->index('RAI_ID', 'I_FK_SAN_RACES_SAN_RAIDS');
@@ -163,6 +166,7 @@ return new class extends Migration
             $table->unsignedInteger('TEA_ID');
             $table->unsignedInteger('RAC_ID');
             $table->time('TER_TIME')->nullable();
+            $table->integer('TER_POINTS')->nullable();
             $table->integer('TER_IS_VALID')->nullable();
             $table->integer('TER_RACE_NUMBER');
             $table->primary(['TEA_ID', 'RAC_ID']);

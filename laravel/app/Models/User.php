@@ -33,6 +33,7 @@ class User extends Authenticatable
         'USE_PHONE_NUMBER',
         'USE_LICENCE_NUMBER',
         'USE_MEMBERSHIP_DATE',
+        'USE_VALIDITY',
     ];
 
     protected $hidden = [
@@ -42,6 +43,7 @@ class User extends Authenticatable
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
+        'USE_VALIDITY'        => 'date',
         'USE_PASSWORD'        => 'hashed',
     ];
 
@@ -73,6 +75,11 @@ class User extends Authenticatable
             'USE_ID',
             'RAC_ID'
         );
+    }
+
+    public function isValid()
+    {
+        return $this->USE_VALIDITY !== null;
     }
 
     public function isAdmin()

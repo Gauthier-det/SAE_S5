@@ -31,7 +31,7 @@ import { createAddress } from '../../api/address';
 import type { AddressCreation } from '../../models/address.model';
 
 const CreateRaid = () => {
-    const { user } = useUser();
+    const { user, refreshUser } = useUser();
     const navigate = useNavigate();
     const { showAlert } = useAlert();
 
@@ -145,6 +145,7 @@ const CreateRaid = () => {
 
             // 3. Create Raid
             await createRaid(raidData);
+            await refreshUser();
             setErrors([]);
             showAlert('Raid créé avec succès', 'success');
             navigate('/raids');

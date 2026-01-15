@@ -54,7 +54,7 @@ import type { Raid } from '../../models/raid.model';
 const CreateRace = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const { showAlert } = useAlert();
 
   // State for raid data and club members
@@ -69,6 +69,7 @@ const CreateRace = () => {
   const [formData, setFormData] = useState<RaceCreation>({
     USE_ID: 0,
     RAI_ID: parseInt(id || '0'),
+    RAC_NAME: '',
     RAC_TIME_START: '',
     RAC_TIME_END: '',
     RAC_GENDER: 'Mixte',
@@ -85,7 +86,7 @@ const CreateRace = () => {
     CAT_1_PRICE: 0,
     CAT_2_PRICE: 0,
     CAT_3_PRICE: 0,
-    RAC_CHIP_REQUIRED: false
+    RAC_CHIP_MANDATORY: false
   });
 
   /**
@@ -207,7 +208,7 @@ const CreateRace = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
     const numValue = ['RAC_MIN_PARTICIPANTS', 'RAC_MAX_PARTICIPANTS', 'RAC_MIN_TEAMS', 'RAC_MAX_TEAMS', 'RAC_MAX_TEAM_MEMBERS', 'RAC_AGE_MIN', 'RAC_AGE_MIDDLE', 'RAC_AGE_MAX', 'CAT_1_PRICE', 'CAT_2_PRICE', 'CAT_3_PRICE'].includes(name as string)
-      ? parseFloat(value as string)
+      ? (value === '' ? 0 : parseFloat(value as string))
       : value;
     const newFormData = {
       ...formData,
@@ -239,17 +240,6 @@ const CreateRace = () => {
     setErrors(newErrors);
   };
 
-  const handleCompetitionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isComp = event.target.name === 'competition';
-    const newFormData = {
-      ...formData,
-      RAC_TYPE: isComp ? RaceType.Competitive : RaceType.Hobby
-    };
-    setFormData(newFormData);
-    const newErrors = validateForm(newFormData);
-    setErrors(newErrors);
-  };
-
   /**
    * Handles form submission
    * - Performs final validation
@@ -276,12 +266,15 @@ const CreateRace = () => {
     try {
       // Remove USE_ID from payload (will be set by server via authentication)
       const { USE_ID, ...raceData } = formData;
+
       const racePayload = {
         ...raceData,
         RAI_ID: parseInt(id || '0'),
         USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 0),
+        RAC_CHIP_MANDATORY: raceData.RAC_CHIP_MANDATORY ? 1 : 0,
       };
       await createRaceWithPrices(racePayload as any);
+      await refreshUser();
       setErrors({});
       showAlert("Course créée avec succès !", "success");
       navigate('/raids');
@@ -441,9 +434,9 @@ const CreateRace = () => {
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={formData.RAC_CHIP_REQUIRED || false}
-                          onChange={(e) => setFormData({ ...formData, RAC_CHIP_REQUIRED: e.target.checked })}
-                          name="RAC_CHIP_REQUIRED"
+                          checked={formData.RAC_CHIP_MANDATORY || false}
+                          onChange={(e) => setFormData({ ...formData, RAC_CHIP_MANDATORY: e.target.checked })}
+                          name="RAC_CHIP_MANDATORY"
                         />
                       }
                       label="Puce requise"

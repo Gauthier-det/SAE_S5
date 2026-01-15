@@ -19,7 +19,7 @@ export interface Race {
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
     RAC_AGE_MAX: number;
-    RAC_CHIP_REQUIRED?: boolean;
+    RAC_CHIP_MANDATORY?: boolean;
 }
 
 export interface RaceResponse {
@@ -29,7 +29,7 @@ export interface RaceResponse {
 export interface RaceCreation {
     USE_ID: number;
     RAI_ID: number;
-    RAC_NAME: string;
+    RAC_NAME?: string;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
@@ -43,10 +43,10 @@ export interface RaceCreation {
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
     RAC_AGE_MAX: number;
-    CAT_1_PRICE: 0;
-    CAT_2_PRICE: 0;
-    CAT_3_PRICE: 0;
-    RAC_CHIP_REQUIRED?: boolean;
+    CAT_1_PRICE: number;
+    CAT_2_PRICE: number;
+    CAT_3_PRICE: number;
+    RAC_CHIP_MANDATORY?: boolean;
 }
 
 
