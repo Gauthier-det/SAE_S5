@@ -114,6 +114,7 @@ class RaceController extends Controller
         $validator = Validator::make($request->all(), [
             'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'required|string|max:255',
             'RAC_TIME_START' => 'required|date',
             'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
@@ -144,6 +145,7 @@ class RaceController extends Controller
         $race = Race::create($request->only([
             'USE_ID',
             'RAI_ID',
+            'RAC_NAME',
             'RAC_TIME_START',
             'RAC_TIME_END',
             'RAC_GENDER',
@@ -168,6 +170,7 @@ class RaceController extends Controller
         $validator = Validator::make($request->all(), [
             'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'required|string|max:255',
             'RAC_TIME_START' => 'required|date',
             'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
@@ -197,6 +200,7 @@ class RaceController extends Controller
             $race = Race::create($request->only([
                 'USE_ID',
                 'RAI_ID',
+                'RAC_NAME',
                 'RAC_TIME_START',
                 'RAC_TIME_END',
                 'RAC_GENDER',
@@ -247,6 +251,7 @@ class RaceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
+            'RAC_NAME' => 'sometimes|string|max:255',
             'RAC_TIME_START' => 'sometimes|date',
             'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
@@ -269,6 +274,7 @@ class RaceController extends Controller
 
         $race->update($request->only([
             'RAI_ID',
+            'RAC_NAME',
             'RAC_TIME_START',
             'RAC_TIME_END',
             'RAC_GENDER',

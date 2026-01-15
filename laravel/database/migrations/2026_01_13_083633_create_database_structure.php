@@ -121,6 +121,7 @@ return new class extends Migration
             $table->increments('RAC_ID');
             $table->unsignedInteger('USE_ID');
             $table->unsignedInteger('RAI_ID');
+            $table->string('RAC_NAME', 255);
             $table->dateTime('RAC_TIME_START');
             $table->dateTime('RAC_TIME_END');
             $table->string('RAC_GENDER', 16);
@@ -165,6 +166,7 @@ return new class extends Migration
             $table->unsignedInteger('TEA_ID');
             $table->unsignedInteger('RAC_ID');
             $table->time('TER_TIME')->nullable();
+            $table->integer('TER_POINTS')->nullable();
             $table->integer('TER_IS_VALID')->nullable();
             $table->integer('TER_RACE_NUMBER');
             $table->primary(['TEA_ID', 'RAC_ID']);
