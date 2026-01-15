@@ -273,4 +273,50 @@ class UserController extends Controller
         }
         return $rank . 'e';
     }
+
+    public function registerUserToRace(Request $request)
+{
+    $validator = \Validator::make($request->all(), [
+        'USE_ID'      => 'required|integer|exists:SAN_USERS,USE_ID',
+        'RAC_ID'      => 'required|integer|exists:SAN_RACES,RAC_ID',
+        'USR_CHIP_NUMBER' => 'nullable|string|max:255',
+        'USR_TIME'    => 'nullable|integer',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'message' => 'Validation failed',
+            'errors'  => $validator->errors(),
+        ], 422);
+    }
+
+    $exists = \DB::table('SAN_USERS_RACES')
+        ->where('USE_ID', $request->USE_ID)
+        ->where('RAC_ID', $request->RAC_ID)
+        ->exists();
+
+    if ($exists) {
+        return response()->json([
+            'message' => 'User already registered for this race',
+        ], 409);
+    }
+
+    \DB::table('SAN_USERS_RACES')->insert([
+        'USE_ID'         => $request->USE_ID,
+        'RAC_ID'         => $request->RAC_ID,
+        'USR_CHIP_NUMBER'=> $request->USR_CHIP_NUMBER,
+        'USR_TIME'       => $request->USR_TIME,
+    ]);
+
+    return response()->json([
+        'message' => 'User registered to race successfully',
+        'data' => [
+            'USE_ID'         => $request->USE_ID,
+            'RAC_ID'         => $request->RAC_ID,
+            'USR_CHIP_NUMBER'=> $request->USR_CHIP_NUMBER,
+            'USR_TIME'       => $request->USR_TIME,
+        ],
+    ], 201);
+}
+
 }
