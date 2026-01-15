@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RaidController;
@@ -13,6 +14,14 @@ use App\Http\Controllers\TeamController;
 
 
 // Authentication routes
+Route::get('/reset', function () {
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+        '--force' => true
+    ]);
+    return response()->json(['message' => 'Database reset and seeded successfully']);
+});
+
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/register', [AuthController::class, 'register']);
