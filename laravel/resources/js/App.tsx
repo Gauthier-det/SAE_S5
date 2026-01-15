@@ -57,7 +57,7 @@ const AppRoutes = () => {
           <Route path="/raid/create" element={<CreateRaid />} />
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
-          <Route path="/race/create" element={<CreateRace />} />
+          <Route path="/raids/:id/create" element={<CreateRace />} />
         </Route>
       </Route>
     </Routes>
