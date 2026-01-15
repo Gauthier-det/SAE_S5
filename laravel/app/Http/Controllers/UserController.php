@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function getAllUsers()
     {
-        $users = User::all();
+        $users = User::with('club')->get();
         return response()->json(['data' => $users]);
     }
 

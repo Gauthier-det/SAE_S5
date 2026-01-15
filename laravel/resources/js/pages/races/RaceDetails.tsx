@@ -99,8 +99,8 @@ export default function RaceDetails() {
     }, [race, searchTerm, user, isAuthenticated]);
 
     // Check if registration deadline has passed
-    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
-    console.log("journee passe:", dayjs(race?.raid.RAI_REGISTRATION_START), "journnee now:", dayjs(), "disableEditing:", disableEditing);
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_END)) : false;
+    console.log("journee passe:", dayjs(race?.raid.RAI_REGISTRATION_END), "journnee now:", dayjs(), "disableEditing:", disableEditing);
 
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;

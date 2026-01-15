@@ -11,7 +11,7 @@ export interface User {
     USE_MAIL: string;
     USE_GENDER: Gender;
     USE_BIRTHDATE?: string;
-    USE_PHONE_NUMBER?: number;
+    USE_PHONE_NUMBER?: string;
     USE_LICENCE_NUMBER?: string;
     USE_MEMBERSHIP_DATE?: string;
     address?: Address;
@@ -27,7 +27,7 @@ export interface UserUpdate {
     USE_NAME?: string;
     USE_LAST_NAME?: string;
     USE_BIRTHDATE?: string;
-    USE_PHONE_NUMBER?: number;
+    USE_PHONE_NUMBER?: string;
     USE_LICENCE_NUMBER?: string;
     address?: Address;
 }

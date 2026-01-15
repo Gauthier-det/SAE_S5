@@ -342,17 +342,6 @@ const RaidDetails = () => {
                                         </Typography>
                                     </Box>
                                 </Box>
-                                <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <CalendarTodayIcon fontSize="small" color="primary" />
-                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                            DATES DU RAID
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                        Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
-                                    </Typography>
-                                </Box>
                                 <Box sx={{ p: 2, backgroundColor: '#fff3e0', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <EventIcon fontSize="small" color="warning" />
@@ -362,6 +351,17 @@ const RaidDetails = () => {
                                     </Box>
                                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                         Du {formatDate(raid.RAI_REGISTRATION_START)} au {formatDate(raid.RAI_REGISTRATION_END)}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <CalendarTodayIcon fontSize="small" color="primary" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            DATES DU RAID
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                        Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
                                     </Typography>
                                 </Box>
                             </Box>
