@@ -1,17 +1,17 @@
-import { Container, Typography, Box, MenuItem, TextField } from '@mui/material';
+import { Container, Typography, Box, MenuItem, TextField, Stack, Button, Divider } from '@mui/material';
 import RaidCard from '../../components/cards/RaidCard';
 import { getListOfRaids } from '../../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dayjs } from 'dayjs';
 import 'dayjs/locale/fr';
 import type { Raid } from '../../models/raid.model';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { parseDateToTs } from '../../utils/dateUtils';
+import { useAlert } from '../../contexts/AlertContext';
+import { parseDateToTs, getRaidStatus, getRegistrationStatus } from '../../utils/dateUtils';
+import { useUser } from '../../contexts/userContext';
 
 
 
@@ -20,29 +20,38 @@ export default function Raids() {
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
     const [club, setClub] = React.useState('');
     const [keyword, setKeyword] = React.useState('');
+    const [statusFilter, setStatusFilter] = React.useState('');
+    const [registrationFilter, setRegistrationFilter] = React.useState('');
+    const [sortField, setSortField] = React.useState('');
+    const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
+    const [raids, setRaids] = useState<Raid[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { user, isClubManager } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
-    const [raids, setRaids] = React.useState<Raid[]>([]);
-    // Actually, I should use useMemo for filteredRaids but fetch in useEffect
-
-    React.useEffect(() => {
+    useEffect(() => {
         const fetchRaids = async () => {
             try {
                 const data = await getListOfRaids();
                 setRaids(data);
             } catch (error) {
                 console.error("Failed to fetch raids", error);
+                showAlert("Impossible de charger la liste des raids", "error");
+            } finally {
+                setLoading(false);
             }
         };
+
         fetchRaids();
-    }, []);
+    }, [showAlert]); // Added dependency to suppress lint warning, though context is stable
 
     const filteredRaids = React.useMemo(() => {
 
         const startTs = startDate ? startDate.valueOf() : null;
         const endTs = endDate ? endDate.valueOf() : null;
 
-        return raids.filter((raid) => {
+        const result = raids.filter((raid) => {
             const raidStartTs = parseDateToTs(raid.RAI_TIME_START);
             const raidEndTs = parseDateToTs(raid.RAI_TIME_END);
 
@@ -55,9 +64,30 @@ export default function Raids() {
 
             const matchesClub = club ? raid.club?.CLU_NAME === club : true;
 
-            return matchesStart && matchesEnd && matchesKeyword && matchesClub;
+            const currentStatus = getRaidStatus(raid.RAI_TIME_START, raid.RAI_TIME_END);
+            const matchesStatus = statusFilter ? currentStatus === statusFilter : true;
+
+            const currentRegStatus = getRegistrationStatus(raid.RAI_REGISTRATION_START, raid.RAI_REGISTRATION_END);
+            const matchesRegStatus = registrationFilter ? currentRegStatus === registrationFilter : true;
+
+            return matchesStart && matchesEnd && matchesKeyword && matchesClub && matchesStatus && matchesRegStatus;
         });
-    }, [raids, startDate, endDate, keyword, club]);
+
+        if (sortField) {
+            result.sort((a, b) => {
+                const dateA = parseDateToTs(a[sortField as keyof Raid] as string);
+                const dateB = parseDateToTs(b[sortField as keyof Raid] as string);
+
+                if (sortDirection === 'asc') {
+                    return dateA - dateB;
+                } else {
+                    return dateB - dateA;
+                }
+            });
+        }
+
+        return result;
+    }, [raids, startDate, endDate, keyword, club, statusFilter, registrationFilter, sortField, sortDirection]);
 
     // Extract unique clubs for filter dropdown
     const uniqueClubs = React.useMemo(() => {
@@ -65,14 +95,10 @@ export default function Raids() {
         return [...new Set(clubs)] as string[];
     }, [raids]);
 
-    const handleRaidDetails = (raidId: number) => {
-
-    };
-
     return (
-        <Container maxWidth={false}>
-            <Box sx={{ my: 4 }}>
-                <Box sx={{ display: 'flex', gap: 4 }}>
+        <Container maxWidth={false} sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', pt: 4 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+                <Box sx={{ display: 'flex', gap: 4, flex: 1, minHeight: 0 }}>
                     <Box
                         sx={{
                             width: 260,
@@ -80,10 +106,42 @@ export default function Raids() {
                             display: 'flex',
                             flexDirection: 'column',
                             gap: 3,
+                            overflowY: 'auto',
+                            pr: 2,
                         }}
                     >
                         <Typography variant="h6">Filtrer les raids</Typography>
-
+                        <Stack direction="row" spacing={1}>
+                            <TextField
+                                select
+                                label="Critère"
+                                value={sortField}
+                                onChange={(e) => setSortField(e.target.value)}
+                                size="small"
+                                fullWidth
+                            >
+                                <MenuItem value="">Aucun</MenuItem>
+                                <MenuItem value="RAI_TIME_START">Début Raid</MenuItem>
+                                <MenuItem value="RAI_TIME_END">Fin Raid</MenuItem>
+                                <MenuItem value="RAI_REGISTRATION_START">Début Inscription</MenuItem>
+                                <MenuItem value="RAI_REGISTRATION_END">Fin Inscription</MenuItem>
+                            </TextField>
+                            <TextField
+                                select
+                                label="Ordre"
+                                value={sortDirection}
+                                onChange={(e) => setSortDirection(e.target.value as 'asc' | 'desc')}
+                                size="small"
+                                sx={{ minWidth: 100 }}
+                            >
+                                <MenuItem value="asc">Croissant</MenuItem>
+                                <MenuItem value="desc">Décroissant</MenuItem>
+                            </TextField>
+                        </Stack>
+                        <Divider />
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Date
+                        </Typography>
                         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
                             <DatePicker
                                 label="Début"
@@ -101,7 +159,9 @@ export default function Raids() {
                                 format="DD/MM/YYYY"
                             />
                         </LocalizationProvider>
-
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Recherche
+                        </Typography>
                         <TextField
                             label="Mot clé"
                             placeholder="Nom du raid..."
@@ -111,6 +171,38 @@ export default function Raids() {
                             value={keyword}
                             onChange={(e) => setKeyword(e.target.value)}
                         />
+
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Statut
+                        </Typography>
+                        <TextField
+                            select
+                            label="Statut du Raid"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            size="small"
+                            fullWidth
+                        >
+                            <MenuItem value="">Tous</MenuItem>
+                            <MenuItem value="À venir">À venir</MenuItem>
+                            <MenuItem value="En cours">En cours</MenuItem>
+                            <MenuItem value="Terminé">Terminé</MenuItem>
+                        </TextField>
+
+                        <TextField
+                            select
+                            label="Inscriptions"
+                            value={registrationFilter}
+                            onChange={(e) => setRegistrationFilter(e.target.value)}
+                            size="small"
+                            fullWidth
+                        >
+                            <MenuItem value="">Toutes</MenuItem>
+                            <MenuItem value="Non ouverte">Non ouverte</MenuItem>
+                            <MenuItem value="Ouverte">Ouverte</MenuItem>
+                            <MenuItem value="Close">Close</MenuItem>
+                        </TextField>
+
 
                         <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                             Club
@@ -129,30 +221,29 @@ export default function Raids() {
                             ))}
                         </TextField>
                     </Box>
-                    <Box sx={{ flex: 1 }}>
-                        <Typography variant="h2" component="h1" gutterBottom>
-                            Les Raids
-                        </Typography>
-                        <Typography variant="body1">
-                            Liste des raids disponibles à l&apos;exploration.
-                        </Typography>
-                        {filteredRaids.length} raids trouvés
-
-                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
-                            <Button
+                    <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+                        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+                            <Stack direction="column">
+                                <Typography variant="h2" component="h1" gutterBottom>
+                                    Les Raids
+                                </Typography>
+                                <Typography variant="body1">
+                                    Liste des raids disponibles à l&apos;exploration.
+                                </Typography>
+                                <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                                    {filteredRaids.length} raids trouvés
+                                </Typography>
+                            </Stack>
+                            {user && isClubManager && <Button
                                 variant="contained"
-                                color="success"
-                                startIcon={<AddIcon />}
-                                onClick={() => navigate('/create-raid')}
-                                sx={{
-                                    bgcolor: '#1b5e20',
-                                    '&:hover': { bgcolor: '#144a19' }
-                                }}
+                                color="warning"
+                                onClick={() => navigate('/raid/create')}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '1rem', mr: 2 }}
                             >
-                                CRÉER UN RAID
+                                créer un raid
                             </Button>
-                        </Box>
-
+                            }
+                        </Stack>
                         <Box
                             sx={{
                                 display: 'grid',
@@ -163,12 +254,17 @@ export default function Raids() {
                                     md: 'repeat(3, 1fr)',
                                     lg: 'repeat(4, 1fr)'
                                 },
-                                alignItems: 'stretch'
+                                alignItems: 'stretch',
+                                p: 3,
+                                flex: 1,
+                                overflowY: 'auto',
+                                borderRadius: '10px',
+                                backgroundColor: 'primary.main'
                             }}
                         >
                             {filteredRaids.map((raid) => (
-                                <Box key={raid.RAI_ID} sx={{ display: 'flex' }}>
-                                    <RaidCard raid={raid} onDetailsClick={handleRaidDetails} />
+                                <Box key={raid.RAI_ID}>
+                                    <RaidCard raid={raid} />
                                 </Box>
                             ))}
                         </Box>

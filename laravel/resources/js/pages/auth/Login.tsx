@@ -7,29 +7,29 @@ import {
     TextField,
     Typography,
     Paper,
-    Link,
     Stack
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import LogoColor from '../../assets/logo-color.png';
 
 const Login = () => {
-    const [email, setEmail] = useState('');
+    const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
         try {
-            await login({ email, password });
-            navigate('/dashboard');
+            await login({ mail, password });
+            showAlert('Connexion réussie', 'success');
+            navigate('/');
         } catch (err) {
-            setError('Échec de la connexion. Vérifiez vos identifiants.');
             console.error(err);
+            showAlert('Erreur de connexion. Vérifiez vos identifiants.', 'error');
         }
     };
 
@@ -40,8 +40,7 @@ const Login = () => {
                 backgroundColor: 'primary.main',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                overflow: 'hidden',
+                justifyContent: 'center'
             }}
         >
             <Container maxWidth="sm">
@@ -50,7 +49,7 @@ const Login = () => {
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -79,8 +78,8 @@ const Login = () => {
                             autoComplete="email"
                             autoFocus
                             variant="standard"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={mail}
+                            onChange={(e) => setMail(e.target.value)}
                             placeholder="adresse.email@mail.com"
                         />
                         <TextField
@@ -99,29 +98,35 @@ const Login = () => {
                             sx={{ mt: 3 }}
                         />
 
-                        {error && (
-                            <Typography color="error" variant="body2" sx={{ mt: 2 }}>
-                                {error}
-                            </Typography>
-                        )}
-
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             color="primary"
-                            sx={{ mt: 5, mb: 4, py: 1.5, color: 'white' }}
+                            sx={{ mt: 5, mb: 4, py: 1.5, color: 'white', borderRadius: '10px' }}
                         >
                             SE CONNECTER
                         </Button>
 
                         <Stack spacing={2} alignItems="center">
-                            <Link href="#" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                mot de passe oublié
-                            </Link>
-                            <Link href="/register" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                s'inscrire
-                            </Link>
+                            <>
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                    onClick={() => navigate('/login')}
+                                >
+                                    Mot de passe oublié ?
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    color="warning"
+                                    sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                    onClick={() => navigate('/register')}
+                                >
+                                    S'inscrire
+                                </Button>
+                            </>
                         </Stack>
                     </Box>
                 </Paper>

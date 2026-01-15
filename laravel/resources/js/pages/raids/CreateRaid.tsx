@@ -5,12 +5,13 @@ import {
     TextField,
     Typography,
     Paper,
+    Stack,
     FormControl,
     InputLabel,
     Select,
     MenuItem,
-    Stack,
-    Alert
+    Alert,
+    FormHelperText
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -22,13 +23,16 @@ import type { RaidCreation } from '../../models/raid.model';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
-import { getClub, getClubUsers, type Club } from '../../api/club';
+import { useAlert } from '../../contexts/AlertContext';
+import { getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
-import { createAddress, type Address } from '../../api/address';
+import { createAddress } from '../../api/address';
+import type { AddressCreation } from '../../models/address.model';
 
 const CreateRaid = () => {
-    const navigate = useNavigate();
     const { user } = useUser();
+    const navigate = useNavigate();
+    const { showAlert } = useAlert();
 
     // Form data for Raid
     const [formData, setFormData] = useState<RaidCreation>({
@@ -42,11 +46,12 @@ const CreateRaid = () => {
         RAI_TIME_START: '',
         RAI_TIME_END: '',
         RAI_REGISTRATION_START: '',
-        RAI_REGISTRATION_END: ''
+        RAI_REGISTRATION_END: '',
+        RAI_NB_RACES: 1
     });
 
     // Address Form Data
-    const [addressData, setAddressData] = useState<Address>({
+    const [addressData, setAddressData] = useState<AddressCreation>({
         ADD_STREET_NUMBER: '',
         ADD_STREET_NAME: '',
         ADD_CITY: '',
@@ -58,23 +63,24 @@ const CreateRaid = () => {
     const [clubUsers, setClubUsers] = useState<User[]>([]);
     const [selectedResponsible, setSelectedResponsible] = useState<number | ''>('');
     const [errors, setErrors] = useState<string[]>([]);
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
     // USE_ID in Raid creation is the responsible person selected from club users.
 
     useEffect(() => {
         const init = async () => {
-            if (user && user.CLU_ID) {
-                setFormData(prev => ({ ...prev, CLU_ID: user.CLU_ID! }));
+            if (user && user.club) {
+                setFormData(prev => ({ ...prev, CLU_ID: user.club?.CLU_ID! }));
                 try {
                     // Fetch Club info
-                    const club = await getClub(user.CLU_ID);
-                    if (club) setClubName(club.CLU_NAME);
+                    setClubName(user.club.CLU_NAME);
 
                     // Fetch Club Users for Responsible selection
-                    const users = await getClubUsers(user.CLU_ID);
+                    const users = await getClubUsers(user.club.CLU_ID);
                     setClubUsers(users || []);
                 } catch (e) {
                     console.error("Failed to load club info", e);
+                    showAlert("Impossible de charger les informations du club", "error");
                 }
             }
         };
@@ -101,7 +107,8 @@ const CreateRaid = () => {
         e.preventDefault();
         try {
             // 1. Create Address
-            const addId = await createAddress(addressData);
+            const createdAddress = await createAddress(addressData);
+            const addId = createdAddress;
 
             console.log('Address ID:', addId);
             // Format dates to YYYY-MM-DD HH:mm:ss for Laravel
@@ -134,11 +141,15 @@ const CreateRaid = () => {
             // 3. Create Raid
             await createRaid(raidData);
             setErrors([]);
+            showAlert('Raid créé avec succès', 'success');
             navigate('/raids');
         } catch (error: any) {
             console.error('Error creating raid:', error);
-            if (error.body?.errors) {
-                const errorMessages = Object.values(error.body.errors).flat() as string[];
+            showAlert('Erreur lors de la création du raid', 'error');
+            const errorData = error.data || error.body;
+            if (errorData?.errors) {
+                setFieldErrors(errorData.errors);
+                const errorMessages = Object.values(errorData.errors).flat() as string[];
                 setErrors(errorMessages);
             } else {
                 setErrors([error.message || 'Une erreur est survenue']);
@@ -150,12 +161,14 @@ const CreateRaid = () => {
         <Box
             sx={{
                 flexGrow: 1,
-                bgcolor: '#fcfcfc', // Off-white background as per image
-                minHeight: '100vh',
+                bgcolor: '#1a2e22',
+                overflow: 'auto',
+                minHeight: 0,
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                py: 4
+                alignItems: 'flex-start',
+                p: 4,
+                pb: 12
             }}
         >
             <Paper
@@ -164,7 +177,7 @@ const CreateRaid = () => {
                     p: 6,
                     width: '100%',
                     maxWidth: 1000,
-                    bgcolor: 'transparent'
+                    height: 'fit-content'
                 }}
             >
                 <Typography component="h2" variant="h5" sx={{ mb: 6, fontWeight: 'bold', textTransform: 'uppercase', textAlign: 'center', fontFamily: '"Archivo Black", sans-serif' }}>
@@ -194,22 +207,22 @@ const CreateRaid = () => {
                                         onChange={handleChange}
                                         required
                                         InputLabelProps={{ shrink: true }}
-                                        placeholder="Raid Miam"
+                                        placeholder="Raid"
+                                        error={!!fieldErrors.RAI_NAME}
+                                        helperText={fieldErrors.RAI_NAME?.[0]}
                                     />
 
                                     <FormControl fullWidth variant="standard">
-                                        <InputLabel shrink>Club Organisateur</InputLabel>
-                                        <Select
-                                            value={user?.CLU_ID || ''}
+                                        <TextField
+                                            label="Club organisateur"
+                                            variant="standard"
+                                            value={clubName || ''}
+                                            onChange={handleAddressChange}
                                             disabled
-                                            displayEmpty
-                                            renderValue={() => clubName || "Chargement..."}
-                                        >
-                                            <MenuItem value={user?.CLU_ID}>{clubName}</MenuItem>
-                                        </Select>
+                                        />
                                     </FormControl>
 
-                                    <FormControl fullWidth variant="standard">
+                                    <FormControl fullWidth variant="standard" error={!!fieldErrors.USE_ID}>
                                         <InputLabel shrink>Responsable</InputLabel>
                                         <Select
                                             value={selectedResponsible}
@@ -221,29 +234,30 @@ const CreateRaid = () => {
                                                 <MenuItem key={u.USE_ID} value={u.USE_ID}>{u.USE_NAME} {u.USE_LAST_NAME}</MenuItem>
                                             ))}
                                         </Select>
+                                        {fieldErrors.USE_ID && <FormHelperText>{fieldErrors.USE_ID[0]}</FormHelperText>}
                                     </FormControl>
 
                                     <TextField
                                         fullWidth
-                                        label="Contact (Email)"
+                                        label="Email du contact"
                                         name="RAI_MAIL"
                                         variant="standard"
                                         value={formData.RAI_MAIL}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
                                         required
-                                        placeholder="test@gmail.com"
+                                        error={!!fieldErrors.RAI_MAIL}
+                                        helperText={fieldErrors.RAI_MAIL?.[0]}
                                     />
 
                                     <TextField
                                         fullWidth
-                                        label="Téléphone (Si besoin)"
+                                        label="Téléphone"
                                         name="RAI_PHONE_NUMBER"
                                         variant="standard"
                                         value={formData.RAI_PHONE_NUMBER}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="06..."
+                                        error={!!fieldErrors.RAI_PHONE_NUMBER}
+                                        helperText={fieldErrors.RAI_PHONE_NUMBER?.[0]}
                                     />
 
                                     <TextField
@@ -253,67 +267,37 @@ const CreateRaid = () => {
                                         variant="standard"
                                         value={formData.RAI_WEB_SITE}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="test.course.com"
+                                        error={!!fieldErrors.RAI_WEB_SITE}
+                                        helperText={fieldErrors.RAI_WEB_SITE?.[0]}
                                     />
 
-                                    <Box>
-                                        <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>Lieu</Typography>
-                                        <Stack direction="row" spacing={2}>
-                                            <TextField
-                                                label="Ville"
-                                                name="ADD_CITY"
-                                                variant="standard"
-                                                value={addressData.ADD_CITY}
-                                                onChange={handleAddressChange}
-                                                fullWidth
-                                                required
-                                                placeholder="Caen"
-                                            />
-                                            <TextField
-                                                label="Code Postal"
-                                                name="ADD_POSTAL_CODE"
-                                                variant="standard"
-                                                value={addressData.ADD_POSTAL_CODE}
-                                                onChange={handleAddressChange}
-                                                fullWidth
-                                                required
-                                                placeholder="14000"
-                                            />
-                                        </Stack>
-                                        <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
-                                            <TextField
-                                                label="N°"
-                                                name="ADD_STREET_NUMBER"
-                                                variant="standard"
-                                                value={addressData.ADD_STREET_NUMBER}
-                                                onChange={handleAddressChange}
-                                                sx={{ width: '100px' }}
-                                                required
-                                                placeholder="12"
-                                            />
-                                            <TextField
-                                                label="Rue"
-                                                name="ADD_STREET_NAME"
-                                                variant="standard"
-                                                value={addressData.ADD_STREET_NAME}
-                                                onChange={handleAddressChange}
-                                                fullWidth
-                                                required
-                                                placeholder="rue de la Paix"
-                                            />
-                                        </Stack>
-                                    </Box>
+
 
                                     <TextField
                                         fullWidth
-                                        label="Illustration"
+                                        label="lien image"
                                         name="RAI_IMAGE"
                                         variant="standard"
                                         value={formData.RAI_IMAGE}
                                         onChange={handleChange}
-                                        InputLabelProps={{ shrink: true }}
-                                        placeholder="course.png"
+                                        error={!!fieldErrors.RAI_IMAGE}
+                                        helperText={fieldErrors.RAI_IMAGE?.[0]}
+                                    />
+
+                                    <TextField
+                                        fullWidth
+                                        label="Nombre de courses"
+                                        name="RAI_NB_RACES"
+                                        type="number"
+                                        variant="standard"
+                                        value={formData.RAI_NB_RACES}
+                                        onChange={handleChange}
+                                        required
+                                        slotProps={{
+                                            htmlInput: { min: 1 }
+                                        }}
+                                        error={!!fieldErrors.RAI_NB_RACES}
+                                        helperText={fieldErrors.RAI_NB_RACES?.[0]}
                                     />
                                 </Stack>
                             </Grid>
@@ -332,7 +316,8 @@ const CreateRaid = () => {
                                                 textField: {
                                                     variant: 'standard',
                                                     fullWidth: true,
-                                                    helperText: "À partir d'aujourd'hui"
+                                                    helperText: fieldErrors.RAI_REGISTRATION_START?.[0] || "À partir d'aujourd'hui",
+                                                    error: !!fieldErrors.RAI_REGISTRATION_START
                                                 }
                                             }}
                                             minDate={dayjs()}
@@ -346,7 +331,8 @@ const CreateRaid = () => {
                                                 textField: {
                                                     variant: 'standard',
                                                     fullWidth: true,
-                                                    helperText: "Après le début des inscriptions"
+                                                    helperText: fieldErrors.RAI_REGISTRATION_END?.[0] || "Après le début des inscriptions",
+                                                    error: !!fieldErrors.RAI_REGISTRATION_END
                                                 }
                                             }}
                                             minDate={formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs()}
@@ -364,10 +350,11 @@ const CreateRaid = () => {
                                                 textField: {
                                                     variant: 'standard',
                                                     fullWidth: true,
-                                                    helperText: "Après la fin des inscriptions"
+                                                    helperText: fieldErrors.RAI_TIME_START?.[0] || "5 jours après la fin des inscriptions",
+                                                    error: !!fieldErrors.RAI_TIME_START
                                                 }
                                             }}
-                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END).add(1, 'day') : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs())}
+                                            minDate={formData.RAI_REGISTRATION_END ? dayjs(formData.RAI_REGISTRATION_END).add(6, 'day') : (formData.RAI_REGISTRATION_START ? dayjs(formData.RAI_REGISTRATION_START).add(1, 'day') : dayjs())}
                                             format="DD/MM/YYYY"
                                         />
                                         <DatePicker
@@ -378,13 +365,63 @@ const CreateRaid = () => {
                                                 textField: {
                                                     variant: 'standard',
                                                     fullWidth: true,
-                                                    helperText: "Après le début du raid"
+                                                    helperText: fieldErrors.RAI_TIME_END?.[0] || "Après le début du raid",
+                                                    error: !!fieldErrors.RAI_TIME_END
                                                 }
                                             }}
                                             minDate={formData.RAI_TIME_START ? dayjs(formData.RAI_TIME_START).add(1, 'day') : dayjs()}
                                             format="DD/MM/YYYY"
                                         />
                                     </Stack>
+                                    <Box>
+                                        <Typography variant="caption" sx={{ color: 'text.secondary', mb: 1, display: 'block' }}>Lieu</Typography>
+                                        <Stack direction="row" spacing={2}>
+                                            <TextField
+                                                label="Ville"
+                                                name="ADD_CITY"
+                                                variant="standard"
+                                                value={addressData.ADD_CITY}
+                                                onChange={handleAddressChange}
+                                                fullWidth
+                                                required
+                                                error={!!fieldErrors.ADD_CITY}
+                                                helperText={fieldErrors.ADD_CITY?.[0]}
+                                            />
+                                            <TextField
+                                                label="Code Postal"
+                                                name="ADD_POSTAL_CODE"
+                                                variant="standard"
+                                                value={addressData.ADD_POSTAL_CODE}
+                                                onChange={handleAddressChange}
+                                                fullWidth
+                                                required
+                                                error={!!fieldErrors.ADD_POSTAL_CODE}
+                                                helperText={fieldErrors.ADD_POSTAL_CODE?.[0]}
+                                            />
+                                        </Stack>
+                                        <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                                            <TextField
+                                                label="N°"
+                                                name="ADD_STREET_NUMBER"
+                                                variant="standard"
+                                                value={addressData.ADD_STREET_NUMBER}
+                                                onChange={handleAddressChange}
+                                                sx={{ width: '100px' }}
+                                                error={!!fieldErrors.ADD_STREET_NUMBER}
+                                                helperText={fieldErrors.ADD_STREET_NUMBER?.[0]}
+                                            />
+                                            <TextField
+                                                label="Rue"
+                                                name="ADD_STREET_NAME"
+                                                variant="standard"
+                                                value={addressData.ADD_STREET_NAME}
+                                                onChange={handleAddressChange}
+                                                fullWidth
+                                                error={!!fieldErrors.ADD_STREET_NAME}
+                                                helperText={fieldErrors.ADD_STREET_NAME?.[0]}
+                                            />
+                                        </Stack>
+                                    </Box>
                                 </Stack>
 
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 8 }}>

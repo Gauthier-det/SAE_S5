@@ -1,46 +1,74 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
+import { useAlert } from '../../contexts/AlertContext';
 import type { Raid } from '../../models/raid.model';
-import type { Race } from '../../models/race.model';
+import { RaceType, type Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EventIcon from '@mui/icons-material/Event';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
+import { useUser } from '../../contexts/userContext';
 
-export default function InfoRaid() {
+const RaidDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const [raid, setRaid] = React.useState<Raid | null>(null);
-    const [allRaces, setAllRaces] = React.useState<Race[]>([]);
+    const [raid, setRaid] = useState<Raid | null>(null);
+    const [allRaces, setAllRaces] = useState<Race[]>([]);
+    const [loading, setLoading] = useState(true);
+    const { showAlert } = useAlert();
+    const { user,isRaidManager } = useUser();
+    
 
-    React.useEffect(() => {
-        if (id) {
-            const raidId = parseInt(id, 10);
-            getRaidById(raidId).then(setRaid).catch(console.error);
-            getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
-        }
-    }, [id]);
+    useEffect(() => {
+        if (!id) return;
 
-    const [difficultyFilter, setDifficultyFilter] = React.useState<Set<string>>(new Set(['facile', 'moyen', 'difficile']));
+        const raidId = parseInt(id);
+        setLoading(true);
+
+        Promise.all([
+            getRaidById(raidId),
+            getListOfRacesByRaidId(raidId)
+        ]).then(([raidData, racesData]) => {
+            setRaid(raidData);
+            setAllRaces(racesData);
+        }).catch(err => {
+            console.error(err);
+            showAlert("Impossible de charger les détails du raid", "error");
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
+    const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
 
-    const handleDifficultyChange = (level: string) => {
-        const newFilter = new Set(difficultyFilter);
-        if (newFilter.has(level)) {
-            newFilter.delete(level);
-        } else {
-            newFilter.add(level);
+    // Calculate global min/max for the slider bounds
+    const limits = React.useMemo(() => {
+        if (allRaces.length === 0) return { min: 0, max: 100 };
+        const mins = allRaces.map(r => r.RAC_AGE_MIN);
+        const maxs = allRaces.map(r => r.RAC_AGE_MAX);
+        return {
+            min: Math.min(...mins),
+            max: Math.max(...maxs)
+        };
+    }, [allRaces]);
+
+    const [ageRange, setAgeRange] = useState<number[]>([0, 100]);
+
+    // Update range when limits change
+    useEffect(() => {
+        if (allRaces.length > 0) {
+            setAgeRange([limits.min, limits.max]);
         }
-        setDifficultyFilter(newFilter);
-    };
+    }, [limits, allRaces.length]);
 
     const handleTypeChange = (type: string) => {
         const newFilter = new Set(raceType);
@@ -52,20 +80,33 @@ export default function InfoRaid() {
         setRaceType(newFilter);
     };
 
+    const handleGenderChange = (gender: string) => {
+        const newFilter = new Set(raceGender);
+        if (newFilter.has(gender)) {
+            newFilter.delete(gender);
+        } else {
+            newFilter.add(gender);
+        }
+        setRaceGender(newFilter);
+    };
+
+    const handleAgeChange = (_event: Event, newValue: number | number[]) => {
+        setAgeRange(newValue as number[]);
+    };
+
     const filteredRaces = React.useMemo(() => {
         return allRaces.filter((race) => {
-            // Type filter - Compétitif or Loisir
             const matchesType = raceType.size === 0 ||
-                (raceType.has('Compétitif') && race.RAC_TYPE === 'Compétitif') ||
-                (raceType.has('Loisir') && race.RAC_TYPE === 'Loisir');
+                (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
+                (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
 
-            // Difficulty filter - normalize to lowercase for comparison
-            const raceDifficulty = (race.RAC_DIFFICULTY || 'moyen').toLowerCase();
-            const matchesDifficulty = difficultyFilter.size === 0 || difficultyFilter.has(raceDifficulty);
+            const matchesGender = raceGender.size === 0 || raceGender.has(race.RAC_GENDER);
 
-            return matchesType && matchesDifficulty;
+            const matchesAge = race.RAC_AGE_MIN >= ageRange[0] && race.RAC_AGE_MAX <= ageRange[1];
+
+            return matchesType && matchesGender && matchesAge;
         });
-    }, [allRaces, raceType, difficultyFilter]);
+    }, [allRaces, raceType, raceGender, ageRange]);
 
 
     if (!raid) {
@@ -88,7 +129,7 @@ export default function InfoRaid() {
     }
 
     return (
-        <Container maxWidth={false}>
+        <Container maxWidth={false} sx={{ overflowX: 'hidden' }}>
             <Box sx={{ my: 4 }}>
                 <Button
                     variant="text"
@@ -118,37 +159,6 @@ export default function InfoRaid() {
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-                                Difficulté
-                            </Typography>
-                            <Box sx={{ px: 1 }}>
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('facile')}
-                                            onChange={() => handleDifficultyChange('facile')}
-                                        />}
-                                        label="Facile"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('moyen')}
-                                            onChange={() => handleDifficultyChange('moyen')}
-                                        />}
-                                        label="Moyen"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox
-                                            checked={difficultyFilter.has('difficile')}
-                                            onChange={() => handleDifficultyChange('difficile')}
-                                        />}
-                                        label="Difficile"
-                                    />
-                                </FormGroup>
-                            </Box>
-                        </Box>
-
-                        <Box>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                 Type
                             </Typography>
                             <FormGroup>
@@ -168,13 +178,79 @@ export default function InfoRaid() {
                                 />
                             </FormGroup>
                         </Box>
-                    </Box>
 
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Genre
+                            </Typography>
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Homme')}
+                                        onChange={() => handleGenderChange('Homme')}
+                                    />}
+                                    label="Homme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Femme')}
+                                        onChange={() => handleGenderChange('Femme')}
+                                    />}
+                                    label="Femme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Mixte')}
+                                        onChange={() => handleGenderChange('Mixte')}
+                                    />}
+                                    label="Mixte"
+                                />
+                            </FormGroup>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Age (ans)
+                            </Typography>
+                            <Box sx={{ px: 1 }}>
+                                <Slider
+                                    value={ageRange}
+                                    onChange={handleAgeChange}
+                                    valueLabelDisplay="auto"
+                                    min={limits.min}
+                                    max={limits.max}
+                                />
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {ageRange[0]} ans
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        {ageRange[1]} ans
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+
+
+
+                    </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-                                {raid.RAI_NAME}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+                                    {raid.RAI_NAME}
+                                </Typography>
+                                {user && raid && user.USE_ID === raid.user.USE_ID && isRaidManager && (
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={() => navigate(`/raids/${id}/create`)}
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                    >
+                                        Créer une course
+                                    </Button>
+                                )}
+                            </Box>
 
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -198,6 +274,19 @@ export default function InfoRaid() {
 
                             {/* Info Cards */}
                             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+                                {user?.USE_ID === raid.user?.USE_ID &&
+                                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                        <Box sx={{ p: 2, backgroundColor: '#e3fde3ff', borderRadius: 2, minWidth: 200 }}>
+                                            <ManageAccountsIcon fontSize="medium" color="primary" />
+                                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                                Informations
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                vous êtes l'organisateur de ce raid
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                }
                                 <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" color="primary" />
@@ -286,3 +375,5 @@ export default function InfoRaid() {
         </Container>
     );
 }
+
+export default RaidDetails;

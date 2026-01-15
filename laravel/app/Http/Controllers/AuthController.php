@@ -23,7 +23,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = User::where('USE_MAIL', $request->mail)->first();
+        $user = User::with(['address', 'club'])->where('USE_MAIL', $request->mail)->first();
 
         if (!$user || !Hash::check($request->password, $user->USE_PASSWORD)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
@@ -31,23 +31,31 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['data' => [
-            'user_id' => $user->USE_ID,
-            'user_name' => $user->USE_NAME,
-            'user_last_name' => $user->USE_LAST_NAME,
-            'user_mail' => $user->USE_MAIL,
-            'club_id' => $user->CLU_ID,
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]], 201);
+        return response()->json([
+            'data' => [
+                'user_id' => $user->USE_ID,
+                'user_name' => $user->USE_NAME,
+                'user_last_name' => $user->USE_LAST_NAME,
+                'user_mail' => $user->USE_MAIL,
+                'user_gender' => $user->USE_GENDER,
+                'user_phone' => $user->USE_PHONE_NUMBER,
+                'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
+                'user_address' => $user->address,
+                'user_club' => $user->club,
+                'user_licence' => $user->USE_LICENCE_NUMBER,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]
+        ], 201);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->delete(); // Revokes ALL tokens for this user
 
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
+
 
     public function register(Request $request)
     {
@@ -57,6 +65,7 @@ class AuthController extends Controller
                 'password' => 'required|min:8',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
+                'gender' => 'required|string|in:Homme,Femme,Autre',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -70,18 +79,26 @@ class AuthController extends Controller
             'USE_PASSWORD' => Hash::make($request->password),
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
+            'USE_GENDER' => $request->gender,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['data' => [
-            'user_id' => $user->USE_ID,
-            'user_name' => $user->USE_NAME,
-            'user_last_name' => $user->USE_LAST_NAME,
-            'user_mail' => $user->USE_MAIL,
-            'club_id' => $user->CLU_ID,
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]], 201);
+        return response()->json([
+            'data' => [
+                'user_id' => $user->USE_ID,
+                'user_name' => $user->USE_NAME,
+                'user_last_name' => $user->USE_LAST_NAME,
+                'user_mail' => $user->USE_MAIL,
+                'user_gender' => $user->USE_GENDER,
+                'user_phone' => $user->USE_PHONE_NUMBER,
+                'user_birthdate' => null,
+                'user_address' => null,
+                'user_club' => null,
+                'user_licence' => null,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]
+        ], 201);
     }
 }

@@ -23,13 +23,14 @@ class Race extends Model
         'RAI_ID', 
         'RAC_TIME_START', 
         'RAC_TIME_END', 
+        'RAC_GENDER',
         'RAC_TYPE', 
         'RAC_DIFFICULTY', 
         'RAC_MIN_PARTICIPANTS', 
         'RAC_MAX_PARTICIPANTS', 
         'RAC_MIN_TEAMS', 
         'RAC_MAX_TEAMS', 
-        'RAC_TEAM_MEMBERS', 
+        'RAC_MAX_TEAM_MEMBERS', 
         'RAC_AGE_MIN', 
         'RAC_AGE_MIDDLE', 
         'RAC_AGE_MAX'
@@ -43,6 +44,11 @@ class Race extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'USE_ID', 'USE_ID');
+    }
+
+    public function raid(): BelongsTo
+    {
+        return $this->belongsTo(Raid::class, 'RAI_ID', 'RAI_ID');
     }
 
     public function teams(): BelongsToMany
