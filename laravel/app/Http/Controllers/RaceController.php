@@ -27,6 +27,34 @@ class RaceController extends Controller
         return response()->json(['data' => $race], 200);
     }
 
+    public function getRaceByIdWithPrice($id)
+    {
+        $race = Race::with('categories')
+            ->find($id);
+            
+        if (!$race) {
+            return response()->json([
+                'message' => 'Race not found',
+            ], 404);
+        }
+        
+        // Map prices from categories relationship
+        $priceMap = [
+            1 => 'CAT_1_PRICE',
+            2 => 'CAT_2_PRICE',
+            3 => 'CAT_3_PRICE',
+        ];
+        
+        foreach ($race->categories as $category) {
+            $catId = $category->CAT_ID;
+            if (isset($priceMap[$catId])) {
+                $race[$priceMap[$catId]] = $category->pivot->CAR_PRICE ?? 0;
+            }
+        }
+        
+        return response()->json(['data' => $race], 200);
+    }
+
     public function getRacesByRaid($raidId)
     {
         $races = Race::where('RAI_ID', $raidId)->get()->load('user');
@@ -243,17 +271,22 @@ class RaceController extends Controller
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+        // Check authorization: admin or raid manager
+        $raid = Raid::find($race->RAI_ID);
+        $isAdmin = auth()->user()->isAdmin();
+        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
+
+        if (!$isAdmin && !$isRaidManager) {
             return response()->json([
-                'message' => 'Unauthorized. You can only update races you created.',
+                'message' => 'Unauthorized. Only admins or raid managers can update this race.',
             ], 403);
         }
 
         $validator = Validator::make($request->all(), [
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
             'RAC_NAME' => 'sometimes|string|max:255',
-            'RAC_TIME_START' => 'sometimes|date',
-            'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
+            'RAC_TIME_START' => 'sometimes|date_format:Y-m-d H:i:s',
+            'RAC_TIME_END' => 'sometimes|date_format:Y-m-d H:i:s|after_or_equal:RAC_TIME_START',
             'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
             'RAC_TYPE' => 'sometimes|string|max:255',
             'RAC_DIFFICULTY' => 'sometimes|string|max:255',
@@ -266,32 +299,66 @@ class RaceController extends Controller
             'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
+            'CAT_1_PRICE' => 'sometimes|numeric|min:0',
+            'CAT_2_PRICE' => 'sometimes|numeric|min:0',
+            'CAT_3_PRICE' => 'sometimes|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $race->update($request->only([
-            'RAI_ID',
-            'RAC_NAME',
-            'RAC_TIME_START',
-            'RAC_TIME_END',
-            'RAC_GENDER',
-            'RAC_TYPE',
-            'RAC_DIFFICULTY',
-            'RAC_MIN_PARTICIPANTS',
-            'RAC_MAX_PARTICIPANTS',
-            'RAC_MIN_TEAMS',
-            'RAC_MAX_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS',
-            'RAC_AGE_MIN',
-            'RAC_AGE_MIDDLE',
-            'RAC_AGE_MAX',
-            'RAC_CHIP_MANDATORY',
-        ]));
+        try {
+            DB::beginTransaction();
 
-        return response()->json(['data' => $race], 200);
+            $race->update($request->only([
+                'RAI_ID',
+                'RAC_NAME',
+                'RAC_TIME_START',
+                'RAC_TIME_END',
+                'RAC_GENDER',
+                'RAC_TYPE',
+                'RAC_DIFFICULTY',
+                'RAC_MIN_PARTICIPANTS',
+                'RAC_MAX_PARTICIPANTS',
+                'RAC_MIN_TEAMS',
+                'RAC_MAX_TEAMS',
+                'RAC_MAX_TEAM_MEMBERS',
+                'RAC_AGE_MIN',
+                'RAC_AGE_MIDDLE',
+                'RAC_AGE_MAX',
+                'RAC_CHIP_MANDATORY',
+            ]));
+
+            // Update prices if provided
+            if ($request->has('CAT_1_PRICE') || $request->has('CAT_2_PRICE') || $request->has('CAT_3_PRICE')) {
+                for ($catId = 1; $catId <= 3; $catId++) {
+                    if ($request->has('CAT_' . $catId . '_PRICE')) {
+                        DB::table('SAN_CATEGORIES_RACES')
+                            ->where('RAC_ID', $race->RAC_ID)
+                            ->where('CAT_ID', $catId)
+                            ->update([
+                                'CAR_PRICE' => $request->input('CAT_' . $catId . '_PRICE'),
+                            ]);
+                    }
+                }
+            }
+
+            DB::commit();
+
+            $race->load('categories');
+
+            return response()->json(['data' => $race], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Race update error: ' . $e->getMessage() . ' - ' . $e->getFile() . ':' . $e->getLine());
+            return response()->json([
+                'message' => 'Error updating race',
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], 500);
+        }
     }
 
     public function deleteRace($id)
@@ -301,9 +368,14 @@ class RaceController extends Controller
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+        // Check authorization: admin, race creator, or raid manager
+        $raid = Raid::find($race->RAI_ID);
+        $isAdmin = auth()->user()->isAdmin();
+        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
+
+        if (!$isAdmin && !$isRaidManager) {
             return response()->json([
-                'message' => 'Unauthorized. You can only delete races you created.',
+                'message' => 'Unauthorized. Only admins, race creators, or raid managers can delete this race.',
             ], 403);
         }
 
@@ -320,7 +392,9 @@ class RaceController extends Controller
                 $query->withPivot('CAR_PRICE');
             },
             'teams.owner',
-            'teams.members'
+            'teams.members',
+            'user',
+            'raid'
         ])->find($id);
 
         if (!$race) {
@@ -389,6 +463,7 @@ class RaceController extends Controller
                     'time' => $team->pivot->TER_TIME,
                     'bonus' => $team->pivot->TER_BONUS_POINTS,
                 ]
+                'is_valid' => (bool)$team->pivot->TER_IS_VALID,
             ];
         });
 

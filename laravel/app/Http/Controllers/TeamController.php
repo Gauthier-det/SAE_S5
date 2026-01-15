@@ -175,6 +175,14 @@ class TeamController extends Controller
             'race_id' => 'required|integer|exists:SAN_RACES,RAC_ID',
         ]);
 
+        $race = Race::findOrFail($request->race_id);
+        $raid = $race->raid; // Assuming relationship 'raid' exists in Race model
+
+        // Check registration deadline
+        if ($raid && $raid->RAI_REGISTRATION_END && now()->greaterThan($raid->RAI_REGISTRATION_END)) {
+             return response()->json(['message' => 'Les inscriptions pour ce raid sont closes.'], 422);
+        }
+
         $team = Team::find($teamId);
         if (!$team) {
             return response()->json(['message' => 'Team not found'], 404);
@@ -321,8 +329,11 @@ class TeamController extends Controller
 
         $team = Team::findOrFail($request->team_id);
         
-        // Allow owner OR the user themselves to update
-        if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id) {
+        
+        $race = Race::findOrFail($request->race_id);
+
+        // Allow owner OR the user themselves OR the Race Manager to update
+        if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id && $race->USE_ID !== auth()->id()) {
              return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -348,8 +359,11 @@ class TeamController extends Controller
         ]);
 
         $team = Team::findOrFail($request->team_id);
-        if ($team->USE_ID !== auth()->id()) {
-             return response()->json(['message' => 'Unauthorized'], 403);
+        $race = Race::findOrFail($request->race_id);
+
+        // Allow Race Manager
+        if ($race->USE_ID !== auth()->id()) {
+             return response()->json(['message' => 'Seul le responsable de la course peut valider une équipe.'], 403);
         }
         
         $race = Race::findOrFail($request->race_id);
@@ -410,11 +424,12 @@ class TeamController extends Controller
         ]);
 
         $team = Team::findOrFail($request->team_id);
-        if ($team->USE_ID !== auth()->id()) {
-             return response()->json(['message' => 'Unauthorized'], 403);
-        }
-        
         $race = Race::findOrFail($request->race_id);
+
+        // Allow Race Manager
+        if ($race->USE_ID !== auth()->id()) {
+             return response()->json(['message' => 'Seul le responsable de la course peut dévalider une équipe.'], 403);
+        }
 
         // Check if race has started
         $raceStart = \Carbon\Carbon::parse($race->RAC_DATE . ' ' . ($race->RAC_TIME_START ?? '00:00:00'));

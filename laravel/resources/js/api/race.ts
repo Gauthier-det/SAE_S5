@@ -27,7 +27,12 @@ export const createRaceWithPrices = async (race: RaceCreation): Promise<Race> =>
         body: JSON.stringify(race)
     });
     return response.data;
-}
+};
+
+export const getRaceById = async (id: number): Promise<Race> => {
+    const response = await apiClient<{ data: Race }>(`/races/${id}`);
+    return response.data;
+};
 
 export const importRaceResults = async (raceId: number, file: File) => {
     const formData = new FormData();
@@ -46,8 +51,21 @@ export const deleteRaceResults = async (raceId: number) => {
 };
 export const updateRace = async (raceId: number, race: Partial<RaceCreation>): Promise<Race> => {
     const response = await apiClient<{ data: Race }>(`/races/${raceId}`, {
+export const getRaceByIdWithPrice = async (id: number): Promise<Race> => {
+    const response = await apiClient<{ data: Race }>(`/races/${id}/with-price`);
+    return response.data;
+};
+
+export const updateRaceWithPrices = async (id: number, race: RaceCreation): Promise<Race> => {
+    const response = await apiClient<{ data: Race }>(`/races/${id}`, {
         method: 'PUT',
         body: JSON.stringify(race)
     });
     return response.data;
-}
+};
+
+export const deleteRace = async (id: number): Promise<void> => {
+    await apiClient(`/races/${id}`, {
+        method: 'DELETE'
+    });
+};

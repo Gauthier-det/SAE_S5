@@ -10,13 +10,13 @@ import ProtectedRoute from './components/router/ProtectedRoute';
 import GuestRoute from './components/router/GuestRoute';
 import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
-import About from './pages/About';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
 import RaceResults from './pages/races/RaceResults';
 import TeamRegistration from './pages/races/TeamRegistration';
 import TeamRaceManagement from './pages/teams/TeamRaceManagement';
 import CreateRace from './pages/raids/CreateRace';
+import EditRace from './pages/races/EditRace';
 import CreateRaid from './pages/raids/CreateRaid';
 import EditRaid from './pages/raids/EditRaid';
 import Login from './pages/auth/Login';
@@ -69,6 +69,7 @@ const AppRoutes = () => {
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
           <Route path="/raids/:id/create" element={<CreateRace />} />
+          <Route path="/races/:id/edit" element={<EditRace />} />
         </Route>
 
         {/* Admin Routes */}

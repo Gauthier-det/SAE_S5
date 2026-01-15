@@ -1,7 +1,10 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaceDetails, importRaceResults, deleteRaceResults } from '../../api/race';
+import { getRaceDetails, deleteRace } from '../../api/race';
+import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
+import dayjs from 'dayjs';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
     TextField, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
@@ -9,18 +12,25 @@ import {
     Stack,
     CircularProgress,
     DialogActions
+    TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
+    Tooltip, Stack
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EventIcon from '@mui/icons-material/Event';
 import PersonIcon from '@mui/icons-material/Person';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import RuleIcon from '@mui/icons-material/Rule';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import LockIcon from '@mui/icons-material/Lock';
 import StarIcon from '@mui/icons-material/Star';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -30,7 +40,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user, isAuthenticated } = useUser();
+    const { user, isAuthenticated, isRaidManager, isAdmin } = useUser();
+    const { showAlert } = useAlert();
     const [race, setRace] = useState<RaceDetail | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTeam, setSelectedTeam] = useState<TeamDetail | null>(null);
@@ -92,6 +103,9 @@ export default function RaceDetails() {
 
         return { myTeams: my, otherTeams: others };
     }, [race, searchTerm, user, isAuthenticated]);
+
+    // Check if registration deadline has passed
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
 
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;
@@ -163,6 +177,49 @@ export default function RaceDetails() {
         );
     }
 
+    const handleDeleteClick = () => {
+        setDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await deleteRace(parseInt(id || '0'));
+            showAlert("Course supprimée avec succès !", "success");
+            navigate(`/raids/${race?.raid.RAI_ID}`);
+        } catch (error: any) {
+            console.error('Error deleting race:', error);
+            showAlert("Erreur lors de la suppression de la course", "error");
+        }
+        setDeleteDialogOpen(false);
+    const handleValidateTeam = async (e: React.MouseEvent, teamId: number) => {
+        e.stopPropagation();
+        if (!race) return;
+        try {
+            await validateTeamForRace(teamId, race.RAC_ID);
+            // Refresh logic - ideally reload race details or update local state
+            const updatedRace = await getRaceDetails(race.RAC_ID);
+            setRace(updatedRace);
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la validation");
+        }
+    };
+
+    const handleUnvalidateTeam = async (e: React.MouseEvent, teamId: number) => {
+        e.stopPropagation();
+        if (!race) return;
+        if (!confirm("Voulez-vous vraiment dévalider cette équipe ?")) return;
+        try {
+            await unvalidateTeamForRace(teamId, race.RAC_ID);
+            // Refresh
+            const updatedRace = await getRaceDetails(race.RAC_ID);
+            setRace(updatedRace);
+        } catch (err) {
+            console.error(err);
+            alert("Erreur lors de la dévalidation");
+        }
+    };
+
     if (!race) {
         return <Typography>Course introuvable</Typography>;
     }
@@ -170,11 +227,26 @@ export default function RaceDetails() {
     const { stats, formatted_categories } = race;
     const isBelowMinParticipants = stats.participants_count < race.RAC_MIN_PARTICIPANTS;
 
+    // Check if current user is the Race Manager (using race.user linked in RaceController)
+    // In RaceController: 'user' relation is loaded. So race.user.USE_ID is the manager.
+    const isRaceManager = isAuthenticated && user && race && user.USE_ID === race.user.USE_ID;
+
     const renderTeamCard = (team: TeamDetail & { isResponsible?: boolean, isMember?: boolean }) => (
         <Card key={team.id} sx={{ p: 2, mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', border: team.isResponsible ? '2px solid #ed6c02' : (team.isMember ? '2px solid #1976d2' : 'none') }}>
             <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Typography fontWeight="bold">{team.name}</Typography>
+                    {/* Validation Status */}
+                    {team.is_valid ? (
+                        <Tooltip title="Équipe validée par le responsable">
+                            <CheckCircleIcon color="success" />
+                        </Tooltip>
+                    ) : (
+                        <Tooltip title="Équipe en attente de validation">
+                            <CancelIcon color="error" />
+                        </Tooltip>
+                    )}
+
                     {team.isResponsible && <Chip label="Responsable" size="small" color="warning" icon={<StarIcon />} />}
                     {team.isMember && !team.isResponsible && <Chip label="Membre" size="small" color="primary" />}
                 </Box>
@@ -182,23 +254,67 @@ export default function RaceDetails() {
                     Resp: {team.responsible?.name || 'N/A'} • {team.members_count} / {race.RAC_MAX_TEAM_MEMBERS} membres
                 </Typography>
             </Box>
-            <Tooltip title={isAuthenticated ? "Voir les membres" : "Connectez-vous pour voir les détails"}>
-                <span>
-                    <IconButton onClick={() => handleOpenTeamModal(team)} color="primary" disabled={!isAuthenticated}>
-                        {isAuthenticated ? <GroupsIcon /> : <LockIcon />}
-                    </IconButton>
-                </span>
-            </Tooltip>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+                {isRaceManager && (
+                    <>
+                        {!team.is_valid ? (
+                            <Tooltip title="Valider l'équipe">
+                                <IconButton onClick={(e) => handleValidateTeam(e, team.id)} color="success">
+                                    <RuleIcon />
+                                </IconButton>
+                            </Tooltip>
+                        ) : (
+                            <Tooltip title="Invalider l'équipe">
+                                <IconButton onClick={(e) => handleUnvalidateTeam(e, team.id)} color="warning">
+                                    <CancelIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )}
+                    </>
+                )}
+
+                <Tooltip title={isAuthenticated ? "Voir les membres" : "Connectez-vous pour voir les détails"}>
+                    <span>
+                        <IconButton onClick={() => handleOpenTeamModal(team)} color="primary" disabled={!isAuthenticated}>
+                            {isAuthenticated ? <GroupsIcon /> : <LockIcon />}
+                        </IconButton>
+                    </span>
+                </Tooltip>
+            </Box>
         </Card>
     );
 
     return (
         <Container maxWidth="md" sx={{ pb: 10 }}>
             {/* Header / Back */}
-            <Box sx={{ py: 2, display: 'flex', alignItems: 'center' }}>
-                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid.RAI_ID}`)}>
+            <Box sx={{ py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid?.RAI_ID}`)} sx={{ borderRadius: '8px' }}>
                     Retour au raid
                 </Button>
+                {user && (isAdmin || isRaidManager) && !disableEditing && (
+                    <Stack direction="row" spacing={1}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<EditIcon />}
+                            onClick={() => navigate(`/races/${id}/edit`)}
+                            disabled={disableEditing}
+                            sx={{ borderRadius: '8px' }}
+                        >
+                            Modifier la Course
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={handleDeleteClick}
+                            disabled={disableEditing}
+                            sx={{ borderRadius: '8px' }}
+                        >
+                            Supprimer la Course
+                        </Button>
+                    </Stack>
+                )}
             </Box>
             <Box sx={{ py: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Stack direction="column" spacing={2}>
@@ -476,7 +592,8 @@ export default function RaceDetails() {
                         ))}
                     </List>
                 </DialogContent>
-                {selectedTeam && user && selectedTeam.responsible?.id === user.USE_ID && (
+                {/* Allow Team Owner OR Race Manager to manage team */}
+                {selectedTeam && user && (selectedTeam.responsible?.id === user.USE_ID || isRaceManager) && (
                     <DialogActions>
                         <Button
                             variant="contained"
@@ -484,7 +601,7 @@ export default function RaceDetails() {
                             fullWidth
                             onClick={() => navigate(`/teams/${selectedTeam.id}/races/${race?.RAC_ID}/manage`)}
                         >
-                            Gérer l'équipe
+                            {isRaceManager ? "Gérer l'équipe (Admin)" : "Gérer l'équipe"}
                         </Button>
                     </DialogActions>
                 )}
@@ -565,6 +682,22 @@ export default function RaceDetails() {
                         </Button>
                     </Box>
                 </DialogContent>
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+                <DialogTitle sx={{ fontWeight: 'bold' }}>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Êtes-vous sûr de vouloir supprimer cette course ? Cette action est irréversible.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
+                        Annuler
+                    </Button>
+                    <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+                        Supprimer
+                    </Button>
+                </DialogActions>
             </Dialog>
         </Container>
     );

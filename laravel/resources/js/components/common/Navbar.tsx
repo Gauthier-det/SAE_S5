@@ -21,7 +21,12 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 
-const settings = ['Profile', 'Logout'];
+const pages = [
+    { name: 'TABLEAU DE BORD', path: '/dashboard' },
+    { name: 'LES RAIDS', path: '/raids' },
+];
+
+const settings = ['Profil', 'Déconnexion'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
@@ -48,9 +53,9 @@ function Navbar() {
     };
 
     const handleMenuClick = (setting: string) => {
-        if (setting === 'Logout') {
+        if (setting === 'Déconnexion') {
             logout();
-        } else if (setting === 'Profile') {
+        } else if (setting === 'Profil') {
             navigate('/profile');
         }
         handleCloseUserMenu();
@@ -59,7 +64,7 @@ function Navbar() {
     const handlePageClick = (path: string) => {
         navigate(path);
     };
-console.log("user", user);
+    console.log("user", user);
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
             <Container maxWidth={false} disableGutters>
@@ -133,7 +138,7 @@ console.log("user", user);
                                 Admin
                             </Button>
                         )}
-                        {user && user.club && isClubManager&& (
+                        {user && user.club && isClubManager && (
                             <Button
                                 key="Club"
                                 onClick={() => navigate('/club/' + user?.club!.CLU_ID)}
