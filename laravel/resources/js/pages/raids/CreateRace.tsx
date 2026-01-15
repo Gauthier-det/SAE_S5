@@ -53,7 +53,7 @@ import type { Raid } from '../../models/raid.model';
 const CreateRace = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { user } = useUser();
+  const { user, refreshUser } = useUser();
   const { showAlert } = useAlert();
 
   // State for raid data and club members
@@ -277,6 +277,7 @@ const CreateRace = () => {
         USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 0),
       };
       await createRaceWithPrices(racePayload as any);
+      await refreshUser();
       setErrors({});
       showAlert("Course créée avec succès !", "success");
       navigate('/raids');
