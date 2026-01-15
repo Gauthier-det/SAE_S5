@@ -71,7 +71,6 @@ const AdminDashboard = () => {
 
     const handleDelete = (id: number) => {
         showConfirm({
-            title: 'Supprimer le club ?',
             message: 'Êtes-vous sûr de vouloir supprimer ce club ? Cette action est irréversible.',
             onAccept: async () => {
                 try {

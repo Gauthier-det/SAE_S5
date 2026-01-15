@@ -1,5 +1,6 @@
 import type { Club } from "./club.model";
-import type { Address, User } from "./user.model";
+import type { User } from "./user.model";
+import type { Address } from "./address.model";
 
 export interface Raid {
     RAI_ID: number;
