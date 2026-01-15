@@ -88,13 +88,21 @@ export interface TeamDetail {
     members_count: number;
     responsible: TeamResponsible | null;
     members: TeamMember[];
+    result?: {
+        rank: number | null;
+        time: string | null;
+        bonus: number | null;
+    };
 }
 
 export interface RaceDetail extends Race {
     stats: RaceStats;
     formatted_categories: FormattedCategory[];
     teams_list: TeamDetail[];
+    has_results: boolean;
 }
+
+export interface RaceResultPage extends RaceDetail { }
 
 export interface RaceDetailResponse {
     data: RaceDetail;

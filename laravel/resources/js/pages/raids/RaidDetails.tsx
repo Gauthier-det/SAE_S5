@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider, Stack } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider, Stack, CircularProgress } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -107,6 +107,15 @@ const RaidDetails = () => {
         });
     }, [allRaces, raceType, raceGender, ageRange]);
 
+
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
 
     if (!raid) {
         return (

@@ -28,3 +28,19 @@ export const createRaceWithPrices = async (race: RaceCreation): Promise<Race> =>
     });
     return response.data;
 }
+
+export const importRaceResults = async (raceId: number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return await apiClient<{ message: string; details: any[] }>(`/races/${raceId}/import-results`, {
+        method: 'POST',
+        body: formData,
+    });
+};
+
+export const deleteRaceResults = async (raceId: number) => {
+    return await apiClient<{ message: string; }>(`/races/${raceId}/results`, {
+        method: 'DELETE',
+    });
+};

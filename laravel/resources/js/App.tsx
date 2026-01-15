@@ -13,6 +13,7 @@ import RaidDetails from './pages/raids/RaidDetails';
 import About from './pages/About';
 import Register from './pages/auth/Register';
 import RaceDetails from './pages/races/RaceDetails';
+import RaceResults from './pages/races/RaceResults';
 import CreateRace from './pages/raids/CreateRace';
 import CreateRaid from './pages/raids/CreateRaid';
 import Login from './pages/auth/Login';
@@ -41,6 +42,7 @@ const AppRoutes = () => {
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
         <Route path="/races/:id" element={<RaceDetails />} />
+        <Route path="/races/:id/results" element={<RaceResults />} />
         <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}

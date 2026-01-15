@@ -266,7 +266,9 @@ class RaceController extends Controller
     public function getRaceDetails($id)
     {
         $race = Race::with([
-            'categories' => function($query) {
+            'user',
+            'raid',
+            'categories' => function ($query) {
                 $query->withPivot('CAR_PRICE');
             },
             'teams.owner',
@@ -297,6 +299,16 @@ class RaceController extends Controller
             'participants_expected_max' => $race->RAC_MAX_PARTICIPANTS,
         ];
 
+        // Check if there are any results
+        $hasResults = false;
+        foreach ($race->teams as $team) {
+            if ($team->pivot->TER_RANK !== null || $team->pivot->TER_TIME !== null) {
+                $hasResults = true;
+                break;
+            }
+        }
+        $raceData['has_results'] = $hasResults;
+
         // Format categories
         $raceData['formatted_categories'] = $race->categories->map(function ($cat) {
             return [
@@ -324,13 +336,225 @@ class RaceController extends Controller
                         'email' => $member->USE_MAIL,
                     ];
                 }),
+                'result' => [
+                    'rank' => $team->pivot->TER_RANK,
+                    'time' => $team->pivot->TER_TIME,
+                    'bonus' => $team->pivot->TER_BONUS_POINTS,
+                ]
             ];
         });
 
         // Remove raw relationships to clean up response size if needed, 
         // but 'toArray()' already included them. We can overwrite 'teams' or just keep 'teams_list'.
-        unset($raceData['teams']); 
+        unset($raceData['teams']);
 
         return response()->json(['data' => $raceData], 200);
+    }
+
+    public function deleteResults($raceId)
+    {
+        $race = Race::find($raceId);
+        if (!$race) {
+            return response()->json(['message' => 'Race not found'], 404);
+        }
+
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only the race manager can delete results.',
+            ], 403);
+        }
+
+        // Set rank, time, bonus to null for this race
+        DB::table('SAN_TEAMS_RACES')
+            ->where('RAC_ID', $raceId)
+            ->update([
+                    'TER_RANK' => null,
+                    'TER_TIME' => null,
+                    'TER_BONUS_POINTS' => null,
+                ]);
+
+        return response()->json(['message' => 'Results deleted successfully'], 200);
+    }
+
+    public function importResults(Request $request, $raceId)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $race = Race::find($raceId);
+        if (!$race) {
+            return response()->json(['message' => 'Race not found'], 404);
+        }
+
+        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only the race manager can import results.',
+            ], 403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $file = $request->file('file');
+            $path = $file->getPathname();
+
+            // Detect separator
+            $firstLine = fgets(fopen($path, 'r'));
+            $separator = (strpos($firstLine, ';') !== false) ? ';' : ',';
+
+            $handle = fopen($path, 'r');
+
+            // Handle UTF-8 BOM
+            $bom = fread($handle, 3);
+            if ($bom != "\xEF\xBB\xBF") {
+                rewind($handle);
+            }
+
+            $header = fgetcsv($handle, 0, $separator);
+
+            if (!$header) {
+                fclose($handle);
+                return response()->json(['message' => 'Fichier CSV vide ou invalide'], 422);
+            }
+
+            // Normalize header
+            $header = array_map(function ($h) {
+                return mb_strtolower(trim($h), 'UTF-8');
+            }, $header);
+
+            // Find column indices
+            $rankIndex = false;
+            $teamNameIndex = false;
+            $bonusIndex = false;
+            $timeIndex = false;
+
+            foreach ($header as $index => $col) {
+                if ($col === 'clt' || $col === 'classement')
+                    $rankIndex = $index;
+                if (strpos($col, 'quipe') !== false)
+                    $teamNameIndex = $index;
+                if (strpos($col, 'pts bonus') !== false || strpos($col, 'points bonus') !== false)
+                    $bonusIndex = $index;
+                if ($col === 'temps' || $col === 'temp' || $col === 'chrono')
+                    $timeIndex = $index;
+            }
+
+            if ($teamNameIndex === false) {
+                fclose($handle);
+                return response()->json(['message' => 'Colonne "équipe" introuvable dans le CSV'], 422);
+            }
+
+            $rowsToProcess = [];
+            $missingTeams = [];
+            $notRegisteredTeams = [];
+
+            while (($row = fgetcsv($handle, 0, $separator)) !== false) {
+                if (count($row) < count($header))
+                    continue;
+
+                $teamName = isset($row[$teamNameIndex]) ? trim($row[$teamNameIndex]) : '';
+                if (empty($teamName))
+                    continue;
+
+                // Check if team exists in DB
+                $team = DB::table('SAN_TEAMS')->where('TEA_NAME', $teamName)->first();
+
+                if (!$team) {
+                    if (!in_array($teamName, $missingTeams)) {
+                        $missingTeams[] = $teamName;
+                    }
+                    continue; // Skip further checks for this row
+                }
+
+                // Check if team is registered for this race
+                $isRegistered = DB::table('SAN_TEAMS_RACES')
+                    ->where('RAC_ID', $raceId)
+                    ->where('TEA_ID', $team->TEA_ID)
+                    ->exists();
+
+                if (!$isRegistered) {
+                    if (!in_array($teamName, $notRegisteredTeams)) {
+                        $notRegisteredTeams[] = $teamName;
+                    }
+                    continue;
+                }
+
+                // Prepare data for update if valid
+                $rowsToProcess[] = [
+                    'team_id' => $team->TEA_ID,
+                    'row' => $row
+                ];
+            }
+
+            fclose($handle);
+
+            // If there are errors, rollback (implicit since we haven't written yet) and return error
+            if (!empty($missingTeams)) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Le fichier comprend un club inexistant : ' . implode(', ', $missingTeams)
+                ], 422);
+            }
+
+            if (!empty($notRegisteredTeams)) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Les équipes suivantes ne sont pas inscrites à cette course : ' . implode(', ', $notRegisteredTeams)
+                ], 422);
+            }
+
+            // Process updates
+            $results = [];
+            foreach ($rowsToProcess as $item) {
+                $teamId = $item['team_id'];
+                $row = $item['row'];
+                $updateData = [];
+
+                if ($rankIndex !== false && isset($row[$rankIndex])) {
+                    $val = trim($row[$rankIndex]);
+                    if ($val !== '')
+                        $updateData['TER_RANK'] = intval($val);
+                }
+                if ($bonusIndex !== false && isset($row[$bonusIndex])) {
+                    $val = trim($row[$bonusIndex]);
+                    if ($val !== '')
+                        $updateData['TER_BONUS_POINTS'] = intval($val);
+                }
+                if ($timeIndex !== false && isset($row[$timeIndex])) {
+                    $timeStr = trim($row[$timeIndex]);
+                    if (!empty($timeStr)) {
+                        $updateData['TER_TIME'] = $timeStr;
+                    }
+                }
+
+                if (!empty($updateData)) {
+                    DB::table('SAN_TEAMS_RACES')
+                        ->where('RAC_ID', $raceId)
+                        ->where('TEA_ID', $teamId)
+                        ->update($updateData);
+
+                    $results[] = ['status' => 'Updated'];
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Résultats importés avec succès',
+                'details' => $results // Optional, frontend doesn't use it much yet
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            if (isset($handle) && is_resource($handle)) {
+                fclose($handle);
+            }
+            return response()->json(['message' => 'Erreur lors de l\'import', 'error' => $e->getMessage()], 500);
+        }
     }
 }

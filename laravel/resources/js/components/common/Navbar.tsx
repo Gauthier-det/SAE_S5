@@ -21,12 +21,6 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 
-const pages = [
-    { name: 'TABLEAU DE BORD', path: '/dashboard' },
-    { name: 'LES RAIDS', path: '/raids' },
-    { name: 'A PROPOS', path: '/about' },
-];
-
 const settings = ['Profile', 'Logout'];
 
 function Navbar() {
@@ -84,27 +78,41 @@ function Navbar() {
                             onClick={() => navigate('/')}
                         />
                     </Box>
-
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 4 }}>
-                        {pages.map((page) => (
-                            <Button
-                                key={page.name}
-                                onClick={() => handlePageClick(page.path)}
-                                sx={{
-                                    my: 2,
-                                    borderRadius: 1,
-                                    color: location.pathname === page.path ? 'warning.main' : 'white',
-                                    display: 'block',
-                                    px: 3,
-                                    fontFamily: '"Archivo Black", sans-serif',
-                                    '&:hover': {
-                                        backgroundColor: 'secondary.main',
-                                    }
-                                }}
-                            >
-                                {page.name}
-                            </Button>
-                        ))}
+                        {user && <Button
+                            key="TABLEAU DE BORD"
+                            onClick={() => handlePageClick('/dashboard')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/dashboard' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            TABLEAU DE BORD
+                        </Button>}
+                        <Button
+                            key="LES RAIDS"
+                            onClick={() => handlePageClick('/raids')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/raids' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            LES RAIDS
+                        </Button>
                         {isAdmin && (
                             <Button
                                 key="Admin"
