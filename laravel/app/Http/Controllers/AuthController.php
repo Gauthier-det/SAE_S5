@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
@@ -79,6 +82,21 @@ class AuthController extends Controller
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
         ]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(60),
+            [
+                'id' => $user->USE_ID,
+                'hash' => sha1($user->USE_MAIL)
+            ]
+        );
+
+        // send verification email
+        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function($message) use ($user) {
+            $message->to($user->USE_MAIL)
+                ->subject('Vérification de votre adresse e-mail');
+        });
 
         $token = $user->createToken('auth_token')->plainTextToken;
 

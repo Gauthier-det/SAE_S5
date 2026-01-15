@@ -44,6 +44,7 @@ return new class extends Migration
             $table->integer('USE_LICENCE_NUMBER')->nullable();
             $table->string('USE_PPS_FORM', 255)->nullable();
             $table->date('USE_MEMBERSHIP_DATE')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
 
             $table->index('ADD_ID', 'I_FK_SAN_USERS_SAN_ADDRESSES');
             $table->index('CLU_ID', 'I_FK_SAN_USERS_SAN_CLUBS');

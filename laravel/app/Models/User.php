@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, Notifiable, HasFactory;
 
@@ -81,7 +82,7 @@ class User extends Authenticatable
             ->where('ROL_NAME', 'Gestionnaire de site')
             ->exists();
     }
-  
+
     public function getAuthPassword()
     {
         return $this->USE_PASSWORD;
@@ -116,4 +117,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(Raid::class, 'USE_ID', 'USE_ID');
     }
+
+    public function getEmailForVerification()
+    {
+        return $this->USE_MAIL;
+    }
+
+    public function hasVerifiedEmail()
+    {
+        return !is_null($this->email_verified_at);
+    }
+
+    public function markEmailAsVerified()
+    {
+        $this->forceFill(['email_verified_at' => $this->freshTimestamp()]);
+        $this->save();
+    }
+
+    public function getKeyForEmailVerification()
+    {
+        return $this->USE_ID;
+    }
+
 }
