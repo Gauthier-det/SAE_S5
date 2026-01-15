@@ -149,6 +149,5 @@ class InitialDatabaseSeeder extends Seeder
             ['USE_ID' => 10, 'RAC_ID' => 4, 'USR_TIME' => 120.50, 'USR_CHIP_NUMBER' => 1007, 'USR_PPS_FORM' => null],
             ['USE_ID' => 3, 'RAC_ID' => 4, 'USR_TIME' => 118.40, 'USR_CHIP_NUMBER' => 1008, 'USR_PPS_FORM' => null],
         ]);
-        DB::statement('PRAGMA foreign_keys = ON');
     }
 }
