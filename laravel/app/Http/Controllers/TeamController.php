@@ -95,4 +95,42 @@ class TeamController extends Controller
         return response()->json(['data' => $teams], 200);
     }
 
+
+    public function registerTeamToRace(Request $request)
+    {
+        $request->validate([
+            'race_id'        => 'required|integer|exists:SAN_RACES,RAC_ID',
+            'team_id'        => 'required|integer|exists:SAN_TEAMS,TEA_ID',
+            'ter_race_number'=> 'required|integer',
+        ]);
+
+        $exists = DB::table('SAN_TEAMS_RACES')
+            ->where('RAC_ID', $request->race_id)
+            ->where('TEA_ID', $request->team_id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'message' => 'This team is already registered for this race',
+            ], 409);
+        }
+
+        DB::table('SAN_TEAMS_RACES')->insert([
+            'RAC_ID'          => $request->race_id,
+            'TEA_ID'          => $request->team_id,
+            'TER_RACE_NUMBER' => $request->ter_race_number,
+            'TER_IS_VALID'    => 0,
+        ]);
+
+        return response()->json(['data' => [
+            'race_id'          => $request->race_id,
+            'team_id'          => $request->team_id,
+            'ter_race_number'  => $request->ter_race_number,
+            'ter_is_valid'     => 0,
+            'message'          => 'Team registered to race successfully',
+        ]], 201);
+    }
+
+
+
 }

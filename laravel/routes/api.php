@@ -58,6 +58,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
+    Route::post('/teams/register-to-race', [TeamController::class, 'registerTeamToRace']);
     Route::get('/teams/{id}', [TeamController::class, 'getTeamById'])->whereNumber('id');
 
     // Address routes
