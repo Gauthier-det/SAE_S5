@@ -9,13 +9,13 @@ class AddressFactory extends Factory
 {
     protected $model = Address::class;
 
-    public function definition()
+    public function definition(): array
     {
         return [
-            'ADD_POSTAL_CODE' => $this->faker->postcode(),
-            'ADD_CITY' => $this->faker->city(),
-            'ADD_STREET_NAME' => $this->faker->streetName(),
-            'ADD_STREET_NUMBER' => $this->faker->buildingNumber(),
+            'ADD_POSTAL_CODE' => fake()->postcode(),
+            'ADD_CITY' => fake()->city(),
+            'ADD_STREET_NAME' => fake()->streetName(),
+            'ADD_STREET_NUMBER' => fake()->buildingNumber(),
         ];
     }
 }

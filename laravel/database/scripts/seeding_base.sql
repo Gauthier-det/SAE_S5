@@ -104,15 +104,15 @@ INSERT INTO SAN_RAIDS (RAI_ID, CLU_ID, ADD_ID, USE_ID, RAI_NAME, RAI_MAIL, RAI_P
 -- Raid 2 organised by club 2
 (2, 2, 4, 5, 'Raid de Vanves 2025', 'contact@trailvanves.fr', null, 'https://trailfalaises.fr', 'trail_falaises.jpg', '2026-04-20 07:30:00', '2026-04-20 19:00:00', '2025-12-01 00:00:00', '2026-04-15 23:59:59');
 
-INSERT INTO SAN_RACES (RAC_ID, USE_ID, RAI_ID, RAC_TIME_START, RAC_TIME_END, RAC_TYPE, RAC_DIFFICULTY, RAC_MIN_PARTICIPANTS, RAC_MAX_PARTICIPANTS, RAC_MIN_TEAMS, RAC_MAX_TEAMS, RAC_TEAM_MEMBERS, RAC_AGE_MIN, RAC_AGE_MIDDLE, RAC_AGE_MAX) VALUES
+INSERT INTO SAN_RACES (RAC_ID, USE_ID, RAI_ID, RAC_TIME_START, RAC_TIME_END, RAC_TYPE, RAC_DIFFICULTY, RAC_MIN_PARTICIPANTS, RAC_MAX_PARTICIPANTS, RAC_MIN_TEAMS, RAC_MAX_TEAMS, RAC_MAX_TEAM_MEMBERS, RAC_GENDER, RAC_AGE_MIN, RAC_AGE_MIDDLE, RAC_AGE_MAX) VALUES
 -- Course 1 in Raid 1
-(1, 4, 1, '2025-10-10 08:30:00', '2025-10-10 13:30:00', 'Compétitif', 'Moyen', 5, 200, 2, 50, 3, 12, 15, 18),
+(1, 4, 1, '2025-10-10 08:30:00', '2025-10-10 13:30:00', 'Compétitif', 'Moyen', 5, 200, 2, 50, 3, 'Mixte', 12, 15, 18),
 -- Course 2 in Raid 1
-(2, 4, 1, '2025-10-10 12:30:00', '2025-10-10 18:30:00', 'Compétitif', 'Difficile', 4, 150, 2, 40, 2, 18, 25, 30),
+(2, 4, 1, '2025-10-10 12:30:00', '2025-10-10 18:30:00', 'Compétitif', 'Difficile', 4, 150, 2, 40, 2, 'Homme', 18, 25, 30),
 -- Course 3 in Raid 2
-(3, 6, 2, '2026-06-15 09:15:00', '2026-06-15 13:15:00', 'Compétitif', 'Moyen', 6, 120, 2, 30, 3, 10.00, 18, 20),
+(3, 6, 2, '2026-06-15 09:15:00', '2026-06-15 13:15:00', 'Compétitif', 'Moyen', 6, 120, 2, 30, 3, 'Femme', 10.00, 18, 20),
 -- Course 4 in Raid 2
-(4, 6, 3, '2026-04-20 08:00:00', '2026-04-20 11:30:00', 'Loisir', 'Facile', 4, 300, 2, 60, 2, 14, 17, 19);
+(4, 6, 3, '2026-04-20 08:00:00', '2026-04-20 11:30:00', 'Loisir', 'Facile', 4, 300, 2, 60, 2, 'Mixte', 14, 17, 19);
 -- Duration, results à supprimer, ages à remettre au bon type
 
 INSERT INTO SAN_CATEGORIES_RACES (RAC_ID, CAT_ID, CAR_PRICE) VALUES

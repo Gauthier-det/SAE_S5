@@ -6,23 +6,37 @@ import {
     TextField,
     Typography,
     Paper,
-    Link,
-    Stack
+    Stack,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    type SelectChangeEvent
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../../assets/logo-color.png';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
+import type { Gender } from '../../models/user.model';
 
 const Register = () => {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        name: string;
+        last_name: string;
+        mail: string;
+        password: string;
+        gender: Gender | '';
+    }>({
         name: '',
         last_name: '',
-        email: '',
-        password: ''
+        mail: '',
+        password: '',
+        gender: ''
     });
 
     const [error, setError] = useState('');
     const { register } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,34 +47,44 @@ const Register = () => {
         }));
     };
 
+    const handleGenderChange = (event: SelectChangeEvent) => {
+        setFormData(prev => ({
+            ...prev,
+            gender: event.target.value as Gender
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
         if (formData.password.length < 8) {
-            setError('Le mot de passe doit contenir au moins 8 caractères.');
+            const errorMessage = 'Le mot de passe doit contenir au moins 8 caractères.';
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
+            return;
+        }
+
+        if (formData.gender === '') {
+            setError('Veuillez sélectionner un genre.');
             return;
         }
 
         try {
-            // Register and automatically login the user
-            await register({
-                name: formData.name,
-                last_name: formData.last_name,
-                email: formData.email,
-                password: formData.password
-            });
-            // Redirect to dashboard after successful registration
+            await register(formData as any); 
+            showAlert('Inscription réussie !', 'success');
             navigate('/dashboard');
-        } catch (err: any) { // Type as any or import ApiError to check instance
+        } catch (err: any) {
             console.error(err);
+            let errorMessage = "Échec de l'inscription. Vérifiez vos informations.";
             if (err.name === 'ApiError' && err.data && err.data.errors) {
-                // Laravel validation errors format: { field: ["error1", "error2"] }
                 const messages = Object.values(err.data.errors).flat().join(' ');
-                setError(messages);
+                errorMessage = messages;
             } else {
-                setError(err.message || "Échec de l'inscription. Vérifiez vos informations.");
+                errorMessage = err.message || errorMessage;
             }
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
         }
     };
 
@@ -72,8 +96,6 @@ const Register = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                minHeight: '100vh',
-                py: 4
             }}
         >
             <Container maxWidth="md">
@@ -82,7 +104,7 @@ const Register = () => {
                         component="img"
                         src={LogoColor}
                         alt="Orient'Action"
-                        sx={{ backgroundColor: 'white', width: 150, height: 'auto', mb: 2, borderRadius: 4, p: 1 }}
+                        sx={{ backgroundColor: 'white', width: 250, height: 'auto', mb: 2, borderRadius: 4 }}
                     />
                 </Box>
                 <Paper
@@ -108,10 +130,10 @@ const Register = () => {
                             fullWidth
                             id="email"
                             label="e-mail"
-                            name="email"
+                            name="mail"
                             autoComplete="email"
                             variant="standard"
-                            value={formData.email}
+                            value={formData.mail}
                             onChange={handleChange}
                             placeholder="jean.dupont@gmail.com"
                         />
@@ -131,6 +153,20 @@ const Register = () => {
                         />
 
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+                            <FormControl fullWidth variant="standard" required>
+                                <InputLabel id="gender-select-label">Genre</InputLabel>
+                                <Select
+                                    labelId="gender-select-label"
+                                    id="gender-select"
+                                    value={formData.gender}
+                                    onChange={handleGenderChange}
+                                    label="Genre"
+                                >
+                                    <MenuItem value="Homme">Homme</MenuItem>
+                                    <MenuItem value="Femme">Femme</MenuItem>
+                                    <MenuItem value="Autre">Autre</MenuItem>
+                                </Select>
+                            </FormControl>
                             <TextField
                                 required
                                 fullWidth
@@ -165,16 +201,21 @@ const Register = () => {
                             type="submit"
                             fullWidth
                             variant="contained"
-                            color="success" // Matching the image green button
-                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', backgroundColor: '#1b5e20' }} // Custom green to match image darker green
+                            color="success"
+                            sx={{ mt: 2, mb: 2, py: 1.5, color: 'white', borderRadius: '10px' }}
                         >
                             S'INSCRIRE
                         </Button>
 
                         <Stack alignItems="center">
-                            <Link href="/login" variant="body2" color="text.primary" sx={{ textDecoration: 'none', fontSize: '12px' }}>
-                                se connecter
-                            </Link>
+                            <Button
+                                variant="contained"
+                                color="warning"
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
+                                onClick={() => navigate('/login')}
+                            >
+                                Se connecter
+                            </Button>
                         </Stack>
                     </Box>
                 </Paper>
