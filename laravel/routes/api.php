@@ -52,6 +52,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Race routes
     Route::post('/races', [RaceController::class, 'createRace']);
     Route::post('/races/with-prices', [RaceController::class, 'createRaceWithPrices']);
+    Route::post('/races/{raceId}/team-results', [RaceController::class, 'storeTeamRaceResult'])->whereNumber('raceId');
     Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
     Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
     Route::get('/races/{raceId}/teams', [TeamController::class, 'getTeamsByRace'])->whereNumber('raceId');
