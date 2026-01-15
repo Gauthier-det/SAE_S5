@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import type { Club } from '../../models/club.model';
 import type { User } from '../../models/user.model';
-import { createClubWithAddress, updateClub } from '../../api/club';
+import { createClubWithAddress, updateClub, getListOfClubs } from '../../api/club';
 import { useAlert } from '../../contexts/AlertContext';
 
 interface ClubFormModalProps {
@@ -31,6 +31,27 @@ const ClubFormModal = ({ open, onClose, onSuccess, club, users }: ClubFormModalP
     const [streetName, setStreetName] = useState('');
     const [streetNumber, setStreetNumber] = useState('');
     const [loading, setLoading] = useState(false);
+    const [clubs, setClubs] = useState<Club[]>([]);
+    const [clubManagerIds, setClubManagerIds] = useState<number[]>([]);
+
+    // Récupérer les clubs et extraire les managers
+    useEffect(() => {
+        const fetchClubs = async () => {
+            try {
+                const clubList = await getListOfClubs();
+                setClubs(clubList);
+                // Extraire les USE_ID des managers de clubs
+                const managerIds = clubList.map(c => c.USE_ID);
+                setClubManagerIds(managerIds);
+            } catch (error) {
+                console.error('Erreur lors de la récupération des clubs:', error);
+            }
+        };
+        
+        if (open) {
+            fetchClubs();
+        }
+    }, [open]);
 
     useEffect(() => {
         if (club) {
@@ -111,7 +132,7 @@ const ClubFormModal = ({ open, onClose, onSuccess, club, users }: ClubFormModalP
                             required
                         >
                             {users.filter(user =>
-                                !user.CLU_ID || (club && user.CLU_ID === club.CLU_ID)
+                                (user.CLU_ID && !clubManagerIds.includes(user.USE_ID)) || (club && user.USE_ID === club.USE_ID)
                             ).map((user) => (
                                 <MenuItem key={user.USE_ID} value={user.USE_ID}>
                                     {user.USE_NAME} {user.USE_LAST_NAME}

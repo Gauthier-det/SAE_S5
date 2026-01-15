@@ -168,8 +168,8 @@ class InitialDatabaseSeeder extends Seeder
         DB::table('SAN_USERS')->whereIn('USE_ID', [1, 6, 9, 10, 11, 15])->update(['CLU_ID' => 1]);
         // CLU_ID=2: Balise 25
         DB::table('SAN_USERS')->whereIn('USE_ID', [3, 7, 12, 13, 14])->update(['CLU_ID' => 2]);
-        // CLU_ID=3: Raidlinks
-        DB::table('SAN_USERS')->whereIn('USE_ID', [2, 5, 8])->update(['CLU_ID' => 3]);
+        // CLU_ID=3: Raidlinks (Clara DUMONT exclue - candidate pour créer IFSGO)
+        DB::table('SAN_USERS')->whereIn('USE_ID', [5, 8])->update(['CLU_ID' => 3]);
         // CLU_ID=4: VIKAZIM (utilisateurs mobile)
         DB::table('SAN_USERS')->whereIn('USE_ID', [4, 16, 17, 18, 19])->update(['CLU_ID' => 4]);
 

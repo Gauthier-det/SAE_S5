@@ -5,6 +5,7 @@ import type { Race } from './race.model';
 export type Gender = 'Homme' | 'Femme' | 'Autre';
 
 export interface User {
+    CLU_ID: any;
     USE_ID: number;
     USE_NAME: string;
     USE_LAST_NAME: string;
