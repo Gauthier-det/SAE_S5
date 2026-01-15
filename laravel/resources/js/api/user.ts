@@ -42,4 +42,11 @@ export const isAdmin = async () => {
     }
 }
 
+export const updateUser = async (userId: number, data: Partial<User>) => {
+    return await apiClient<User>(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+}
+
 

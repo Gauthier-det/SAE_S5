@@ -57,6 +57,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
+
+    // Address routes
+    Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
+    Route::post('/addresses', [AddressController::class, 'createAddress']);
+    Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
@@ -84,4 +89,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById'])->whereNumber('id');
     Route::post('/users/{id}', [UserController::class, 'createUser'])->whereNumber('id');
+    
+    // Admin Address routes (Delete/GetAll remain admin only)
+    Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
+    Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
 });

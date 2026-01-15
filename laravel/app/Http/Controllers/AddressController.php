@@ -26,12 +26,26 @@ class AddressController extends Controller{
 
     public function createAddress(Request $request)
     {
+        $messages = [
+            'required' => 'Le champ :attribute est obligatoire.',
+            'string' => 'Le champ :attribute doit être une chaîne de caractères.',
+            'integer' => 'Le champ :attribute doit être un entier.',
+            'max' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+        ];
+
+        $attributes = [
+            'ADD_POSTAL_CODE' => 'Code postal',
+            'ADD_CITY' => 'Ville',
+            'ADD_STREET_NAME' => 'Rue',
+            'ADD_STREET_NUMBER' => 'Numéro de rue',
+        ];
+
         $validator = Validator::make($request->all(), [
             'ADD_POSTAL_CODE' => 'required|integer|max:99999',
             'ADD_CITY' => 'required|string|max:100',
             'ADD_STREET_NAME' => 'nullable|string|max:255',
             'ADD_STREET_NUMBER' => 'nullable|string|max:20'
-        ]);
+        ], $messages, $attributes);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);

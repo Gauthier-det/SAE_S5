@@ -25,7 +25,8 @@ const RaidDetails = () => {
     const [allRaces, setAllRaces] = useState<Race[]>([]);
     const [loading, setLoading] = useState(true);
     const { showAlert } = useAlert();
-    const { user } = useUser();
+    const { user,isRaidManager } = useUser();
+    
 
     useEffect(() => {
         if (!id) return;
@@ -47,6 +48,7 @@ const RaidDetails = () => {
         });
     }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
+    const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
 
     // Calculate global min/max for the slider bounds
     const limits = React.useMemo(() => {
@@ -78,6 +80,16 @@ const RaidDetails = () => {
         setRaceType(newFilter);
     };
 
+    const handleGenderChange = (gender: string) => {
+        const newFilter = new Set(raceGender);
+        if (newFilter.has(gender)) {
+            newFilter.delete(gender);
+        } else {
+            newFilter.add(gender);
+        }
+        setRaceGender(newFilter);
+    };
+
     const handleAgeChange = (_event: Event, newValue: number | number[]) => {
         setAgeRange(newValue as number[]);
     };
@@ -88,11 +100,13 @@ const RaidDetails = () => {
                 (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
                 (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
 
+            const matchesGender = raceGender.size === 0 || raceGender.has(race.RAC_GENDER);
+
             const matchesAge = race.RAC_AGE_MIN >= ageRange[0] && race.RAC_AGE_MAX <= ageRange[1];
 
-            return matchesType && matchesAge;
+            return matchesType && matchesGender && matchesAge;
         });
-    }, [allRaces, raceType, ageRange]);
+    }, [allRaces, raceType, raceGender, ageRange]);
 
 
     if (!raid) {
@@ -167,6 +181,35 @@ const RaidDetails = () => {
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Genre
+                            </Typography>
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Homme')}
+                                        onChange={() => handleGenderChange('Homme')}
+                                    />}
+                                    label="Homme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Femme')}
+                                        onChange={() => handleGenderChange('Femme')}
+                                    />}
+                                    label="Femme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Mixte')}
+                                        onChange={() => handleGenderChange('Mixte')}
+                                    />}
+                                    label="Mixte"
+                                />
+                            </FormGroup>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                 Age (ans)
                             </Typography>
                             <Box sx={{ px: 1 }}>
@@ -193,9 +236,22 @@ const RaidDetails = () => {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-                                {raid.RAI_NAME}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+                                    {raid.RAI_NAME}
+                                </Typography>
+                                {user && raid && user.USE_ID === raid.user.USE_ID && isRaidManager && (
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={() => navigate(`/raids/${id}/create`)}
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                    >
+                                        Créer une course
+                                    </Button>
+                                )}
+                            </Box>
+
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
                                 {raid.club && (

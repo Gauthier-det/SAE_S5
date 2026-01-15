@@ -37,6 +37,7 @@ class AuthController extends Controller
                 'user_name' => $user->USE_NAME,
                 'user_last_name' => $user->USE_LAST_NAME,
                 'user_mail' => $user->USE_MAIL,
+                'user_gender' => $user->USE_GENDER,
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
                 'user_address' => $user->address,
@@ -64,6 +65,7 @@ class AuthController extends Controller
                 'password' => 'required|min:8',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
+                'gender' => 'required|string|in:Homme,Femme,Autre',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -77,6 +79,7 @@ class AuthController extends Controller
             'USE_PASSWORD' => Hash::make($request->password),
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
+            'USE_GENDER' => $request->gender,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -87,7 +90,8 @@ class AuthController extends Controller
                 'user_name' => $user->USE_NAME,
                 'user_last_name' => $user->USE_LAST_NAME,
                 'user_mail' => $user->USE_MAIL,
-                'user_phone' => null,
+                'user_gender' => $user->USE_GENDER,
+                'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
                 'user_address' => null,
                 'user_club' => null,
