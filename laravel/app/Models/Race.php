@@ -20,7 +20,8 @@ class Race extends Model
 
     protected $fillable = [
         'USE_ID', 
-        'RAI_ID', 
+        'RAI_ID',
+        'RAC_NAME',
         'RAC_TIME_START', 
         'RAC_TIME_END', 
         'RAC_GENDER',

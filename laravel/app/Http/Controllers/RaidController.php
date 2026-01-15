@@ -108,18 +108,21 @@ class RaidController extends Controller
 
     public function updateRaid(Request $request, $id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+        if (auth()->user()->USE_ID !== $raid->club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. You can only update raids you created.',
-            ], 403);
+                'message' => 'Unauthorized. Only the club manager can update raids.',
+            ], 404);
         }
 
-        $validator = Validator::make($request->all(), [
+        // Merge existing raid data with request for validation context
+        $dataForValidation = array_merge($raid->toArray(), $request->all());
+
+        $validator = Validator::make($dataForValidation, [
             'CLU_ID' => 'sometimes|integer|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'sometimes|integer|exists:SAN_ADDRESSES,ADD_ID',
             'RAI_NAME' => 'sometimes|string|max:255',
@@ -143,15 +146,15 @@ class RaidController extends Controller
 
     public function deleteRaid($id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+        if (auth()->user()->USE_ID !== $raid->club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. You can only delete raids you created.',
-            ], 403);
+                'message' => 'Raid not found',
+            ], 404);
         }
 
         $raid->delete();
