@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Raid;
 use App\Models\Address;
 use Laravel\Sanctum\Sanctum;
+use Database\Seeders\InitialDatabaseSeeder;
 
 class RaceControllerTest extends TestCase
 {
@@ -21,21 +22,17 @@ class RaceControllerTest extends TestCase
     {
         parent::setUp();
 
-        // Créer une adresse
+        $this->seed(InitialDatabaseSeeder::class);
+
+        // Utiliser l'utilisateur admin du seeder
+        $this->user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+
+        // Créer une adresse supplémentaire pour les tests
         $address = Address::create([
             'ADD_POSTAL_CODE' => 75001,
             'ADD_CITY' => 'Paris',
             'ADD_STREET_NAME' => 'Rue de Test',
             'ADD_STREET_NUMBER' => '42',
-        ]);
-
-        // Créer un utilisateur
-        $this->user = User::create([
-            'ADD_ID' => $address->ADD_ID,
-            'USE_MAIL' => 'test@example.com',
-            'USE_PASSWORD' => bcrypt('password'),
-            'USE_NAME' => 'Test',
-            'USE_LAST_NAME' => 'User',
         ]);
 
         // Créer un club
@@ -49,6 +46,7 @@ class RaceControllerTest extends TestCase
             'CLU_ID' => $club->CLU_ID,
             'ADD_ID' => $address->ADD_ID,
             'USE_ID' => $this->user->USE_ID,
+            'RAI_NB_RACES' => 5,
             'RAI_NAME' => 'Raid Test',
             'RAI_TIME_START' => '2026-01-20 10:00:00',
             'RAI_TIME_END' => '2026-01-20 18:00:00',
@@ -91,13 +89,14 @@ class RaceControllerTest extends TestCase
             'RAI_ID' => $this->raid->RAI_ID,
             'RAC_TIME_START' => '2026-01-20 10:00:00',
             'RAC_TIME_END' => '2026-01-20 12:00:00',
+            'RAC_GENDER' => 'Mixte',
             'RAC_TYPE' => 'Trail',
             'RAC_DIFFICULTY' => 'Hard',
             'RAC_MIN_PARTICIPANTS' => 1,
             'RAC_MAX_PARTICIPANTS' => 100,
             'RAC_MIN_TEAMS' => 1,
             'RAC_MAX_TEAMS' => 20,
-            'RAC_TEAM_MEMBERS' => 5,
+            'RAC_MAX_TEAM_MEMBERS' => 5,
             'RAC_AGE_MIN' => 18,
             'RAC_AGE_MIDDLE' => 30,
             'RAC_AGE_MAX' => 65,

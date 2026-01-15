@@ -8,6 +8,7 @@ use App\Models\Club;
 use App\Models\User;
 use App\Models\Address;
 use Laravel\Sanctum\Sanctum;
+use Database\Seeders\InitialDatabaseSeeder;
 
 class ClubControllerTest extends TestCase
 {
@@ -20,23 +21,18 @@ class ClubControllerTest extends TestCase
     {
         parent::setUp();
 
-        // Create an address
+        $this->seed(InitialDatabaseSeeder::class);
+
+        // Use the admin user from seeder
+        $this->user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+
+        // Create an additional address for tests
         $this->address = Address::create([
             'ADD_POSTAL_CODE' => 75001,
             'ADD_CITY' => 'Paris',
             'ADD_STREET_NAME' => 'Rue de Test',
             'ADD_STREET_NUMBER' => '42',
         ]);
-
-        // Create a user
-        $this->user = User::create([
-            'ADD_ID' => $this->address->ADD_ID,
-            'USE_MAIL' => 'test@example.com',
-            'USE_PASSWORD' => bcrypt('password'),
-            'USE_NAME' => 'Test',
-            'USE_LAST_NAME' => 'User',
-        ]);
-
     }
 
     /**
