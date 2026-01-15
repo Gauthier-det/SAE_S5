@@ -19,6 +19,9 @@ export interface Race {
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
     RAC_AGE_MAX: number;
+    CAT_1_PRICE?: number;
+    CAT_2_PRICE?: number;
+    CAT_3_PRICE?: number;
     RAC_CHIP_MANDATORY?: boolean;
 }
 
@@ -30,6 +33,29 @@ export interface RaceCreation {
     USE_ID: number;
     RAI_ID: number;
     RAC_NAME?: string;
+    RAC_TIME_START: string;
+    RAC_TIME_END: string;
+    RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
+    RAC_TYPE: string;
+    RAC_DIFFICULTY: string;
+    RAC_MIN_PARTICIPANTS: number;
+    RAC_MAX_PARTICIPANTS: number;
+    RAC_MIN_TEAMS: number;
+    RAC_MAX_TEAMS: number;
+    RAC_MAX_TEAM_MEMBERS: number;
+    RAC_AGE_MIN: number;
+    RAC_AGE_MIDDLE: number;
+    RAC_AGE_MAX: number;
+    CAT_1_PRICE: number;
+    CAT_2_PRICE: number;
+    CAT_3_PRICE: number;
+    RAC_CHIP_MANDATORY?: boolean;
+}
+
+export interface RaceUpdate {
+    USE_ID: number;
+    RAI_ID: number;
+    RAC_NAME: string;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
