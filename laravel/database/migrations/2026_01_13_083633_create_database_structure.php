@@ -44,6 +44,7 @@ return new class extends Migration
             $table->integer('USE_PHONE_NUMBER')->nullable();
             $table->integer('USE_LICENCE_NUMBER')->nullable();
             $table->date('USE_MEMBERSHIP_DATE')->nullable();
+            $table->date('USE_VALIDITY')->nullable();
 
             $table->index('ADD_ID', 'I_FK_SAN_USERS_SAN_ADDRESSES');
             $table->index('CLU_ID', 'I_FK_SAN_USERS_SAN_CLUBS');
@@ -133,6 +134,7 @@ return new class extends Migration
             $table->bigInteger('RAC_AGE_MIN');
             $table->bigInteger('RAC_AGE_MIDDLE');
             $table->bigInteger('RAC_AGE_MAX');
+            $table->integer('RAC_CHIP_MANDATORY');
 
             $table->index('USE_ID', 'I_FK_SAN_RACES_SAN_USERS');
             $table->index('RAI_ID', 'I_FK_SAN_RACES_SAN_RAIDS');

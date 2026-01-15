@@ -29,6 +29,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        if (!$user->isValid()) {
+            return response()->json(['message' => 'User account is not valid'], 401);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -40,12 +44,15 @@ class AuthController extends Controller
                 'user_gender' => $user->USE_GENDER,
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
+                'user_licence' => $user->USE_LICENCE_NUMBER ? $user->USE_LICENCE_NUMBER : null,
+                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : null,
+                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : null,
                 'user_address' => $user->address,
                 'user_club' => $user->club,
-                'user_licence' => $user->USE_LICENCE_NUMBER,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
+
         ], 201);
     }
 
@@ -93,9 +100,11 @@ class AuthController extends Controller
                 'user_gender' => $user->USE_GENDER,
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
+                'user_licence' => null,
+                'user_membership_date' => null,
+                'user_validity' => null,
                 'user_address' => null,
                 'user_club' => null,
-                'user_licence' => null,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
