@@ -111,7 +111,7 @@ const ClubFormModal = ({ open, onClose, onSuccess, club, users }: ClubFormModalP
                             required
                         >
                             {users.filter(user =>
-                                !user.CLU_ID || (club && user.CLU_ID === club.CLU_ID)
+                                !user.club || (club && user.club.CLU_ID === club.CLU_ID)
                             ).map((user) => (
                                 <MenuItem key={user.USE_ID} value={user.USE_ID}>
                                     {user.USE_NAME} {user.USE_LAST_NAME}
@@ -125,7 +125,7 @@ const ClubFormModal = ({ open, onClose, onSuccess, club, users }: ClubFormModalP
                                 value={city}
                                 onChange={(e) => setCity(e.target.value)}
                                 fullWidth
-                                required={!club} 
+                                required={!club}
                             />
                             <TextField
                                 label="Code Postal"
