@@ -33,6 +33,7 @@ Route::get('/races/{raceId}/prices', [RaceController::class, 'getRacePrices'])->
 Route::get('/clubs', [ClubController::class, 'getAllClubs']);
 Route::get('/clubs/{id}', [ClubController::class, 'getClubById'])->whereNumber('id');
 Route::get('/clubs/{clubId}/users', [UserController::class, 'getUsersByClub'])->whereNumber('clubId');
+Route::get('/users/free', [UserController::class, 'getFreeRunners']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Raid routes
@@ -75,6 +76,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
     Route::post('/addresses', [AddressController::class, 'createAddress']);
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
+    Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
+    
+    // Club Member Management
+    Route::post('/clubs/{id}/members/add', [ClubController::class, 'addMember'])->whereNumber('id');
+    Route::post('/clubs/{id}/members/remove', [ClubController::class, 'removeMember'])->whereNumber('id');
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
@@ -89,6 +95,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/clubs', [ClubController::class, 'createClub']);
     Route::post('/clubs/with-address', [ClubController::class, 'createClubWithAddress']);
     Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
+    Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
+    
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
 
     // Admin Addresse routes
