@@ -60,7 +60,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     }
 
     // Mark as verified
-    $user->email_verified_at = now();
+    $user->USE_VALIDITY = now();
     $user->save();
 
     return response()->json([
@@ -116,7 +116,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
     Route::get('/races/{raceId}/available-users', [TeamController::class, 'getAvailableUsersForRace'])->whereNumber('raceId');
     Route::post('/teams/{teamId}/register-race', [TeamController::class, 'registerTeamToRace']);
-    
+
     // Team Management
     Route::get('/teams/{teamId}/races/{raceId}', [TeamController::class, 'getTeamRaceDetails']);
     Route::post('/teams/member/remove', [TeamController::class, 'removeMember']);
@@ -131,7 +131,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/addresses', [AddressController::class, 'createAddress']);
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
     Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
-    
+
     // Club Member Management
     Route::post('/clubs/{id}/members/add', [ClubController::class, 'addMember'])->whereNumber('id');
     Route::post('/clubs/{id}/members/remove', [ClubController::class, 'removeMember'])->whereNumber('id');
@@ -152,7 +152,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/clubs/with-address', [ClubController::class, 'createClubWithAddress']);
     Route::put('/clubs/{id}', [ClubController::class, 'updateClub'])->whereNumber('id');
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
-    
+
     Route::delete('/clubs/{id}', [ClubController::class, 'deleteClub'])->whereNumber('id');
 
     // Admin Addresse routes

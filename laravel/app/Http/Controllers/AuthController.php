@@ -90,8 +90,6 @@ class AuthController extends Controller
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
             'USE_GENDER' => $request->gender,
-            'USE_VALIDITY' => \Carbon\Carbon::now()->addYear(),
-            'USE_MEMBERSHIP_DATE' => \Carbon\Carbon::now(),
         ]);
 
         $verificationUrl = URL::temporarySignedRoute(
