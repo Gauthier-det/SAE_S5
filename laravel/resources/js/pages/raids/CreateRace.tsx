@@ -68,6 +68,7 @@ const CreateRace = () => {
   const [formData, setFormData] = useState<RaceCreation>({
     USE_ID: 0,
     RAI_ID: parseInt(id || '0'),
+    RAC_NAME: '',
     RAC_TIME_START: '',
     RAC_TIME_END: '',
     RAC_GENDER: 'Mixte',
@@ -234,6 +235,7 @@ const CreateRace = () => {
     setErrors(newErrors);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleCompetitionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isComp = event.target.name === 'competition';
     const newFormData = {
@@ -405,6 +407,19 @@ const CreateRace = () => {
                 ))}
               </Select>
             </FormControl>
+
+            {/* Race Name */}
+            <TextField
+              fullWidth
+              label="Nom de la course"
+              name="RAC_NAME"
+              variant="standard"
+              value={formData.RAC_NAME}
+              onChange={handleChange}
+              margin="normal"
+              required
+              placeholder="Ex: Les sangliers Rapides"
+            />
 
             {/* Race Type + Chip Requirement */}
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 1 }}>
