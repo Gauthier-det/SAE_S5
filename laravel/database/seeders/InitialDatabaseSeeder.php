@@ -100,8 +100,8 @@ class InitialDatabaseSeeder extends Seeder
 
         // Raids
         DB::table('SAN_RAIDS')->insert([
-            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 25, 'USE_ID' => 15, 'RAI_NB_RACES' => 2, 'RAI_NAME' => 'RAID CHAMPETRE', 'RAI_MAIL' => null, 'RAI_PHONE_NUMBER' => '0613245698', 'RAI_WEB_SITE' => 'https://raidchampetre.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2025-11-13 08:00:00', 'RAI_TIME_END' => '2025-11-14 18:00:00', 'RAI_REGISTRATION_START' => '2025-08-10 00:00:00', 'RAI_REGISTRATION_END' => '2025-10-30 23:59:59'],
-            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => null, 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-09 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 23:59:59'],
+            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 25, 'USE_ID' => 15, 'RAI_NB_RACES' => 2, 'RAI_NAME' => 'RAID CHAMPETRE', 'RAI_MAIL' => "example@raidchampetre.fr", 'RAI_PHONE_NUMBER' => '0613245698', 'RAI_WEB_SITE' => 'https://raidchampetre.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2025-11-13 08:00:00', 'RAI_TIME_END' => '2025-11-14 18:00:00', 'RAI_REGISTRATION_START' => '2025-08-10 00:00:00', 'RAI_REGISTRATION_END' => '2025-10-30 00:00:00'],
+            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => "example@raidobivwak.fr", 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-09 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'],
         ]);
 
         // Races

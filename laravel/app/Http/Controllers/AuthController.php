@@ -72,7 +72,7 @@ class AuthController extends Controller
         try {
             $request->validate([
                 'mail' => 'required|email|unique:SAN_USERS,USE_MAIL',
-                'password' => 'required|min:8',
+                'password' => 'required|min:8|confirmed',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
                 'gender' => 'required|string|in:Homme,Femme,Autre',
@@ -102,7 +102,7 @@ class AuthController extends Controller
         );
 
         // send verification email
-        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function($message) use ($user) {
+        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function ($message) use ($user) {
             $message->to($user->USE_MAIL)
                 ->subject('Vérification de votre adresse e-mail');
         });

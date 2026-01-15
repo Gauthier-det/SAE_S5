@@ -5,17 +5,17 @@ import {
     Typography,
     Container,
     Paper,
-    List,
-    ListItem,
-    ListItemAvatar,
-    Avatar,
-    ListItemText,
-    ListItemSecondaryAction,
-    IconButton,
-    Grid,
-    Divider,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Autocomplete,
+    Button,
+    TextField,
     CircularProgress,
-    TextField
+    IconButton
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -35,14 +35,9 @@ const Club = () => {
     const [members, setMembers] = useState<User[]>([]);
     const [freeRunners, setFreeRunners] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedRunner, setSelectedRunner] = useState<User | null>(null);
 
     const clubId = parseInt(id || '0');
-
-    const filteredFreeRunners = freeRunners.filter(runner =>
-        runner.USE_NAME.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        runner.USE_LAST_NAME.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     const fetchData = async () => {
         try {
@@ -55,6 +50,7 @@ const Club = () => {
             setClub(clubData);
             setMembers(membersData);
             setFreeRunners(freeRunnersData);
+            setSelectedRunner(null); // Reset selection after refresh
         } catch (error) {
             console.error("Error fetching club data:", error);
             showAlert('Erreur lors du chargement des données', 'error');
@@ -69,9 +65,11 @@ const Club = () => {
         }
     }, [clubId]);
 
-    const handleAddMember = async (userId: number) => {
+    const handleAddMember = async () => {
+        if (!selectedRunner) return;
+
         try {
-            await addMemberToClub(clubId, userId);
+            await addMemberToClub(clubId, selectedRunner.USE_ID);
             showAlert('Membre ajouté avec succès', 'success');
             fetchData(); // Refresh lists
         } catch (error) {
@@ -118,107 +116,79 @@ const Club = () => {
                 {club.CLU_NAME}
             </Typography>
 
-            <Grid container spacing={4}>
-                {/* Members List */}
-                <Grid xs={12} md={6}>
-                    <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                        <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
-                            <Typography variant="h6" fontWeight="bold">Membres du Club ({members.length})</Typography>
-                        </Box>
-                        <List sx={{ maxHeight: 500, overflow: 'auto' }}>
+            <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+                <Typography variant="h6" gutterBottom color="secondary.main" fontWeight="bold">
+                    Ajouter un membre
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Autocomplete
+                        options={freeRunners}
+                        getOptionLabel={(option) => `${option.USE_NAME} ${option.USE_LAST_NAME} (${option.USE_MAIL})`}
+                        value={selectedRunner}
+                        onChange={(event, newValue) => setSelectedRunner(newValue)}
+                        sx={{ flexGrow: 1 }}
+                        renderInput={(params) => <TextField {...params} label="Rechercher un coureur sans club" variant="outlined" />}
+                        noOptionsText="Aucun coureur disponible"
+                    />
+                    <Button
+                        variant="contained"
+                        color="success"
+                        startIcon={<PersonAddIcon />}
+                        onClick={handleAddMember}
+                        disabled={!selectedRunner}
+                        sx={{ height: 56, borderRadius: '4px', px: 3, color: 'white' }}
+                    >
+                        Ajouter
+                    </Button>
+                </Box>
+            </Paper>
+
+            <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                <Box sx={{ p: 2, bgcolor: 'primary.main', color: 'white' }}>
+                    <Typography variant="h6" fontWeight="bold">Membres du Club ({members.length})</Typography>
+                </Box>
+                <TableContainer>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Nom</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Prénom</TableCell>
+                                <TableCell sx={{ fontWeight: 'bold' }}>Email</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
                             {members.length === 0 ? (
-                                <ListItem>
-                                    <ListItemText primary="Aucun membre dans le club." />
-                                </ListItem>
+                                <TableRow>
+                                    <TableCell colSpan={4} align="center">
+                                        Aucun membre dans le club.
+                                    </TableCell>
+                                </TableRow>
                             ) : (
                                 members.map((member) => (
-                                    <React.Fragment key={member.USE_ID}>
-                                        <ListItem
-                                            sx={{
-                                                '&:hover': { bgcolor: 'action.hover' },
-                                                transition: 'background-color 0.2s'
-                                            }}
-                                        >
-                                            <ListItemAvatar>
-                                                <Avatar sx={{ bgcolor: 'secondary.main', color: 'white' }}>
-                                                    {member.USE_NAME.charAt(0)}
-                                                </Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={<Typography fontWeight="500">{member.USE_NAME} {member.USE_LAST_NAME}</Typography>}
-                                                secondary={member.USE_MAIL}
-                                            />
-                                            <ListItemSecondaryAction>
-                                                {user && user.USE_ID !== member.USE_ID && (
-                                                    <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveMember(member.USE_ID)}>
-                                                        <DeleteIcon color="error" />
-                                                    </IconButton>
-                                                )}
-                                            </ListItemSecondaryAction>
-                                        </ListItem>
-                                        <Divider variant="inset" component="li" />
-                                    </React.Fragment>
-                                ))
-                            )}
-                        </List>
-                    </Paper>
-                </Grid>
-
-                {/* Free Runners List */}
-                <Grid xs={12} md={6}>
-                    <Paper elevation={2} sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                        <Box sx={{ p: 2, bgcolor: 'secondary.main', color: 'white' }}>
-                            <Typography variant="h6" fontWeight="bold">Coureurs sans club ({freeRunners.length})</Typography>
-                        </Box>
-                        <Box sx={{ p: 2, bgcolor: 'background.default' }}>
-                            <TextField
-                                label="Rechercher un coureur"
-                                variant="outlined"
-                                fullWidth
-                                size="small"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                sx={{ bgcolor: 'white' }}
-                            />
-                        </Box>
-                        <List sx={{ maxHeight: 428, overflow: 'auto' }}>
-                            {filteredFreeRunners.length === 0 ? (
-                                <ListItem>
-                                    <ListItemText
-                                        primary={searchTerm ? "Aucun coureur trouvé" : "Aucun coureur disponible."}
-                                        sx={{ textAlign: 'center', color: 'text.secondary', py: 2 }}
-                                    />
-                                </ListItem>
-                            ) : (
-                                filteredFreeRunners.map((runner) => (
-                                    <React.Fragment key={runner.USE_ID}>
-                                        <ListItem
-                                            sx={{
-                                                '&:hover': { bgcolor: 'action.hover' },
-                                                transition: 'background-color 0.2s'
-                                            }}
-                                        >
-                                            <ListItemAvatar>
-                                                <Avatar>{runner.USE_NAME.charAt(0)}</Avatar>
-                                            </ListItemAvatar>
-                                            <ListItemText
-                                                primary={<Typography fontWeight="500">{runner.USE_NAME} {runner.USE_LAST_NAME}</Typography>}
-                                                secondary={runner.USE_MAIL}
-                                            />
-                                            <ListItemSecondaryAction>
-                                                <IconButton edge="end" aria-label="add" onClick={() => handleAddMember(runner.USE_ID)}>
-                                                    <PersonAddIcon color="primary" />
+                                    <TableRow key={member.USE_ID} hover>
+                                        <TableCell>{member.USE_LAST_NAME}</TableCell>
+                                        <TableCell>{member.USE_NAME}</TableCell>
+                                        <TableCell>{member.USE_MAIL}</TableCell>
+                                        <TableCell align="right">
+                                            {user && user.USE_ID !== member.USE_ID && (
+                                                <IconButton
+                                                    aria-label="delete"
+                                                    onClick={() => handleRemoveMember(member.USE_ID)}
+                                                    color="error"
+                                                    size="small"
+                                                >
+                                                    <DeleteIcon />
                                                 </IconButton>
-                                            </ListItemSecondaryAction>
-                                        </ListItem>
-                                        <Divider variant="inset" component="li" />
-                                    </React.Fragment>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
                                 ))
                             )}
-                        </List>
-                    </Paper>
-                </Grid>
-            </Grid>
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            </Paper>
         </Container>
     );
 };

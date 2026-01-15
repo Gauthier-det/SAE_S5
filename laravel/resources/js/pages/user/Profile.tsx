@@ -165,7 +165,7 @@ const Profile = () => {
             const updateData: UserUpdate = {
                 USE_NAME: formData.firstName,
                 USE_LAST_NAME: formData.lastName,
-                USE_PHONE_NUMBER: formData.phone ? parseInt(formData.phone as string) : undefined,
+                USE_PHONE_NUMBER: formData.phone,
                 USE_BIRTHDATE: formData.birthDate || undefined,
                 USE_LICENCE_NUMBER: formData.licenceNumber || undefined,
             };
