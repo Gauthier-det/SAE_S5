@@ -7,7 +7,7 @@ import dayjs from 'dayjs';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
     TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
-    Tooltip, Stack
+    Tooltip, Stack, Alert, AlertTitle
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -102,6 +102,8 @@ export default function RaceDetails() {
             showAlert("Erreur lors de la suppression de la course", "error");
         }
         setDeleteDialogOpen(false);
+    };
+
     const handleValidateTeam = async (e: React.MouseEvent, teamId: number) => {
         e.stopPropagation();
         if (!race) return;
