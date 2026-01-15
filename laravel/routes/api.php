@@ -80,9 +80,6 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // Admin Addresse routes
     Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
-    Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
-    Route::post('/addresses', [AddressController::class, 'createAddress']);
-    Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
     Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
 
     // Admin User routes
