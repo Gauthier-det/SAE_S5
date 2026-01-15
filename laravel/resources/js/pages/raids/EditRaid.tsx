@@ -492,12 +492,10 @@ const EditRaid = () => {
                                     </Box>
                                 </Stack>
 
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2, mt: 8 }}>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 8 }}>
                                     <Button
-                                        variant="contained"
-                                        color="error"
-                                        startIcon={<DeleteIcon />}
-                                        onClick={handleDeleteClick}
+                                        variant="outlined"
+                                        onClick={() => navigate(`/raids/${id}`)}
                                         sx={{
                                             px: 4,
                                             py: 1.5,
@@ -505,39 +503,25 @@ const EditRaid = () => {
                                             fontWeight: 'bold'
                                         }}
                                     >
-                                        SUPPRIMER
+                                        ANNULER
                                     </Button>
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
-                                        <Button
-                                            variant="outlined"
-                                            onClick={() => navigate(`/raids/${id}`)}
-                                            sx={{
-                                                px: 4,
-                                                py: 1.5,
-                                                borderRadius: 1,
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            ANNULER
-                                        </Button>
-                                        <Button
-                                            type="submit"
-                                            variant="contained"
-                                            color="success"
-                                            sx={{
-                                                px: 6,
-                                                py: 1.5,
-                                                bgcolor: '#1b5e20',
-                                                borderRadius: 1,
-                                                fontWeight: 'bold',
-                                                '&:hover': {
-                                                    bgcolor: '#144a19'
-                                                }
-                                            }}
-                                        >
-                                            ENREGISTRER
-                                        </Button>
-                                    </Box>
+                                    <Button
+                                        type="submit"
+                                        variant="contained"
+                                        color="success"
+                                        sx={{
+                                            px: 6,
+                                            py: 1.5,
+                                            bgcolor: '#1b5e20',
+                                            borderRadius: 1,
+                                            fontWeight: 'bold',
+                                            '&:hover': {
+                                                bgcolor: '#144a19'
+                                            }
+                                        }}
+                                    >
+                                        ENREGISTRER
+                                    </Button>
                                 </Box>
                             </Grid>
 
