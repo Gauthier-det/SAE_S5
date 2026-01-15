@@ -91,6 +91,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'required|integer|min:0',
             'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -120,6 +121,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
             'RAC_AGE_MAX',
+            'RAC_CHIP_MANDATORY',
         ]));
 
         return response()->json(['data' => $race], 201);
@@ -143,6 +145,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'required|integer|min:0',
             'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
             'CAT_1_PRICE' => 'required|numeric|min:0',
             'CAT_2_PRICE' => 'required|numeric|min:0',
             'CAT_3_PRICE' => 'required|numeric|min:0',
@@ -171,6 +174,7 @@ class RaceController extends Controller
                 'RAC_AGE_MIN',
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
+                'RAC_CHIP_MANDATORY',
             ]));
 
             for ($catId = 1; $catId <= 3; $catId++) {
@@ -220,6 +224,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN' => 'sometimes|integer|min:0',
             'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
+            'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
         ]);
 
         if ($validator->fails()) {
@@ -241,6 +246,7 @@ class RaceController extends Controller
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
             'RAC_AGE_MAX',
+            'RAC_CHIP_MANDATORY',
         ]));
 
         return response()->json(['data' => $race], 200);
