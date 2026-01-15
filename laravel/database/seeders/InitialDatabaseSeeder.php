@@ -218,8 +218,8 @@ class InitialDatabaseSeeder extends Seeder
                 'RAI_IMAGE' => null,
                 'RAI_TIME_START' => '2026-05-23 10:00:00',
                 'RAI_TIME_END' => '2026-05-24 18:00:00',
-                'RAI_REGISTRATION_START' => '2026-01-09 00:00:00',
-                'RAI_REGISTRATION_END' => '2026-04-30 23:59:59'  // À modifier vers 06/05/2026
+                'RAI_REGISTRATION_START' => '2026-01-19 00:00:00',
+                'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'  // À modifier vers 06/05/2026
             ],
         ]);
 
