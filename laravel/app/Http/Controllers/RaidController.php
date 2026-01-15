@@ -108,7 +108,7 @@ class RaidController extends Controller
 
     public function updateRaid(Request $request, $id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
@@ -146,7 +146,7 @@ class RaidController extends Controller
 
     public function deleteRaid($id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }

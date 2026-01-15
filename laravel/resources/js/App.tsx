@@ -22,6 +22,7 @@ import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import AdminDashboard from './pages/AdminDashboard';
+import Club from './pages/club/Club';
 
 
 const MainLayout = () => {
@@ -71,6 +72,9 @@ const AppRoutes = () => {
         {/* Admin Routes */}
         <Route element={<ProtectedRoute condition={isAdmin} />}>
           <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
+        <Route element={<ProtectedRoute condition={isClubManager} />}>
+          <Route path="/club/:id" element={<Club />} />
         </Route>
       </Route>
     </Routes>
