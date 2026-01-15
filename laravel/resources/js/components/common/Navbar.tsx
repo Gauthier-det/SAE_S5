@@ -24,15 +24,15 @@ import { thumbs } from '@dicebear/collection';
 const pages = [
     { name: 'TABLEAU DE BORD', path: '/dashboard' },
     { name: 'LES RAIDS', path: '/raids' },
-    { name: 'A PROPOS', path: '/about' },
 ];
 
-const settings = ['Profile', 'Logout'];
+const settings = ['Profil', 'Déconnexion'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, isAdmin, logout } = useUser();
+    const { user, isAdmin, isClubManager, logout } = useUser();
     const navigate = useNavigate();
+
     const location = useLocation();
     console.log("isAdmin", isAdmin);
     const avatarSvg = useMemo(() => {
@@ -53,9 +53,9 @@ function Navbar() {
     };
 
     const handleMenuClick = (setting: string) => {
-        if (setting === 'Logout') {
+        if (setting === 'Déconnexion') {
             logout();
-        } else if (setting === 'Profile') {
+        } else if (setting === 'Profil') {
             navigate('/profile');
         }
         handleCloseUserMenu();
@@ -64,7 +64,7 @@ function Navbar() {
     const handlePageClick = (path: string) => {
         navigate(path);
     };
-
+    console.log("user", user);
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
             <Container maxWidth={false} disableGutters>
@@ -84,27 +84,41 @@ function Navbar() {
                             onClick={() => navigate('/')}
                         />
                     </Box>
-
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 4 }}>
-                        {pages.map((page) => (
-                            <Button
-                                key={page.name}
-                                onClick={() => handlePageClick(page.path)}
-                                sx={{
-                                    my: 2,
-                                    borderRadius: 1,
-                                    color: location.pathname === page.path ? 'warning.main' : 'white',
-                                    display: 'block',
-                                    px: 3,
-                                    fontFamily: '"Archivo Black", sans-serif',
-                                    '&:hover': {
-                                        backgroundColor: 'secondary.main',
-                                    }
-                                }}
-                            >
-                                {page.name}
-                            </Button>
-                        ))}
+                        {user && <Button
+                            key="TABLEAU DE BORD"
+                            onClick={() => handlePageClick('/dashboard')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/dashboard' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            TABLEAU DE BORD
+                        </Button>}
+                        <Button
+                            key="LES RAIDS"
+                            onClick={() => handlePageClick('/raids')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/raids' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            LES RAIDS
+                        </Button>
                         {isAdmin && (
                             <Button
                                 key="Admin"
@@ -122,6 +136,25 @@ function Navbar() {
                                 }}
                             >
                                 Admin
+                            </Button>
+                        )}
+                        {user && user.club && isClubManager && (
+                            <Button
+                                key="Club"
+                                onClick={() => navigate('/club/' + user?.club!.CLU_ID)}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/club' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                Mon club
                             </Button>
                         )}
                     </Box>

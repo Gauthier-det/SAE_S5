@@ -1,4 +1,4 @@
-import { Container, Typography, Box, MenuItem, TextField, Stack, Button, Divider } from '@mui/material';
+import { Container, Typography, Box, MenuItem, TextField, Stack, Button, Divider, CircularProgress } from '@mui/material';
 import RaidCard from '../../components/cards/RaidCard';
 import { getListOfRaids } from '../../api/raid';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -262,11 +262,17 @@ export default function Raids() {
                                 backgroundColor: 'primary.main'
                             }}
                         >
-                            {filteredRaids.map((raid) => (
-                                <Box key={raid.RAI_ID}>
-                                    <RaidCard raid={raid} />
+                            {loading ? (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '200px', gridColumn: '1 / -1' }}>
+                                    <CircularProgress color="warning" />
                                 </Box>
-                            ))}
+                            ) : (
+                                filteredRaids.map((raid) => (
+                                    <Box key={raid.RAI_ID}>
+                                        <RaidCard raid={raid} />
+                                    </Box>
+                                ))
+                            )}
                         </Box>
                     </Box>
                 </Box>

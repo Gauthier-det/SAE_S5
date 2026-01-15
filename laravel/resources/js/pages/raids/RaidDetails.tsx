@@ -1,6 +1,6 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider,CircularProgress,Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRaidById } from '../../api/raid';
+import { getRaidById, deleteRaid } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
 import { useAlert } from '../../contexts/AlertContext';
 import type { Raid } from '../../models/raid.model';
@@ -23,17 +23,17 @@ const RaidDetails = () => {
     const navigate = useNavigate();
     const [raid, setRaid] = useState<Raid | null>(null);
     const [allRaces, setAllRaces] = useState<Race[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const { showAlert } = useAlert();
-    const { user,isRaidManager } = useUser();
-    
+    const [loading, setLoading] = useState(true);
+    const { user, isClubManager, isAdmin } = useUser();
 
     useEffect(() => {
         if (!id) return;
 
         const raidId = parseInt(id);
         setLoading(true);
-
         Promise.all([
             getRaidById(raidId),
             getListOfRacesByRaidId(raidId)
@@ -42,6 +42,7 @@ const RaidDetails = () => {
             setAllRaces(racesData);
         }).catch(err => {
             console.error(err);
+            setLoading(false);
             showAlert("Impossible de charger les détails du raid", "error");
         }).finally(() => {
             setLoading(false);
@@ -109,6 +110,15 @@ const RaidDetails = () => {
     }, [allRaces, raceType, raceGender, ageRange]);
 
 
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
+
     if (!raid) {
         return (
             <Container maxWidth="md">
@@ -126,6 +136,27 @@ const RaidDetails = () => {
 
     const handleRaceDetails = (raceId: number) => {
         navigate(`/races/${raceId}`);
+    }
+
+    const handleDeleteClick = () => {
+        setDeleteConfirmOpen(true);
+    }
+
+    const handleConfirmDelete = async () => {
+        setDeleteConfirmOpen(false);
+        setIsDeleting(true);
+        try {
+            if (!id) return;
+            const raidId = parseInt(id);
+            await deleteRaid(raidId);
+            showAlert("Raid supprimé avec succès", "success");
+            navigate('/raids');
+        } catch (error) {
+            console.error('Failed to delete raid:', error);
+            showAlert("Erreur lors de la suppression du raid", "error");
+        } finally {
+            setIsDeleting(false);
+        }
     }
 
     return (
@@ -236,11 +267,12 @@ const RaidDetails = () => {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                                <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-                                    {raid.RAI_NAME}
-                                </Typography>
-                                {user && raid && user.USE_ID === raid.user.USE_ID && isRaidManager && (
+                            <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 3 }}>
+                                {raid.RAI_NAME}
+                            </Typography>
+                            
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+                                {user && raid && user.USE_ID === raid.user.USE_ID && (
                                     <Button
                                         variant="contained"
                                         color="success"
@@ -250,7 +282,28 @@ const RaidDetails = () => {
                                         Créer une course
                                     </Button>
                                 )}
-                            </Box>
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
+                                    <Button
+                                        variant="contained"
+                                        color="warning"
+                                        sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
+                                        onClick={() => navigate(`/raids/${id}/edit`)}
+                                    >
+                                        MODIFIER le RAID
+                                    </Button>
+                                )}
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                        onClick={handleDeleteClick}
+                                        disabled={isDeleting}
+                                    >
+                                        SUPPRIMER le RAID
+                                    </Button>
+                                )}
+                            </Stack>
 
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -274,19 +327,18 @@ const RaidDetails = () => {
 
                             {/* Info Cards */}
                             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
-                                {user?.USE_ID === raid.user?.USE_ID &&
-                                    <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
-                                        <Box sx={{ p: 2, backgroundColor: '#e3fde3ff', borderRadius: 2, minWidth: 200 }}>
-                                            <ManageAccountsIcon fontSize="medium" color="primary" />
-                                            <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                                Informations
-                                            </Typography>
-                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                vous êtes l'organisateur de ce raid
-                                            </Typography>
-                                        </Box>
+
+                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                    <Box sx={{ p: 2, backgroundColor: '#e3fde3ff', borderRadius: 2, minWidth: 200 }}>
+                                        <ManageAccountsIcon fontSize="medium" color="primary" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            Informations
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {user?.USE_ID === raid.user?.USE_ID ? 'vous êtes l\'organisateur de ce raid' : raid.user?.USE_NAME + ' ' + raid.user?.USE_LAST_NAME + ' gère ce raid'}
+                                        </Typography>
                                     </Box>
-                                }
+                                </Box>
                                 <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" color="primary" />
@@ -372,6 +424,22 @@ const RaidDetails = () => {
                     </Box>
                 </Box>
             </Box>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+                <DialogTitle>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Êtes-vous sûr de vouloir supprimer ce raid ? Cette action est irréversible et supprimera également toutes les courses associées.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteConfirmOpen(false)}>Annuler</Button>
+                    <Button onClick={handleConfirmDelete} variant="contained" color="error" disabled={isDeleting}>
+                        Supprimer
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }

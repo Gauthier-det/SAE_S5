@@ -6,6 +6,7 @@ use App\Models\Address;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class TeamControllerTest extends TestCase
@@ -27,14 +28,9 @@ class TeamControllerTest extends TestCase
             'USE_PASSWORD' => Hash::make('password123'),
         ]);
 
-        $loginResponse = $this->postJson('/api/login', [
-            'mail' => $user->USE_MAIL,
-            'password' => 'password123',
-        ]);
-        $token = $loginResponse['data']['access_token'];
+        Sanctum::actingAs($user);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams', []);
+        $response = $this->postJson('/api/teams', []);
 
         $response->assertStatus(422)
             ->assertJsonStructure([
@@ -49,17 +45,12 @@ class TeamControllerTest extends TestCase
             'USE_PASSWORD' => Hash::make('password123'),
         ]);
 
-        $loginResponse = $this->postJson('/api/login', [
-            'mail' => $user->USE_MAIL,
-            'password' => 'password123',
-        ]);
-        $token = $loginResponse['data']['access_token'];
+        Sanctum::actingAs($user);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams', [
-                'name' => 'My Awesome Team',
-                'image' => 'team-image.jpg',
-            ]);
+        $response = $this->postJson('/api/teams', [
+            'name' => 'My Awesome Team',
+            'image' => 'team-image.jpg',
+        ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -100,29 +91,33 @@ class TeamControllerTest extends TestCase
             'USE_PASSWORD' => Hash::make('password123'),
         ]);
 
-        $loginResponse = $this->postJson('/api/login', [
-            'mail' => $user->USE_MAIL,
-            'password' => 'password123',
-        ]);
-        $token = $loginResponse['data']['access_token'];
+        Sanctum::actingAs($user);
 
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams/addMember', []);
+        $response = $this->postJson('/api/teams/addMember', []);
 
         $response->assertStatus(422)
             ->assertJsonStructure([
                 'message',
                 'errors' => [
                     'user_id',
-                    'team_id'
+                    'team_id',
+                    'race_id'
                 ]
             ]);
     }
 
     public function test_non_owner_cannot_add_member_to_team()
     {
-        $owner = User::factory()->create(['USE_PASSWORD' => Hash::make('password123')]);
-        $nonOwner = User::factory()->create(['USE_PASSWORD' => Hash::make('password123')]);
+        $this->seed(\Database\Seeders\InitialDatabaseSeeder::class);
+
+        $owner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
+        $nonOwner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
         $member = User::factory()->create();
 
         // Owner creates team
@@ -137,6 +132,7 @@ class TeamControllerTest extends TestCase
         $response = $nonOwnerTest->postJson('/api/teams/addMember', [
             'user_id' => $member->USE_ID,
             'team_id' => $ownerResponse,
+            'race_id' => 3,
         ]);
 
         $response->assertStatus(403)
@@ -145,64 +141,64 @@ class TeamControllerTest extends TestCase
 
     public function test_cannot_add_same_user_twice_to_team()
     {
-        $owner = User::factory()->create(['USE_PASSWORD' => Hash::make('password123')]);
+        $this->seed(\Database\Seeders\InitialDatabaseSeeder::class);
+
+        $owner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
         $member = User::factory()->create();
 
-        // Owner login and create team
-        $loginResponse = $this->postJson('/api/login', [
-            'mail' => $owner->USE_MAIL,
-            'password' => 'password123',
-        ]);
-        $token = $loginResponse['data']['access_token'];
-
-        $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams', ['name' => 'Test Team']);
+        // Owner creates team
+        Sanctum::actingAs($owner);
+        $teamResponse = $this->postJson('/api/teams', ['name' => 'Test Team']);
+        $teamId = $teamResponse->json('data.team_id');
 
         // Add member first time (success)
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams/addMember', [
-                'user_id' => $member->USE_ID,
-                'team_id' => 1,
-            ]);
+        $response = $this->postJson('/api/teams/addMember', [
+            'user_id' => $member->USE_ID,
+            'team_id' => $teamId,
+            'race_id' => 3,
+        ]);
         $response->assertStatus(201);
 
         // Add same member again (conflict)
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams/addMember', [
-                'user_id' => $member->USE_ID,
-                'team_id' => 1,
-            ]);
+        $response = $this->postJson('/api/teams/addMember', [
+            'user_id' => $member->USE_ID,
+            'team_id' => $teamId,
+            'race_id' => 3,
+        ]);
 
         $response->assertStatus(409)
             ->assertJson(['message' => 'User is already part of the team']);
 
         $this->assertDatabaseHas('SAN_USERS_TEAMS', [
             'USE_ID' => $member->USE_ID,
-            'TEA_ID' => 1,
+            'TEA_ID' => $teamId,
         ]);
     }
 
     public function test_team_owner_can_add_member_to_their_team()
     {
-        $owner = User::factory()->create(['USE_PASSWORD' => Hash::make('password123')]);
+        $this->seed(\Database\Seeders\InitialDatabaseSeeder::class);
+
+        $owner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
         $member = User::factory()->create();
 
-        // Login and create team
-        $loginResponse = $this->postJson('/api/login', [
-            'mail' => $owner->USE_MAIL,
-            'password' => 'password123',
+        // Owner creates team
+        Sanctum::actingAs($owner);
+        $teamResponse = $this->postJson('/api/teams', ['name' => 'Test Team']);
+        $teamId = $teamResponse->json('data.team_id');
+
+        // Add member
+        $response = $this->postJson('/api/teams/addMember', [
+            'user_id' => $member->USE_ID,
+            'team_id' => $teamId,
+            'race_id' => 3, // Assuming race 3 exists from seed
         ]);
-        $token = $loginResponse['data']['access_token'];
-
-        $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams', ['name' => 'Test Team']);
-
-        // Owner adds member
-        $response = $this->withHeader('Authorization', "Bearer {$token}")
-            ->postJson('/api/teams/addMember', [
-                'user_id' => $member->USE_ID,
-                'team_id' => 1,
-            ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure([
@@ -214,14 +210,67 @@ class TeamControllerTest extends TestCase
             ])
             ->assertJson([
                 'data' => [
-                    'team_id' => 1,
+                    'team_id' => $teamId,
                     'user_id' => $member->USE_ID,
                 ]
             ]);
 
         $this->assertDatabaseHas('SAN_USERS_TEAMS', [
             'USE_ID' => $member->USE_ID,
-            'TEA_ID' => 1,
+            'TEA_ID' => $teamId,
         ]);
+    }
+
+    public function test_get_team_by_id()
+    {
+        $owner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
+
+        $loginResponse = $this->postJson('/api/login', [
+            'mail' => $owner->USE_MAIL,
+            'password' => 'password123',
+        ]);
+        $token = $loginResponse['data']['access_token'];
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/teams', ['name' => 'Test Team']);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/teams/1');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['data']);
+    }
+
+    public function test_get_users_by_team()
+    {
+        $owner = User::factory()->create([
+            'USE_PASSWORD' => Hash::make('password123'),
+            'USE_VALIDITY' => now()->addYear(),
+        ]);
+        $member = User::factory()->create();
+
+        $loginResponse = $this->postJson('/api/login', [
+            'mail' => $owner->USE_MAIL,
+            'password' => 'password123',
+        ]);
+        $token = $loginResponse['data']['access_token'];
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/teams', ['name' => 'Test Team']);
+
+        $this->withHeader('Authorization', "Bearer {$token}")
+            ->postJson('/api/teams/addMember', [
+                'user_id' => $member->USE_ID,
+                'team_id' => 1,
+            ]);
+
+        $response = $this->withHeader('Authorization', "Bearer {$token}")
+            ->getJson('/api/teams/1/users');
+
+        $response->assertStatus(200)
+            ->assertJsonStructure(['data']);
     }
 }

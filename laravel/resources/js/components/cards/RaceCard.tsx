@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Race } from '../../models/race.model';
 import { formatDate } from '../../utils/dateUtils';
 import { useUser } from '../../contexts/userContext';
-import { Card, CardContent, Typography, Button, Box, Grid, Stack, Chip, Divider } from '@mui/material';
+import { Card, CardContent, Typography, Button, Box, Stack, Chip, Divider } from '@mui/material';
 import EventIcon from '@mui/icons-material/Event';
 import GroupsIcon from '@mui/icons-material/Groups';
 import PersonIcon from '@mui/icons-material/Person';
@@ -26,6 +26,7 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
             onDetailsClick(race.RAC_ID);
         }
     };
+
 
     return (
         <Card
@@ -61,31 +62,32 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                     textAlign: 'center'
                 }}
             >
-                <Chip
-                    label={race.RAC_TYPE}
-                    size="small"
-                    sx={{
-                        bgcolor: 'rgba(255,255,255,0.2)',
-                        color: 'white',
-                        backdropFilter: 'blur(4px)',
-                        fontWeight: 600,
-                        mb: 1
-                    }}
-                />
                 <Typography variant="h5" sx={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1 }}>
-                    {race.RAC_DIFFICULTY}
+                    {race.RAC_NAME}
                 </Typography>
             </Box>
 
             <CardContent sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {race.user.USE_ID === user?.USE_ID && <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
-                    <Chip
+                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    {race.user.USE_ID === user?.USE_ID && <Chip
                         label="Vous êtes manager de cette course"
                         size="small"
                         color="info"
                         sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />}
+                    <Chip
+                        label={race.RAC_DIFFICULTY}
+                        color="warning"
+                        size="small"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
                     />
-                </Box>}
+                    <Chip
+                        label={race.RAC_TYPE}
+                        color={race.RAC_TYPE === 'Compétitif' ? 'error' : 'success'}
+                        size="small"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
+                </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     <strong>Début:</strong> {formatDate(race.RAC_TIME_START)}
                     <br />
@@ -115,78 +117,68 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
 
                 <Divider sx={{ borderStyle: 'dashed' }} />
 
-                {/* Grid Info */}
-                <Grid container spacing={2} rowSpacing={2}>
+                {/* Info */}
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
                     {/* Participants */}
-                    <Grid item xs={6}>
-                        <Stack spacing={0.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                                <PersonIcon fontSize="small" />
-                                <Typography variant="caption" fontWeight="bold">PARTICIPANTS</Typography>
-                            </Box>
-                            <Typography variant="body2" fontWeight={500}>
-                                {race.RAC_MIN_PARTICIPANTS} - {race.RAC_MAX_PARTICIPANTS}
-                            </Typography>
-                        </Stack>
-                    </Grid>
+                    <Stack spacing={0.5}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                            <PersonIcon fontSize="small" />
+                            <Typography variant="caption" fontWeight="bold">PARTICIPANTS</Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                            {race.RAC_MIN_PARTICIPANTS} - {race.RAC_MAX_PARTICIPANTS}
+                        </Typography>
+                    </Stack>
 
                     {/* Équipes */}
-                    <Grid item xs={6}>
-                        <Stack spacing={0.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                                <FlagIcon fontSize="small" />
-                                <Typography variant="caption" fontWeight="bold">ÉQUIPES</Typography>
-                            </Box>
-                            <Typography variant="body2" fontWeight={500}>
-                                {race.RAC_MIN_TEAMS} - {race.RAC_MAX_TEAMS}
-                            </Typography>
-                        </Stack>
-                    </Grid>
+                    <Stack spacing={0.5}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                            <FlagIcon fontSize="small" />
+                            <Typography variant="caption" fontWeight="bold">ÉQUIPES</Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                            {race.RAC_MIN_TEAMS} - {race.RAC_MAX_TEAMS}
+                        </Typography>
+                    </Stack>
 
                     {/* Team Size */}
-                    <Grid item xs={6}>
-                        <Stack spacing={0.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                                <GroupsIcon fontSize="small" />
-                                <Typography variant="caption" fontWeight="bold">PAR ÉQUIPE</Typography>
-                            </Box>
-                            <Typography variant="body2" fontWeight={500}>
-                                Max {race.RAC_MAX_TEAM_MEMBERS} pers.
-                            </Typography>
-                        </Stack>
-                    </Grid>
+                    <Stack spacing={0.5}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                            <GroupsIcon fontSize="small" />
+                            <Typography variant="caption" fontWeight="bold">PAR ÉQUIPE</Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                            Max {race.RAC_MAX_TEAM_MEMBERS} pers.
+                        </Typography>
+                    </Stack>
 
                     {/* Gender */}
-                    <Grid item xs={6}>
-                        <Stack spacing={0.5}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
-                                <WcIcon fontSize="small" />
-                                <Typography variant="caption" fontWeight="bold">GENRE</Typography>
-                            </Box>
-                            <Typography variant="body2" fontWeight={500}>
-                                {race.RAC_GENDER}
-                            </Typography>
-                        </Stack>
-                    </Grid>
+                    <Stack spacing={0.5}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
+                            <WcIcon fontSize="small" />
+                            <Typography variant="caption" fontWeight="bold">GENRE</Typography>
+                        </Box>
+                        <Typography variant="body2" fontWeight={500}>
+                            {race.RAC_GENDER}
+                        </Typography>
+                    </Stack>
 
                     {/* Age */}
-                    <Grid item xs={12}>
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            bgcolor: '#f8f9fa',
-                            p: 1.5,
-                            borderRadius: 2
-                        }}>
-                            <CakeIcon fontSize="small" color="primary" />
-                            <Typography variant="body2" fontWeight={600} color="text.primary">
-                                {race.RAC_AGE_MIN} - {race.RAC_AGE_MAX} ans
-                            </Typography>
-                        </Box>
-                    </Grid>
-
-                </Grid>
+                    <Box sx={{
+                        gridColumn: '1 / -1',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1.5,
+                        bgcolor: '#f8f9fa',
+                        p: 1.5,
+                        borderRadius: 2
+                    }}>
+                        <CakeIcon fontSize="small" color="primary" />
+                        <Typography variant="body2" fontWeight={600} color="text.primary">
+                            {race.RAC_AGE_MIN} - {race.RAC_AGE_MAX} ans
+                        </Typography>
+                    </Box>
+                </Box>
 
                 <Box sx={{ mt: 'auto', pt: 2 }}>
                     <Button

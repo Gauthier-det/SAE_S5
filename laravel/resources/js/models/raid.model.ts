@@ -1,5 +1,6 @@
 import type { Club } from "./club.model";
-import type { Address, User } from "./user.model";
+import type { User } from "./user.model";
+import type { Address } from "./address.model";
 
 export interface Raid {
     RAI_ID: number;
@@ -12,6 +13,7 @@ export interface Raid {
     RAI_TIME_END: string;
     RAI_REGISTRATION_START: string;
     RAI_REGISTRATION_END: string;
+    RAI_NB_RACES: number;
     club: Club;
     address: Address;
     user: User;
@@ -33,5 +35,21 @@ export interface RaidCreation {
     RAI_TIME_END: string | null;
     RAI_REGISTRATION_START: string | null;
     RAI_REGISTRATION_END: string | null;
+    RAI_NB_RACES: number;
+}
+
+export interface RaidUpdate {
+    CLU_ID?: number;
+    ADD_ID?: number;
+    USE_ID?: number;
+    RAI_NAME?: string;
+    RAI_MAIL?: string | null;
+    RAI_PHONE_NUMBER?: string | null;
+    RAI_WEB_SITE?: string | null;
+    RAI_IMAGE?: string | null;
+    RAI_TIME_START?: string | null;
+    RAI_TIME_END?: string | null;
+    RAI_REGISTRATION_START?: string | null;
+    RAI_REGISTRATION_END?: string | null;
     RAI_NB_RACES: number;
 }

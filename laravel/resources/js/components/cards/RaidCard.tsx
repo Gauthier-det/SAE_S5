@@ -17,7 +17,7 @@ interface RaidCardProps {
 function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
     const navigate = useNavigate();
     const [imageError, setImageError] = useState(false);
-    const { user, isRaidManager } = useUser();
+    const { user } = useUser();
     const handleClick = () => {
         navigate(`/raids/${raid.RAI_ID}`);
         if (onDetailsClick) {
@@ -34,9 +34,6 @@ function RaidCard({ raid, onDetailsClick }: RaidCardProps) {
         return 'warning';
     };
 
-    console.log("isRaidManager : "+isRaidManager);
-    console.log("user : "+user?.USE_ID);
-    console.log("raid.user : "+raid.user?.USE_ID);
     return (
         <Card
             sx={{

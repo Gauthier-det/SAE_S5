@@ -40,6 +40,13 @@ export const apiClient = async <T>(endpoint: string, { token, ...customConfig }:
         },
     };
 
+    if (config.body instanceof FormData) {
+        // Let the browser set the Content-Type with boundary for FormData
+        if (config.headers && 'Content-Type' in config.headers) {
+            delete (config.headers as any)['Content-Type'];
+        }
+    }
+
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
     if (response.status === 401) {

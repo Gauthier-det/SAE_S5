@@ -49,4 +49,44 @@ export const updateUser = async (userId: number, data: Partial<User>) => {
     });
 }
 
+export const deleteUser = async (userId: number): Promise<void> => {
+    await apiClient<void>(`/users/${userId}`, {
+        method: 'DELETE'
+    });
+}
+
+export interface UserStats {
+    racesRun: number;
+    podiums: number;
+    totalPoints: number;
+}
+
+export interface UserHistoryItem {
+    date: string;
+    raid: string;
+    race: string;
+    rank: string;
+    points: number;
+}
+
+export const getUserStats = async (userId: number): Promise<UserStats> => {
+    return await apiClient<UserStats>(`/user/stats/${userId}`, {
+        method: 'GET'
+    });
+}
+
+export const getUserHistory = async (userId: number): Promise<UserHistoryItem[]> => {
+    const response = await apiClient<{ data: UserHistoryItem[] }>(`/user/history/${userId}`, {
+        method: 'GET'
+    });
+    return response.data;
+}
+
+export const getFreeRunners = async (): Promise<User[]> => {
+    const response = await apiClient<{ data: User[] }>('/users/free', {
+        method: 'GET'
+    });
+    return response.data;
+}
+
 

@@ -66,7 +66,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     useEffect(() => {
         const initSession = async () => {
             const token = localStorage.getItem('token');
+            const storedUser = sessionStorage.getItem('user');
+
             if (token) {
+                if (storedUser) {
+                    try {
+                        const parsedUser = JSON.parse(storedUser);
+                        setUser(parsedUser);
+                        setIsAuthenticated(true);
+                        // Optimistically set roles based on stored data if possible? 
+                        // Actually, better to wait for specific check, OR assume false until refreshUser runs.
+                        // But wait, refreshUser calls updateRoles.
+                    } catch (e) {
+                        console.error("Failed to parse stored user", e);
+                        sessionStorage.removeItem('user');
+                    }
+                }
+
                 try {
                     await refreshUser();
                 } catch (error) {
@@ -84,6 +100,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             const { token, user } = await apiLogin(creds);
             localStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
             setUser(user);
             setIsAuthenticated(true);
             await updateRoles(user);
@@ -97,6 +114,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         try {
             const { token, user } = await apiRegister(creds);
             localStorage.setItem('token', token);
+            sessionStorage.setItem('user', JSON.stringify(user));
             setUser(user);
             setIsAuthenticated(true);
             await updateRoles(user);
@@ -109,6 +127,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const logout = () => {
         apiLogout().catch(() => { });
         localStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         setUser(null);
         setIsAuthenticated(false);
         setIsClubManagerUser(false);

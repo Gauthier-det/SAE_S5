@@ -11,7 +11,8 @@ import {
     TableHead,
     TableRow,
     Stack,
-    IconButton
+    IconButton,
+    CircularProgress
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -32,6 +33,7 @@ const AdminDashboard = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedClub, setSelectedClub] = useState<Club | null>(null);
+    const [dataLoading, setDataLoading] = useState(true);
 
     useEffect(() => {
         if (!loading && !isAdmin) {
@@ -40,6 +42,7 @@ const AdminDashboard = () => {
     }, [isAdmin, loading, navigate]);
 
     const fetchData = async () => {
+        setDataLoading(true);
         try {
             const [clubsData, usersData] = await Promise.all([
                 getListOfClubs(),
@@ -50,6 +53,8 @@ const AdminDashboard = () => {
         } catch (error) {
             console.error("Failed to fetch data", error);
             showAlert('Erreur lors du chargement des données', 'error');
+        } finally {
+            setDataLoading(false);
         }
     };
 
@@ -71,7 +76,6 @@ const AdminDashboard = () => {
 
     const handleDelete = (id: number) => {
         showConfirm({
-            title: 'Supprimer le club ?',
             message: 'Êtes-vous sûr de vouloir supprimer ce club ? Cette action est irréversible.',
             onAccept: async () => {
                 try {
@@ -91,6 +95,14 @@ const AdminDashboard = () => {
     };
 
     if (loading) return null;
+
+    if (dataLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', bgcolor: '#1a2e22' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
 
     return (
         <Box sx={{ minHeight: '100vh', bgcolor: '#1a2e22', py: 4 }}>

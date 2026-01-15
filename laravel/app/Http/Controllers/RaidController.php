@@ -121,10 +121,11 @@ class RaidController extends Controller
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->club->USE_ID && !auth()->user()->isAdmin()) {
+        $club = Club::find($raid->CLU_ID);
+        if (auth()->user()->USE_ID !== $club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized. Only the club manager can update raids.',
-            ], 404);
+            ], 403);
         }
 
         if ($request->has('USE_ID')) {
@@ -168,10 +169,11 @@ class RaidController extends Controller
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->club->USE_ID && !auth()->user()->isAdmin()) {
+        $club = Club::find($raid->CLU_ID);
+        if (auth()->user()->USE_ID !== $club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Raid not found',
-            ], 404);
+                'message' => 'Unauthorized. Only the club manager can delete raids.',
+            ], 403);
         }
 
         $raid->delete();
