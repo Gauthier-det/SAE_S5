@@ -87,6 +87,22 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                         size="small"
                         sx={{ fontWeight: 600, fontSize: '0.7rem' }}
                     />
+                    <Chip
+                        label={new Date() < new Date(race.RAC_TIME_START) ?
+                            'En attente'
+                            : new Date() < new Date(race.RAC_TIME_END)
+                                ? 'En cours'
+                                : 'Terminée'
+                        }
+                        color={new Date() < new Date(race.RAC_TIME_START) ?
+                            'warning'
+                            : new Date() < new Date(race.RAC_TIME_END)
+                                ? 'success'
+                                : 'error'
+                        }
+                        size="small"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
                 </Box>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     <strong>Début:</strong> {formatDate(race.RAC_TIME_START)}

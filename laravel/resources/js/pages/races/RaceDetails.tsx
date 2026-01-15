@@ -120,31 +120,43 @@ export default function RaceDetails() {
     };
 
     const getButton = (race: RaceDetail) => {
-        if (new Date() < new Date(race.RAC_TIME_START)) {
-            return null;
+        const now = new Date();
+        const start = new Date(race.RAC_TIME_START);
+        const end = new Date(race.RAC_TIME_END);
+
+        if (now < start) {
+            return <Typography variant="body2" color="text.secondary">En attente du départ</Typography>;
         }
-        if (race.user.USE_ID === user?.USE_ID) {
-            if (new Date(race.RAC_TIME_START) < new Date() && new Date() < new Date(race.RAC_TIME_END)) {
+
+        if (Number(race.user.USE_ID) === Number(user?.USE_ID)) {
+            if (now >= start && now <= end) {
                 return (
-                    <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => navigate('/')}>
-                        pointer les participants
+                    <Button variant="contained" color="info" sx={{ borderRadius: 2 }} onClick={() => navigate(`/races/${race.RAC_ID}/participants`)}>
+                        Gérer le direct
                     </Button>
                 );
             }
+
             if (race.has_results) {
                 return (
                     <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => setDeleteModalOpen(true)}>
-                        supprimer les resultats
+                        Supprimer les résultats
                     </Button>
                 );
             } else {
                 return (
                     <Button variant="contained" color="warning" sx={{ borderRadius: 2 }} onClick={() => setResultsModalOpen(true)}>
-                        ajouter les resultats
+                        Ajouter les résultats
                     </Button>
                 );
             }
         }
+
+        if (now > end && !race.has_results) {
+            return <Typography variant="body2" color="text.secondary">Résultats en attente de publication</Typography>;
+        }
+
+        return null;
     };
 
     const handleImportResults = async () => {
@@ -194,7 +206,6 @@ export default function RaceDetails() {
         if (!race) return;
         try {
             await validateTeamForRace(teamId, race.RAC_ID);
-            // Refresh logic - ideally reload race details or update local state
             const updatedRace = await getRaceDetails(race.RAC_ID);
             setRace(updatedRace);
         } catch (err) {
@@ -209,7 +220,6 @@ export default function RaceDetails() {
         if (!confirm("Voulez-vous vraiment dévalider cette équipe ?")) return;
         try {
             await unvalidateTeamForRace(teamId, race.RAC_ID);
-            // Refresh
             const updatedRace = await getRaceDetails(race.RAC_ID);
             setRace(updatedRace);
         } catch (err) {
@@ -225,8 +235,6 @@ export default function RaceDetails() {
     const { stats, formatted_categories } = race;
     const isBelowMinParticipants = stats.participants_count < race.RAC_MIN_PARTICIPANTS;
 
-    // Check if current user is the Race Manager (using race.user linked in RaceController)
-    // In RaceController: 'user' relation is loaded. So race.user.USE_ID is the manager.
     const isRaceManager = isAuthenticated && user && race && user.USE_ID === race.user.USE_ID;
 
     const renderTeamCard = (team: TeamDetail & { isResponsible?: boolean, isMember?: boolean }) => (
@@ -329,6 +337,12 @@ export default function RaceDetails() {
                     <Chip label={race.RAC_DIFFICULTY} color="success" size="small" variant="outlined" />
                     {race.user.USE_ID === user?.USE_ID && <Chip label="vous êtes l'organisateur" color="warning" size="small" variant="outlined" />}
                     <Chip label={race.RAC_GENDER || 'Mixte'} color="info" size="small" />
+                    <Chip
+                        label={new Date() < new Date(race.RAC_TIME_START) ? 'En attente' : new Date() < new Date(race.RAC_TIME_END) ? 'En cours' : 'Terminée'}
+                        color={new Date() < new Date(race.RAC_TIME_START) ? 'warning' : new Date() < new Date(race.RAC_TIME_END) ? 'success' : 'error'}
+                        size="small"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
                 </Box>
             </Box>
 
@@ -424,7 +438,7 @@ export default function RaceDetails() {
                     <GroupsIcon />
                     <Box>
                         <Typography variant="subtitle2">Membres max par équipe</Typography>
-                        <Typography variant="h6">{race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
+                        <Typography variant="h6">{race.RAC_MIN_TEAM_MEMBERS+" - "+race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
                     </Box>
                 </Box>
             </Paper>

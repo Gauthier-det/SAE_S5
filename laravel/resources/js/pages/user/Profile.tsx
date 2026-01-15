@@ -454,25 +454,6 @@ const Profile = () => {
                                         </TableBody>
                                     </Table>
                                 </TableContainer>
-
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 4 }}>
-                                    <Button
-                                        variant="contained"
-                                        endIcon={<Typography component="span" sx={{ ml: 1 }}>→</Typography>}
-                                        sx={{
-                                            bgcolor: '#e0e0e0',
-                                            color: '#333',
-                                            borderRadius: '20px',
-                                            textTransform: 'none',
-                                            fontWeight: 'bold',
-                                            boxShadow: 'none',
-                                            px: 3,
-                                            '&:hover': { bgcolor: '#d5d5d5', boxShadow: 'none' }
-                                        }}
-                                    >
-                                        VOIR L'HISTORIQUE DES COURSES
-                                    </Button>
-                                </Box>
                             </Paper>
                         </Stack>
                     </Stack>
