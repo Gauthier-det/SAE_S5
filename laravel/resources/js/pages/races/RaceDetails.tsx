@@ -102,6 +102,8 @@ export default function RaceDetails() {
             showAlert("Erreur lors de la suppression de la course", "error");
         }
         setDeleteDialogOpen(false);
+    };
+
     const handleValidateTeam = async (e: React.MouseEvent, teamId: number) => {
         e.stopPropagation();
         if (!race) return;
