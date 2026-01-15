@@ -32,7 +32,6 @@ import { getClubUsers } from '../../api/club';
 import type { User } from '../../models/user.model';
 import { updateAddress } from '../../api/address';
 import type { AddressCreation } from '../../models/address.model';
-import DeleteIcon from '@mui/icons-material/Delete';
 
 const EditRaid = () => {
     const { id } = useParams<{ id: string }>();
@@ -472,7 +471,7 @@ const EditRaid = () => {
                                                 label="N°"
                                                 name="ADD_STREET_NUMBER"
                                                 variant="standard"
-                                                value={addressData.ADD_STREET_NUMBER}
+                                                value={addressData.ADD_STREET_NUMBER || ''}
                                                 onChange={handleAddressChange}
                                                 sx={{ width: '100px' }}
                                                 error={!!fieldErrors.ADD_STREET_NUMBER}
@@ -482,7 +481,7 @@ const EditRaid = () => {
                                                 label="Rue"
                                                 name="ADD_STREET_NAME"
                                                 variant="standard"
-                                                value={addressData.ADD_STREET_NAME}
+                                                value={addressData.ADD_STREET_NAME || ''}
                                                 onChange={handleAddressChange}
                                                 fullWidth
                                                 error={!!fieldErrors.ADD_STREET_NAME}

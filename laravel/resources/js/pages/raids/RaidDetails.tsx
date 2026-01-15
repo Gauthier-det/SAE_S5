@@ -51,6 +51,8 @@ const RaidDetails = () => {
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
     const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
 
+    const raceIsFull = raid && allRaces.length >= raid.RAI_NB_RACES;
+
     // Calculate global min/max for the slider bounds
     const limits = React.useMemo(() => {
         if (allRaces.length === 0) return { min: 0, max: 100 };
@@ -273,7 +275,7 @@ const RaidDetails = () => {
                             </Typography>
 
                             <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
-                                {user && raid && (user.USE_ID === raid.user.USE_ID || isAdmin) && (
+                                {user && raid && !raceIsFull && (user.USE_ID === raid.user.USE_ID || isAdmin) && (
                                     <Button
                                         variant="contained"
                                         color="success"

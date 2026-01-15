@@ -293,7 +293,7 @@ const CreateRace = () => {
       await refreshUser();
       setErrors({});
       showAlert("Course créée avec succès !", "success");
-      navigate('/raids');
+      navigate(`/raids/${id}`);
     } catch (error: any) {
       console.error('Error creating race:', error);
       setErrors({ submit: error.message || 'Error creating race' });
