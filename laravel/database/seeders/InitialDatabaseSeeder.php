@@ -58,7 +58,7 @@ class InitialDatabaseSeeder extends Seeder
 
         // Users
         DB::table('SAN_USERS')->insert([
-            ['USE_ID' => 0, 'ADD_ID' => 1, 'CLU_ID' => null, 'USE_MAIL' => 'admin.site@orient.action.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Admin', 'USE_LAST_NAME' => 'Site', 'USE_GENDER' => 'Autre', 'USE_BIRTHDATE' => '1970-01-01', 'USE_PHONE_NUMBER' => '0600000000', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => '1970-01-01'],   
+            ['USE_ID' => 0, 'ADD_ID' => 1, 'CLU_ID' => null, 'USE_MAIL' => 'admin.site@orient.action.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Admin', 'USE_LAST_NAME' => 'Site', 'USE_GENDER' => 'Autre', 'USE_BIRTHDATE' => '1970-01-01', 'USE_PHONE_NUMBER' => '0600000000', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => '1970-01-01'],
             ['USE_ID' => 1, 'ADD_ID' => 5, 'CLU_ID' => null, 'USE_MAIL' => 'julien.martin@caen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Julien', 'USE_LAST_NAME' => 'MARTIN', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '1990-04-15', 'USE_PHONE_NUMBER' => '0612345678', 'USE_LICENCE_NUMBER' => 77001, 'USE_MEMBERSHIP_DATE' => '2022-01-01', 'USE_VALIDITY' => '2024-12-31'],
             ['USE_ID' => 2, 'ADD_ID' => 6, 'CLU_ID' => null, 'USE_MAIL' => 'c.dumont@email.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Clara', 'USE_LAST_NAME' => 'DUMONT', 'USE_GENDER' => 'Femme', 'USE_BIRTHDATE' => '1985-09-22', 'USE_PHONE_NUMBER' => '0698765432', 'USE_LICENCE_NUMBER' => 25004, 'USE_MEMBERSHIP_DATE' => '2023-01-01', 'USE_VALIDITY' => '2025-12-31'],
             ['USE_ID' => 3, 'ADD_ID' => 7, 'CLU_ID' => null, 'USE_MAIL' => 'antoine.petit@gmail.com', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Antoine', 'USE_LAST_NAME' => 'PETIT', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '2002-01-03', 'USE_PHONE_NUMBER' => '0711223344', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => '2025-01-11'],
@@ -101,14 +101,14 @@ class InitialDatabaseSeeder extends Seeder
         // Raids
         DB::table('SAN_RAIDS')->insert([
             ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 25, 'USE_ID' => 15, 'RAI_NB_RACES' => 2, 'RAI_NAME' => 'RAID CHAMPETRE', 'RAI_MAIL' => "example@raidchampetre.fr", 'RAI_PHONE_NUMBER' => '0613245698', 'RAI_WEB_SITE' => 'https://raidchampetre.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2025-11-13 08:00:00', 'RAI_TIME_END' => '2025-11-14 18:00:00', 'RAI_REGISTRATION_START' => '2025-08-10 00:00:00', 'RAI_REGISTRATION_END' => '2025-10-30 00:00:00'],
-            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => "example@raidobivwak.fr", 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-09 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'],
+            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => "example@raidobivwak.fr", 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-18 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'],
         ]);
 
         // Races
         DB::table('SAN_RACES')->insert([
             ['RAC_ID' => 1, 'USE_ID' => 1, 'RAI_ID' => 1, 'RAC_NAME' => 'Course LUTIN', 'RAC_TIME_START' => '2025-11-13 10:00:00', 'RAC_TIME_END' => '2025-11-13 18:00:00', 'RAC_GENDER' => 'Mixte', 'RAC_TYPE' => "Loisir", 'RAC_DIFFICULTY' => 'Licorne', 'RAC_MIN_PARTICIPANTS' => 2, 'RAC_MAX_PARTICIPANTS' => 8, 'RAC_MIN_TEAMS' => 1, 'RAC_MAX_TEAMS' => 4, 'RAC_MIN_TEAM_MEMBERS' => 2, 'RAC_MAX_TEAM_MEMBERS' => 3, 'RAC_AGE_MIN' => 12, 'RAC_AGE_MIDDLE' => 18, 'RAC_AGE_MAX' => 99, 'RAC_CHIP_MANDATORY' => 0],
             ['RAC_ID' => 2, 'USE_ID' => 15, 'RAI_ID' => 1, 'RAC_NAME' => 'Course ELFE', 'RAC_TIME_START' => '2025-11-14 05:00:00', 'RAC_TIME_END' => '2025-11-14 18:00:00', 'RAC_GENDER' => 'Mixte', 'RAC_TYPE' => "Compétition", 'RAC_DIFFICULTY' => 'Gazelle', 'RAC_MIN_PARTICIPANTS' => 2, 'RAC_MAX_PARTICIPANTS' => 8, 'RAC_MIN_TEAMS' => 1, 'RAC_MAX_TEAMS' => 4, 'RAC_MIN_TEAM_MEMBERS' => 2, 'RAC_MAX_TEAM_MEMBERS' => 3, 'RAC_AGE_MIN' => 18, 'RAC_AGE_MIDDLE' => 25, 'RAC_AGE_MAX' => 99, 'RAC_CHIP_MANDATORY' => 0],
-            
+
             ['RAC_ID' => 3, 'USE_ID' => 11, 'RAI_ID' => 2, 'RAC_NAME' => 'Parcours A', 'RAC_TIME_START' => '2026-05-23 10:00:00', 'RAC_TIME_END' => '2026-05-23 20:00:00', 'RAC_GENDER' => 'Mixte', 'RAC_TYPE' => 'Compétition', 'RAC_DIFFICULTY' => 'Complexe', 'RAC_MIN_PARTICIPANTS' => 10, 'RAC_MAX_PARTICIPANTS' => 40, 'RAC_MIN_TEAMS' => 2, 'RAC_MAX_TEAMS' => 20, 'RAC_MIN_TEAM_MEMBERS' => 2, 'RAC_MAX_TEAM_MEMBERS' => 2, 'RAC_AGE_MIN' => 21, 'RAC_AGE_MIDDLE' => 28, 'RAC_AGE_MAX' => 99, 'RAC_CHIP_MANDATORY' => 1],
             ['RAC_ID' => 4, 'USE_ID' => 2, 'RAI_ID' => 2, 'RAC_NAME' => 'Parcours B', 'RAC_TIME_START' => '2026-05-24 10:00:00', 'RAC_TIME_END' => '2026-05-24 18:00:00', 'RAC_GENDER' => 'Mixte', 'RAC_TYPE' => 'Loisirs', 'RAC_DIFFICULTY' => 'Modérée', 'RAC_MIN_PARTICIPANTS' => 2, 'RAC_MAX_PARTICIPANTS' => 8, 'RAC_MIN_TEAMS' => 4, 'RAC_MAX_TEAMS' => 4, 'RAC_MIN_TEAM_MEMBERS' => 2, 'RAC_MAX_TEAM_MEMBERS' => 2, 'RAC_AGE_MIN' => 18, 'RAC_AGE_MIDDLE' => 25, 'RAC_AGE_MAX' => 99, 'RAC_CHIP_MANDATORY' => 0],
         ]);
@@ -118,7 +118,7 @@ class InitialDatabaseSeeder extends Seeder
             ['TEA_ID' => 1, 'USE_ID' => 18, 'TEA_NAME' => 'Equipe 1 LUTIN', 'TEA_IMAGE' => null],
             ['TEA_ID' => 2, 'USE_ID' => 5, 'TEA_NAME' => 'Equipe 2 LUTIN', 'TEA_IMAGE' => null],
             ['TEA_ID' => 3, 'USE_ID' => 15, 'TEA_NAME' => 'Equipe 3 LUTIN', 'TEA_IMAGE' => null],
-            
+
             ['TEA_ID' => 4, 'USE_ID' => 6, 'TEA_NAME' => 'Equipe 1 ELFE', 'TEA_IMAGE' => null],
             ['TEA_ID' => 5, 'USE_ID' => 17, 'TEA_NAME' => 'Equipe 2 ELFE', 'TEA_IMAGE' => null],
             ['TEA_ID' => 6, 'USE_ID' => 12, 'TEA_NAME' => 'Equipe 3 ELFE', 'TEA_IMAGE' => null],
@@ -133,22 +133,22 @@ class InitialDatabaseSeeder extends Seeder
         DB::table('SAN_USERS_TEAMS')->insert([
             ['USE_ID' => 4, 'TEA_ID' => 1],
             ['USE_ID' => 17, 'TEA_ID' => 1],
-            
+
             ['USE_ID' => 5, 'TEA_ID' => 2],
             ['USE_ID' => 8, 'TEA_ID' => 2],
-            
+
             ['USE_ID' => 15, 'TEA_ID' => 3],
             ['USE_ID' => 10, 'TEA_ID' => 3],
 
             ['USE_ID' => 6, 'TEA_ID' => 4],
             ['USE_ID' => 9, 'TEA_ID' => 4],
-            
+
             ['USE_ID' => 4, 'TEA_ID' => 5],
             ['USE_ID' => 5, 'TEA_ID' => 5],
-            
+
             ['USE_ID' => 12, 'TEA_ID' => 6],
             ['USE_ID' => 3, 'TEA_ID' => 6],
-            
+
             ['USE_ID' => 14, 'TEA_ID' => 7],
             ['USE_ID' => 7, 'TEA_ID' => 7],
 
@@ -164,9 +164,9 @@ class InitialDatabaseSeeder extends Seeder
 
         // Team race
         DB::table('SAN_TEAMS_RACES')->insert([
-            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
-            ['TEA_ID' => 2, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],
-            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 3],
+            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
+            ['TEA_ID' => 2, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],
+            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 3],
 
             ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
             ['TEA_ID' => 5, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],

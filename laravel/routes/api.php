@@ -81,7 +81,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Notice page (web browser)
     Route::get('/email/verify', function () {
         return inertia('Auth/Verify')
-        ->with('status', session('status'));
+            ->with('status', session('status'));
     })->name('verification.notice');
 
 
@@ -135,6 +135,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Club Member Management
     Route::post('/clubs/{id}/members/add', [ClubController::class, 'addMember'])->whereNumber('id');
     Route::post('/clubs/{id}/members/remove', [ClubController::class, 'removeMember'])->whereNumber('id');
+
+    // Delete Team from Race (Special)
+    Route::delete('/races/{raceId}/teams/{teamId}', [TeamController::class, 'deleteTeamFromRace'])
+        ->whereNumber('raceId')
+        ->whereNumber('teamId');
 });
 
 

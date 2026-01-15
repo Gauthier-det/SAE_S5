@@ -567,49 +567,16 @@ class RaceController extends Controller
                 rewind($handle);
             }
 
-            $header = fgetcsv($handle, 0, $separator);
-
-            if (!$header) {
-                fclose($handle);
-                return response()->json(['message' => 'Fichier CSV vide ou invalide'], 422);
-            }
-
-            // Normalize header
-            $header = array_map(function ($h) {
-                return mb_strtolower(trim($h), 'UTF-8');
-            }, $header);
-
-            // Find column indices
-            $rankIndex = false;
-            $teamNameIndex = false;
-            $bonusIndex = false;
-            $timeIndex = false;
-
-            foreach ($header as $index => $col) {
-                if ($col === 'clt' || $col === 'classement')
-                    $rankIndex = $index;
-                if (strpos($col, 'quipe') !== false)
-                    $teamNameIndex = $index;
-                if (strpos($col, 'pts bonus') !== false || strpos($col, 'points bonus') !== false)
-                    $bonusIndex = $index;
-                if ($col === 'temps' || $col === 'temp' || $col === 'chrono')
-                    $timeIndex = $index;
-            }
-
-            if ($teamNameIndex === false) {
-                fclose($handle);
-                return response()->json(['message' => 'Colonne "équipe" introuvable dans le CSV'], 422);
-            }
+            // Skip header line
+            fgetcsv($handle, 0, $separator);
 
             $rowsToProcess = [];
             $missingTeams = [];
             $notRegisteredTeams = [];
 
             while (($row = fgetcsv($handle, 0, $separator)) !== false) {
-                if (count($row) < count($header))
-                    continue;
-
-                $teamName = isset($row[$teamNameIndex]) ? trim($row[$teamNameIndex]) : '';
+                // Column D = Index 3 = Team Name
+                $teamName = isset($row[3]) ? trim($row[3]) : '';
                 if (empty($teamName))
                     continue;
 
@@ -620,7 +587,7 @@ class RaceController extends Controller
                     if (!in_array($teamName, $missingTeams)) {
                         $missingTeams[] = $teamName;
                     }
-                    continue; // Skip further checks for this row
+                    continue;
                 }
 
                 // Check if team is registered for this race
@@ -636,7 +603,6 @@ class RaceController extends Controller
                     continue;
                 }
 
-                // Prepare data for update if valid
                 $rowsToProcess[] = [
                     'team_id' => $team->TEA_ID,
                     'row' => $row
@@ -645,7 +611,6 @@ class RaceController extends Controller
 
             fclose($handle);
 
-            // If there are errors, rollback (implicit since we haven't written yet) and return error
             if (!empty($missingTeams)) {
                 DB::rollBack();
                 return response()->json([
@@ -667,21 +632,26 @@ class RaceController extends Controller
                 $row = $item['row'];
                 $updateData = [];
 
-                if ($rankIndex !== false && isset($row[$rankIndex])) {
-                    $val = trim($row[$rankIndex]);
+                // A = 0 = Rank
+                if (isset($row[0])) {
+                    $val = trim($row[0]);
                     if ($val !== '')
                         $updateData['TER_RANK'] = intval($val);
                 }
-                if ($bonusIndex !== false && isset($row[$bonusIndex])) {
-                    $val = trim($row[$bonusIndex]);
+
+                // F = 5 = Time
+                if (isset($row[5])) {
+                    $timeStr = trim($row[5]);
+                    // Basic validation/cleaning could be added here
+                    if (!empty($timeStr))
+                        $updateData['TER_TIME'] = $timeStr;
+                }
+
+                // P = 15 = Points
+                if (isset($row[15])) {
+                    $val = trim($row[15]);
                     if ($val !== '')
                         $updateData['TER_BONUS_POINTS'] = intval($val);
-                }
-                if ($timeIndex !== false && isset($row[$timeIndex])) {
-                    $timeStr = trim($row[$timeIndex]);
-                    if (!empty($timeStr)) {
-                        $updateData['TER_TIME'] = $timeStr;
-                    }
                 }
 
                 if (!empty($updateData)) {
@@ -698,7 +668,7 @@ class RaceController extends Controller
 
             return response()->json([
                 'message' => 'Résultats importés avec succès',
-                'details' => $results // Optional, frontend doesn't use it much yet
+                'details' => $results
             ], 200);
 
         } catch (\Exception $e) {
