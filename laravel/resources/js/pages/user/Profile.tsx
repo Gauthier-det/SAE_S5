@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -28,22 +28,10 @@ import { useAlert } from '../../contexts/AlertContext';
 import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 import { formatDate } from '../../utils/dateUtils';
-import { updateUser, deleteUser } from '../../api/user';
+import { updateUser, deleteUser, getUserStats, getUserHistory } from '../../api/user';
 import { updateAddress } from '../../api/address';
 import type { UserUpdate } from '../../models/user.model';
-
-// Mock data for UI demonstration
-const mockStats = {
-    racesRun: 12,
-    podiums: 3,
-    totalPoints: 1450
-};
-
-const mockHistory = [
-    { date: '12/09/2025', raid: 'Raid Viking', race: 'Les sangliers Rapides', rank: '5ème' },
-    { date: '20/08/2025', raid: 'Noctune foret', race: 'Solo', rank: '12ème' },
-    { date: '05/07/2025', raid: 'Orien\'t Express', race: 'Équipe A', rank: '3ème' },
-];
+import type { UserStats, UserHistoryItem } from '../../api/user';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -52,6 +40,8 @@ const Profile = () => {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [isUpdateConfirmOpen, setIsUpdateConfirmOpen] = useState(false);
+    const [stats, setStats] = useState<UserStats | null>(null);
+    const [history, setHistory] = useState<UserHistoryItem[]>([]);
     const [formData, setFormData] = useState({
         firstName: user?.USE_NAME || '',
         lastName: user?.USE_LAST_NAME || '',
@@ -64,6 +54,25 @@ const Profile = () => {
         streetNumber: user?.address?.ADD_STREET_NUMBER || '',
     });
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    // Charger les statistiques et l'historique
+    useEffect(() => {
+        if (user) {
+            const loadUserData = async () => {
+                try {
+                    const userStats = await getUserStats(user.USE_ID);
+                    setStats(userStats);
+
+                    const userHistory = await getUserHistory(user.USE_ID);
+                    setHistory(userHistory);
+                } catch (error) {
+                    console.error('Erreur lors du chargement des données:', error);
+                }
+            };
+
+            loadUserData();
+        }
+    }, [user]);
 
     // Generate Avatar
     const avatarSvg = useMemo(() => {
@@ -383,13 +392,13 @@ const Profile = () => {
 
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 6 }}>
                                     <Box sx={{ bgcolor: '#f0f0f0', p: 3, borderRadius: '16px', flex: 1, textAlign: 'center' }}>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Course courues : {mockStats.racesRun}</Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Course courues : {stats?.racesRun || 0}</Typography>
                                     </Box>
                                     <Box sx={{ bgcolor: '#f0f0f0', p: 3, borderRadius: '16px', flex: 1, textAlign: 'center' }}>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Podiums : {mockStats.podiums}</Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Podiums : {stats?.podiums || 0}</Typography>
                                     </Box>
                                     <Box sx={{ bgcolor: '#f0f0f0', p: 3, borderRadius: '16px', flex: 1, textAlign: 'center' }}>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Points total : {mockStats.totalPoints} points</Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Points total : {stats?.totalPoints || 0} points</Typography>
                                     </Box>
                                 </Stack>
 
@@ -408,7 +417,7 @@ const Profile = () => {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {mockHistory.map((row, index) => (
+                                            {history.map((row, index) => (
                                                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                                     <TableCell component="th" scope="row" sx={{ borderBottom: '1px solid #f0f0f0' }}>
                                                         {row.date}

@@ -146,4 +146,126 @@ class UserController extends Controller
     {
         return response()->json(['is_admin' => $request->user()->isAdmin()]);
     }
+
+    public function getUserStats($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Retrieve user race results with times
+        $races = \DB::table('SAN_USERS_RACES')
+            ->where('USE_ID', $id)
+            ->whereNotNull('USR_TIME')
+            ->get();
+
+        $racesRun = $races->count();
+        
+        // Count podiums (top 3 in each race)
+        $podiums = 0;
+        foreach ($races as $race) {
+            // Get the ranking for this race
+            $rank = \DB::table('SAN_USERS_RACES')
+                ->where('RAC_ID', $race->RAC_ID)
+                ->whereNotNull('USR_TIME')
+                ->orderBy('USR_TIME', 'asc')
+                ->pluck('USE_ID')
+                ->search($id);
+            
+            if ($rank !== false && $rank < 3) {
+                $podiums++;
+            }
+        }
+
+        // Calculate points (1st=10, 2nd=8, 3rd=6, 4th=4, 5th=2, 6th+=1)
+        $pointsSystem = [10, 8, 6, 4, 2, 1];
+        $totalPoints = 0;
+
+        foreach ($races as $race) {
+            $rank = \DB::table('SAN_USERS_RACES')
+                ->where('RAC_ID', $race->RAC_ID)
+                ->whereNotNull('USR_TIME')
+                ->orderBy('USR_TIME', 'asc')
+                ->pluck('USE_ID')
+                ->search($id);
+
+            if ($rank !== false) {
+                $points = $pointsSystem[min($rank, 5)] ?? 1;
+                $totalPoints += $points;
+            }
+        }
+
+        return response()->json([
+            'racesRun' => $racesRun,
+            'podiums' => $podiums,
+            'totalPoints' => $totalPoints,
+        ], 200);
+    }
+
+    public function getUserHistory($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found',
+            ], 404);
+        }
+
+        // Retrieve race history with rankings
+        $raceResults = \DB::table('SAN_USERS_RACES')
+            ->join('SAN_RACES', 'SAN_USERS_RACES.RAC_ID', '=', 'SAN_RACES.RAC_ID')
+            ->join('SAN_RAIDS', 'SAN_RACES.RAI_ID', '=', 'SAN_RAIDS.RAI_ID')
+            ->where('SAN_USERS_RACES.USE_ID', $id)
+            ->whereNotNull('SAN_USERS_RACES.USR_TIME')
+            ->select(
+                'SAN_RAIDS.RAI_NAME as raid',
+                'SAN_RACES.RAC_TYPE as race',
+                'SAN_RACES.RAC_TIME_START as date',
+                'SAN_RACES.RAC_ID'
+            )
+            ->orderBy('SAN_RACES.RAC_TIME_START', 'desc')
+            ->get();
+
+        $pointsSystem = [10, 8, 6, 4, 2, 1];
+        $history = [];
+
+        foreach ($raceResults as $result) {
+            // Calculate ranking
+            $rank = \DB::table('SAN_USERS_RACES')
+                ->where('RAC_ID', $result->RAC_ID)
+                ->whereNotNull('USR_TIME')
+                ->orderBy('USR_TIME', 'asc')
+                ->pluck('USE_ID')
+                ->search($id);
+
+            // Calculate points
+            $points = 0;
+            if ($rank !== false) {
+                $points = $pointsSystem[min($rank, 5)] ?? 1;
+            }
+
+            $history[] = [
+                'date' => \Carbon\Carbon::parse($result->date)->format('d/m/Y'),
+                'raid' => $result->raid,
+                'race' => $result->race,
+                'rank' => $this->getRankOrdinal($rank + 1),
+                'points' => $points,
+            ];
+        }
+
+        return response()->json(['data' => $history], 200);
+    }
+
+    private function getRankOrdinal($rank)
+    {
+        if ($rank === 1) {
+            return '1ère';
+        }
+        return $rank . 'e';
+    }
 }
