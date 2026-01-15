@@ -41,13 +41,15 @@ class UserController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'USE_MAIL' => 'required|email|unique:SAN_USERS,USE_MAIL',
+            'USE_PASSWORD' => 'required|string|min:8',
             'USE_NAME' => 'required|string|max:255',
             'USE_LAST_NAME' => 'required|string|max:255',
-            'USE_PASSWORD' => 'required|string|min:8',
             'USE_GENDER' => 'required|string|in:Homme,Femme,Autre',
+            'USE_BIRTHDATE' => 'nullable|date',
             'USE_PHONE_NUMBER' => 'nullable|integer',
             'USE_LICENCE_NUMBER' => 'nullable|integer',
-            'USE_BIRTHDATE' => 'nullable|date',
+            'USE_MEMBERSHIP_DATE' => 'required|date',
+            'USE_VALIDITY' => 'nullable|date',
             'CLU_ID' => 'nullable|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'nullable|exists:SAN_ADDRESSES,ADD_ID',
         ]);
@@ -88,12 +90,15 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'USE_MAIL' => 'sometimes|email|unique:SAN_USERS,USE_MAIL,' . $id . ',USE_ID',
+            'USE_PASSWORD' => 'sometimes|string|min:8',
             'USE_NAME' => 'sometimes|string|max:255',
             'USE_LAST_NAME' => 'sometimes|string|max:255',
-            'USE_PASSWORD' => 'sometimes|string|min:8',
             'USE_GENDER' => 'sometimes|string|in:Homme,Femme,Autre',
+            'USE_BIRTHDATE' => 'sometimes|nullable|date',
             'USE_PHONE_NUMBER' => 'sometimes|nullable|integer',
             'USE_LICENCE_NUMBER' => 'sometimes|nullable|integer',
+            'USE_MEMBERSHIP_DATE' => 'sometimes|nullable|date',
+            'USE_VALIDITY' => 'sometimes|nullable|date',
             'CLU_ID' => 'sometimes|nullable|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'sometimes|nullable|exists:SAN_ADDRESSES,ADD_ID',
         ]);

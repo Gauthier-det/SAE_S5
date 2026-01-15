@@ -58,7 +58,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
-    Route::post('/teams/register-to-race', [TeamController::class, 'registerTeamToRace']);
+    Route::get('/races/{raceId}/available-users', [TeamController::class, 'getAvailableUsersForRace'])->whereNumber('raceId');
+    Route::post('/teams/{teamId}/register-race', [TeamController::class, 'registerTeamToRace']);
+    
+    // Team Management
+    Route::get('/teams/{teamId}/races/{raceId}', [TeamController::class, 'getTeamRaceDetails']);
+    Route::post('/teams/member/remove', [TeamController::class, 'removeMember']);
+    Route::post('/teams/member/update-info', [TeamController::class, 'updateMemberRaceInfo']);
+    Route::post('/teams/validate-race', [TeamController::class, 'validateTeamForRace']);
+    Route::post('/teams/unvalidate-race', [TeamController::class, 'unvalidateTeamForRace']);
     Route::get('/teams/{id}', [TeamController::class, 'getTeamById'])->whereNumber('id');
 
     // Address routes

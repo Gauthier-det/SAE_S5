@@ -33,7 +33,8 @@ class Race extends Model
         'RAC_MAX_TEAM_MEMBERS', 
         'RAC_AGE_MIN', 
         'RAC_AGE_MIDDLE', 
-        'RAC_AGE_MAX'
+        'RAC_AGE_MAX',
+        'RAC_CHIP_MANDATORY',
     ];
 
     public function races(): HasMany
@@ -69,5 +70,10 @@ class Race extends Model
             'RAC_ID',
             'CAT_ID'
         )->withPivot('CAR_PRICE');
+    }
+
+    public function isChipMandatory()
+    {
+        return $this->RAC_CHIP_MANDATORY === 1;
     }
 }
