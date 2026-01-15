@@ -274,6 +274,11 @@ class UserController extends Controller
         return $rank . 'e';
     }
 
+    public function getFreeRunners()
+    {
+        $users = User::whereNull('CLU_ID')->get();
+        return response()->json(['data' => $users], 200);
+    }
     public function registerUserToRace(Request $request)
     {
         $validator = \Validator::make($request->all(), [

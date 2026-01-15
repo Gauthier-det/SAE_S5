@@ -82,4 +82,11 @@ export const getUserHistory = async (userId: number): Promise<UserHistoryItem[]>
     return response.data;
 }
 
+export const getFreeRunners = async (): Promise<User[]> => {
+    const response = await apiClient<{ data: User[] }>('/users/free', {
+        method: 'GET'
+    });
+    return response.data;
+}
+
 

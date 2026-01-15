@@ -31,8 +31,9 @@ const settings = ['Profile', 'Logout'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, isAdmin, logout } = useUser();
+    const { user, isAdmin, isClubManager, logout } = useUser();
     const navigate = useNavigate();
+
     const location = useLocation();
     console.log("isAdmin", isAdmin);
     const avatarSvg = useMemo(() => {
@@ -64,7 +65,7 @@ function Navbar() {
     const handlePageClick = (path: string) => {
         navigate(path);
     };
-
+console.log("user", user);
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
             <Container maxWidth={false} disableGutters>
@@ -122,6 +123,25 @@ function Navbar() {
                                 }}
                             >
                                 Admin
+                            </Button>
+                        )}
+                        {user && user.club && isClubManager&& (
+                            <Button
+                                key="Club"
+                                onClick={() => navigate('/club/' + user?.club!.CLU_ID)}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/club' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                Mon club
                             </Button>
                         )}
                     </Box>
