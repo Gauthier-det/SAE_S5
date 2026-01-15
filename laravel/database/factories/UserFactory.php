@@ -30,6 +30,7 @@ class UserFactory extends Factory
             'USE_PASSWORD' => static::$password ??= Hash::make('password'),
             'USE_NAME' => fake()->firstName(),
             'USE_LAST_NAME' => fake()->lastName(),
+            'USE_GENDER' => fake()->randomElement(['male', 'female']),
             'USE_BIRTHDATE' => fake()->dateTimeBetween('-80 years', '-18 years'),
             'USE_PHONE_NUMBER' => fake()->numberBetween(100000000, 999999999),
         ];

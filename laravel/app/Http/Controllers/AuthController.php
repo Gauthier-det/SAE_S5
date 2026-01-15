@@ -32,6 +32,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid credentials'], 401);
         }
 
+        if (!$user->isValid()) {
+            return response()->json(['message' => 'User account is not valid'], 401);
+        }
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -40,15 +44,18 @@ class AuthController extends Controller
                 'user_name' => $user->USE_NAME,
                 'user_last_name' => $user->USE_LAST_NAME,
                 'user_mail' => $user->USE_MAIL,
+                'user_gender' => $user->USE_GENDER,
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
+                'user_licence' => $user->USE_LICENCE_NUMBER ? $user->USE_LICENCE_NUMBER : null,
+                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : null,
+                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : null,
                 'user_address' => $user->address,
                 'user_club' => $user->club,
-                'user_licence' => $user->USE_LICENCE_NUMBER,
-                'user_pps' => $user->USE_PPS_FORM,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]
+
         ], 201);
     }
 
@@ -68,6 +75,7 @@ class AuthController extends Controller
                 'password' => 'required|min:8',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
+                'gender' => 'required|string|in:Homme,Femme,Autre',
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -78,9 +86,12 @@ class AuthController extends Controller
 
         $user = User::create([
             'USE_MAIL' => $request->mail,
-            'USE_PASSWORD' => Hash::make($request->password),
+            'USE_PASSWORD' => $request->password,
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
+            'USE_GENDER' => $request->gender,
+            'USE_VALIDITY' => \Carbon\Carbon::now()->addYear(),
+            'USE_MEMBERSHIP_DATE' => \Carbon\Carbon::now(),
         ]);
 
         $verificationUrl = URL::temporarySignedRoute(
@@ -106,12 +117,14 @@ class AuthController extends Controller
                 'user_name' => $user->USE_NAME,
                 'user_last_name' => $user->USE_LAST_NAME,
                 'user_mail' => $user->USE_MAIL,
-                'user_phone' => null,
+                'user_gender' => $user->USE_GENDER,
+                'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
+                'user_licence' => null,
+                'user_membership_date' => null,
+                'user_validity' => null,
                 'user_address' => null,
                 'user_club' => null,
-                'user_licence' => null,
-                'user_pps' => null,
                 'access_token' => $token,
                 'token_type' => 'Bearer',
             ]

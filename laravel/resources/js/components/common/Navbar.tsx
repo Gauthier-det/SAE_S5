@@ -22,19 +22,19 @@ import { createAvatar } from '@dicebear/core';
 import { thumbs } from '@dicebear/collection';
 
 const pages = [
-    { name: 'DASHBOARD', path: '/dashboard' },
+    { name: 'TABLEAU DE BORD', path: '/dashboard' },
     { name: 'LES RAIDS', path: '/raids' },
-    { name: 'A PROPOS', path: '/about' },
 ];
 
-const settings = ['Profile', 'Logout'];
+const settings = ['Profil', 'Déconnexion'];
 
 function Navbar() {
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
-    const { user, logout } = useUser();
+    const { user, isAdmin, isClubManager, logout } = useUser();
     const navigate = useNavigate();
-    const location = useLocation();
 
+    const location = useLocation();
+    console.log("isAdmin", isAdmin);
     const avatarSvg = useMemo(() => {
         if (!user) return '';
         const avatar = createAvatar(thumbs, {
@@ -53,9 +53,9 @@ function Navbar() {
     };
 
     const handleMenuClick = (setting: string) => {
-        if (setting === 'Logout') {
+        if (setting === 'Déconnexion') {
             logout();
-        } else if (setting === 'Profile') {
+        } else if (setting === 'Profil') {
             navigate('/profile');
         }
         handleCloseUserMenu();
@@ -64,7 +64,7 @@ function Navbar() {
     const handlePageClick = (path: string) => {
         navigate(path);
     };
-
+    console.log("user", user);
     return (
         <AppBar position="static" sx={{ backgroundColor: 'primary.main' }}>
             <Container maxWidth={false} disableGutters>
@@ -84,16 +84,49 @@ function Navbar() {
                             onClick={() => navigate('/')}
                         />
                     </Box>
-
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, justifyContent: 'center', gap: 4 }}>
-                        {pages.map((page) => (
+                        {user && <Button
+                            key="TABLEAU DE BORD"
+                            onClick={() => handlePageClick('/dashboard')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/dashboard' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            TABLEAU DE BORD
+                        </Button>}
+                        <Button
+                            key="LES RAIDS"
+                            onClick={() => handlePageClick('/raids')}
+                            sx={{
+                                my: 2,
+                                borderRadius: 1,
+                                color: location.pathname === '/raids' ? 'warning.main' : 'white',
+                                display: 'block',
+                                px: 3,
+                                fontFamily: '"Archivo Black", sans-serif',
+                                '&:hover': {
+                                    backgroundColor: 'secondary.main',
+                                }
+                            }}
+                        >
+                            LES RAIDS
+                        </Button>
+                        {isAdmin && (
                             <Button
-                                key={page.name}
-                                onClick={() => handlePageClick(page.path)}
+                                key="Admin"
+                                onClick={() => navigate('/admin')}
                                 sx={{
                                     my: 2,
                                     borderRadius: 1,
-                                    color: location.pathname === page.path ? 'warning.main' : 'white',
+                                    color: location.pathname === '/admin' ? 'warning.main' : 'white',
                                     display: 'block',
                                     px: 3,
                                     fontFamily: '"Archivo Black", sans-serif',
@@ -102,9 +135,28 @@ function Navbar() {
                                     }
                                 }}
                             >
-                                {page.name}
+                                Admin
                             </Button>
-                        ))}
+                        )}
+                        {user && user.club && isClubManager && (
+                            <Button
+                                key="Club"
+                                onClick={() => navigate('/club/' + user?.club!.CLU_ID)}
+                                sx={{
+                                    my: 2,
+                                    borderRadius: 1,
+                                    color: location.pathname === '/club' ? 'warning.main' : 'white',
+                                    display: 'block',
+                                    px: 3,
+                                    fontFamily: '"Archivo Black", sans-serif',
+                                    '&:hover': {
+                                        backgroundColor: 'secondary.main',
+                                    }
+                                }}
+                            >
+                                Mon club
+                            </Button>
+                        )}
                     </Box>
 
                     <Box sx={{ flexGrow: 0 }}>
@@ -118,19 +170,19 @@ function Navbar() {
                                     <Stack direction="row" spacing={2} alignItems="center">
                                         <Box
                                             sx={{
-                                                width: "5vh",
-                                                height: "5vh",
+                                                width: "50px",
+                                                height: "auto",
                                                 mb: 2,
                                                 borderRadius: '50%',
                                                 overflow: 'hidden',
-                                                border: '4px solid #2D5A27',
+                                                border: '2px solid #2D5A27',
                                                 boxShadow: '0 4px 14px 0 rgba(0,0,0,0.1)'
                                             }}
                                         >
                                             <img src={avatarSvg} alt="Avatar" style={{ width: '100%', height: '100%' }} />
                                         </Box>
                                         <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                            {user.USE_LAST_NAME + ' ' + user.USE_NAME}
+                                            {user.USE_NAME + ' ' + user.USE_LAST_NAME}
                                         </Typography>
                                     </Stack>
                                 </Button>

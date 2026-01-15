@@ -36,3 +36,47 @@ export const getClubUsers = async (id: number): Promise<User[]> => {
     const response = await apiClient<ClubUsersResponse>(`/clubs/${id}/users`);
     return response.data;
 };
+
+export const createClub = async (data: any): Promise<Club> => {
+    const response = await apiClient<{ data: Club }>('/clubs', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+    return response.data;
+}
+
+export const createClubWithAddress = async (data: any): Promise<Club> => {
+    const response = await apiClient<{ data: Club }>('/clubs/with-address', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    });
+    return response.data;
+}
+
+export const updateClub = async (id: number, data: any): Promise<Club> => {
+    const response = await apiClient<{ data: Club }>(`/clubs/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+    return response.data;
+}
+
+export const deleteClub = async (id: number): Promise<void> => {
+    await apiClient(`/clubs/${id}`, {
+        method: 'DELETE'
+    });
+}
+
+export const addMemberToClub = async (clubId: number, userId: number): Promise<void> => {
+    await apiClient(`/clubs/${clubId}/members/add`, {
+        method: 'POST',
+        body: JSON.stringify({ userId })
+    });
+}
+
+export const removeMemberFromClub = async (clubId: number, userId: number): Promise<void> => {
+    await apiClient(`/clubs/${clubId}/members/remove`, {
+        method: 'POST',
+        body: JSON.stringify({ userId })
+    });
+}

@@ -1,21 +1,9 @@
-export interface RaidClub {
-    CLU_ID: number;
-    CLU_NAME: string;
-}
-
-export interface RaidAddress {
-    ADD_ID: number;
-    ADD_CITY: string;
-    ADD_POSTAL_CODE: number;
-    ADD_STREET_NAME: string;
-    ADD_STREET_NUMBER: string;
-}
+import type { Club } from "./club.model";
+import type { User } from "./user.model";
+import type { Address } from "./address.model";
 
 export interface Raid {
     RAI_ID: number;
-    CLU_ID: number;
-    ADD_ID: number;
-    USE_ID: number;
     RAI_NAME: string;
     RAI_MAIL: string;
     RAI_PHONE_NUMBER: string | null;
@@ -25,8 +13,10 @@ export interface Raid {
     RAI_TIME_END: string;
     RAI_REGISTRATION_START: string;
     RAI_REGISTRATION_END: string;
-    club?: RaidClub;
-    address?: RaidAddress;
+    RAI_NB_RACES: number;
+    club: Club;
+    address: Address;
+    user: User;
 }
 
 export interface RaidResponse {
@@ -45,4 +35,21 @@ export interface RaidCreation {
     RAI_TIME_END: string | null;
     RAI_REGISTRATION_START: string | null;
     RAI_REGISTRATION_END: string | null;
+    RAI_NB_RACES: number;
+}
+
+export interface RaidUpdate {
+    CLU_ID?: number;
+    ADD_ID?: number;
+    USE_ID?: number;
+    RAI_NAME?: string;
+    RAI_MAIL?: string | null;
+    RAI_PHONE_NUMBER?: string | null;
+    RAI_WEB_SITE?: string | null;
+    RAI_IMAGE?: string | null;
+    RAI_TIME_START?: string | null;
+    RAI_TIME_END?: string | null;
+    RAI_REGISTRATION_START?: string | null;
+    RAI_REGISTRATION_END?: string | null;
+    RAI_NB_RACES: number;
 }

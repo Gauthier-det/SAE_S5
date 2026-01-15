@@ -11,24 +11,25 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/userContext';
+import { useAlert } from '../../contexts/AlertContext';
 import LogoColor from '../../assets/logo-color.png';
 
 const Login = () => {
     const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
     const { login } = useUser();
+    const { showAlert } = useAlert();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
         try {
             await login({ mail, password });
-            navigate('/dashboard');
+            showAlert('Connexion réussie', 'success');
+            navigate('/');
         } catch (err) {
-            setError('Échec de la connexion. Vérifiez vos identifiants.');
             console.error(err);
+            showAlert('Erreur de connexion. Vérifiez vos identifiants.', 'error');
         }
     };
 
@@ -96,12 +97,6 @@ const Login = () => {
                             placeholder="mot de passe"
                             sx={{ mt: 3 }}
                         />
-
-                        {error && (
-                            <Typography color="error" variant="body2" sx={{ mt: 2 }}>
-                                {error}
-                            </Typography>
-                        )}
 
                         <Button
                             type="submit"

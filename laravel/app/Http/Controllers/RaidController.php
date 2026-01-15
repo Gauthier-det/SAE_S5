@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Club;
 use App\Models\Raid;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -11,13 +12,13 @@ class RaidController extends Controller
 {
     public function getAllRaids()
     {
-        $raids = Raid::all();
+        $raids = Raid::with(['club', 'address', 'user'])->get();
         return response()->json(['data' => $raids]);
     }
 
     public function getRaidById($id)
     {
-        $raid = Raid::with(['club', 'address'])->find($id);
+        $raid = Raid::with(['club', 'address', 'user'])->find($id);
         if (!$raid) {
             return response()->json([
                 'message' => 'Raid not found',
@@ -29,6 +30,35 @@ class RaidController extends Controller
     public function createRaid(Request $request)
     {
         
+        $messages = [
+            'required' => 'Le champ :attribute est obligatoire.',
+            'email' => 'Le champ :attribute doit être une adresse email valide.',
+            'url' => 'Le champ :attribute doit être une URL valide.',
+            'date' => 'Le champ :attribute doit être une date valide.',
+            'after' => 'La date :attribute doit être postérieure à :date.',
+            'before' => 'La date :attribute doit être antérieure à :date.',
+            'integer' => 'Le champ :attribute doit être un entier.',
+            'exists' => 'Le champ :attribute sélectionné est invalide.',
+            'required_without' => 'Le champ :attribute est obligatoire si :values n\'est pas renseigné.',
+            'min' => 'Le champ :attribute doit être d\'au moins :min.',
+        ];
+
+        $attributes = [
+            'CLU_ID' => 'Club',
+            'ADD_ID' => 'Adresse',
+            'USE_ID' => 'Responsable',
+            'RAI_NAME' => 'Nom du raid',
+            'RAI_MAIL' => 'Email du contact',
+            'RAI_PHONE_NUMBER' => 'Téléphone',
+            'RAI_WEB_SITE' => 'Site Web',
+            'RAI_IMAGE' => 'Lien image',
+            'RAI_TIME_START' => 'Date de début du raid',
+            'RAI_TIME_END' => 'Date de fin du raid',
+            'RAI_REGISTRATION_START' => 'Début inscriptions',
+            'RAI_REGISTRATION_END' => 'Fin inscriptions',
+            'RAI_NB_RACES' => 'Nombre de courses',
+        ];
+
         $validator = Validator::make($request->all(), [
             'CLU_ID' => 'required|integer|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'required|integer|exists:SAN_ADDRESSES,ADD_ID',
@@ -42,7 +72,8 @@ class RaidController extends Controller
             'RAI_TIME_END' => 'required|date|after:RAI_TIME_START',
             'RAI_REGISTRATION_START' => 'required|date|before:RAI_TIME_START',
             'RAI_REGISTRATION_END' => 'required|date|before:RAI_TIME_START|after:RAI_REGISTRATION_START',
-        ]);
+            'RAI_NB_RACES' => 'required|integer|min:1',
+        ], $messages, $attributes);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
@@ -55,7 +86,14 @@ class RaidController extends Controller
             ], 403);
         }
 
-        $raid = Raid::create($request->only([
+        $raidManager = User::find($request->USE_ID);
+        if ($raidManager->USE_LICENCE_NUMBER === null) {
+            return response()->json([
+                'message' => 'Unauthorized. The raid manager must have a valid licence number.',
+            ], 403);
+        }
+
+        $raidData = $request->only([
             'CLU_ID',
             'ADD_ID',
             'USE_ID',
@@ -68,25 +106,41 @@ class RaidController extends Controller
             'RAI_TIME_END',
             'RAI_REGISTRATION_START',
             'RAI_REGISTRATION_END',
-        ]));
+            'RAI_NB_RACES',
+        ]);
+        
+        $raid = Raid::create($raidData);
 
         return response()->json(['data' => $raid], 201);
     }
 
     public function updateRaid(Request $request, $id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+        $club = Club::find($raid->CLU_ID);
+        if (auth()->user()->USE_ID !== $club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. You can only update raids you created.',
+                'message' => 'Unauthorized. Only the club manager can update raids.',
             ], 403);
         }
 
-        $validator = Validator::make($request->all(), [
+        if ($request->has('USE_ID')) {
+            $raidManager = User::find($request->USE_ID);
+            if ($raidManager->USE_LICENCE_NUMBER === null) {
+                return response()->json([
+                    'message' => 'Unauthorized. The raid manager must have a valid licence number.',
+                ], 403);
+            }
+        }
+
+        // Merge existing raid data with request for validation context
+        $dataForValidation = array_merge($raid->toArray(), $request->all());
+
+        $validator = Validator::make($dataForValidation, [
             'CLU_ID' => 'sometimes|integer|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'sometimes|integer|exists:SAN_ADDRESSES,ADD_ID',
             'RAI_NAME' => 'sometimes|string|max:255',
@@ -110,14 +164,15 @@ class RaidController extends Controller
 
     public function deleteRaid($id)
     {
-        $raid = Raid::find($id);
+        $raid = Raid::with('club')->find($id);
         if (!$raid) {
             return response()->json(['message' => 'Raid not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
+        $club = Club::find($raid->CLU_ID);
+        if (auth()->user()->USE_ID !== $club->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. You can only delete raids you created.',
+                'message' => 'Unauthorized. Only the club manager can delete raids.',
             ], 403);
         }
 

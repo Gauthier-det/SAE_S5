@@ -20,19 +20,23 @@ class Race extends Model
 
     protected $fillable = [
         'USE_ID', 
-        'RAI_ID', 
+        'RAI_ID',
+        'RAC_NAME',
         'RAC_TIME_START', 
         'RAC_TIME_END', 
+        'RAC_GENDER',
         'RAC_TYPE', 
         'RAC_DIFFICULTY', 
         'RAC_MIN_PARTICIPANTS', 
         'RAC_MAX_PARTICIPANTS', 
         'RAC_MIN_TEAMS', 
         'RAC_MAX_TEAMS', 
-        'RAC_TEAM_MEMBERS', 
+        'RAC_MIN_TEAM_MEMBERS',
+        'RAC_MAX_TEAM_MEMBERS', 
         'RAC_AGE_MIN', 
         'RAC_AGE_MIDDLE', 
-        'RAC_AGE_MAX'
+        'RAC_AGE_MAX',
+        'RAC_CHIP_MANDATORY',
     ];
 
     public function races(): HasMany
@@ -45,6 +49,11 @@ class Race extends Model
         return $this->belongsTo(User::class, 'USE_ID', 'USE_ID');
     }
 
+    public function raid(): BelongsTo
+    {
+        return $this->belongsTo(Raid::class, 'RAI_ID', 'RAI_ID');
+    }
+
     public function teams(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -52,7 +61,7 @@ class Race extends Model
             'SAN_TEAMS_RACES',
             'RAC_ID',
             'TEA_ID'
-        )->withPivot('TER_TIME', 'TER_IS_VALID', 'TER_RACE_NUMBER');
+        )->withPivot('TER_TIME', 'TER_IS_VALID', 'TER_RACE_NUMBER', 'TER_RANK', 'TER_BONUS_POINTS');
     }
 
     public function categories(): BelongsToMany
@@ -63,5 +72,10 @@ class Race extends Model
             'RAC_ID',
             'CAT_ID'
         )->withPivot('CAR_PRICE');
+    }
+
+    public function isChipMandatory()
+    {
+        return $this->RAC_CHIP_MANDATORY === 1;
     }
 }

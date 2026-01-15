@@ -29,11 +29,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'USE_PASSWORD',
         'USE_NAME',
         'USE_LAST_NAME',
+        'USE_GENDER',
         'USE_BIRTHDATE',
         'USE_PHONE_NUMBER',
         'USE_LICENCE_NUMBER',
-        'USE_PPS_FORM',
         'USE_MEMBERSHIP_DATE',
+        'USE_VALIDITY',
     ];
 
     protected $hidden = [
@@ -43,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'USE_BIRTHDATE'       => 'date',
         'USE_MEMBERSHIP_DATE' => 'date',
+        'USE_VALIDITY'        => 'date',
         'USE_PASSWORD'        => 'hashed',
     ];
 
@@ -74,6 +76,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'USE_ID',
             'RAC_ID'
         );
+    }
+
+    public function isValid()
+    {
+        return $this->USE_VALIDITY !== null;
     }
 
     public function isAdmin()

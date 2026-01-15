@@ -1,7 +1,8 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider,CircularProgress,Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRaidById } from '../../api/raid';
+import { getRaidById, deleteRaid } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
+import { useAlert } from '../../contexts/AlertContext';
 import type { Raid } from '../../models/raid.model';
 import { RaceType, type Race } from '../../models/race.model';
 import RaceCard from '../../components/cards/RaceCard';
@@ -9,25 +10,46 @@ import React, { useEffect, useState } from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import GroupIcon from '@mui/icons-material/Group';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import EventIcon from '@mui/icons-material/Event';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
+import { useUser } from '../../contexts/userContext';
 
-export default function InfoRaid() {
+const RaidDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [raid, setRaid] = useState<Raid | null>(null);
     const [allRaces, setAllRaces] = useState<Race[]>([]);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const { showAlert } = useAlert();
+    const [loading, setLoading] = useState(true);
+    const { user, isClubManager, isAdmin } = useUser();
 
     useEffect(() => {
-        if (!id) navigate('/raids');
-        const raidId = parseInt(id!);
-        getRaidById(raidId).then(setRaid).catch(console.error);
-        getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
-    }, [id]);
+        if (!id) return;
+
+        const raidId = parseInt(id);
+        setLoading(true);
+        Promise.all([
+            getRaidById(raidId),
+            getListOfRacesByRaidId(raidId)
+        ]).then(([raidData, racesData]) => {
+            setRaid(raidData);
+            setAllRaces(racesData);
+        }).catch(err => {
+            console.error(err);
+            setLoading(false);
+            showAlert("Impossible de charger les détails du raid", "error");
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
+    const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
 
     // Calculate global min/max for the slider bounds
     const limits = React.useMemo(() => {
@@ -59,6 +81,16 @@ export default function InfoRaid() {
         setRaceType(newFilter);
     };
 
+    const handleGenderChange = (gender: string) => {
+        const newFilter = new Set(raceGender);
+        if (newFilter.has(gender)) {
+            newFilter.delete(gender);
+        } else {
+            newFilter.add(gender);
+        }
+        setRaceGender(newFilter);
+    };
+
     const handleAgeChange = (_event: Event, newValue: number | number[]) => {
         setAgeRange(newValue as number[]);
     };
@@ -69,12 +101,23 @@ export default function InfoRaid() {
                 (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
                 (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
 
+            const matchesGender = raceGender.size === 0 || raceGender.has(race.RAC_GENDER);
+
             const matchesAge = race.RAC_AGE_MIN >= ageRange[0] && race.RAC_AGE_MAX <= ageRange[1];
 
-            return matchesType && matchesAge;
+            return matchesType && matchesGender && matchesAge;
         });
-    }, [allRaces, raceType, ageRange]);
+    }, [allRaces, raceType, raceGender, ageRange]);
 
+
+
+    if (loading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+                <CircularProgress color="warning" />
+            </Box>
+        );
+    }
 
     if (!raid) {
         return (
@@ -95,8 +138,29 @@ export default function InfoRaid() {
         navigate(`/races/${raceId}`);
     }
 
+    const handleDeleteClick = () => {
+        setDeleteConfirmOpen(true);
+    }
+
+    const handleConfirmDelete = async () => {
+        setDeleteConfirmOpen(false);
+        setIsDeleting(true);
+        try {
+            if (!id) return;
+            const raidId = parseInt(id);
+            await deleteRaid(raidId);
+            showAlert("Raid supprimé avec succès", "success");
+            navigate('/raids');
+        } catch (error) {
+            console.error('Failed to delete raid:', error);
+            showAlert("Erreur lors de la suppression du raid", "error");
+        } finally {
+            setIsDeleting(false);
+        }
+    }
+
     return (
-        <Container maxWidth={false}>
+        <Container maxWidth={false} sx={{ overflowX: 'hidden' }}>
             <Box sx={{ my: 4 }}>
                 <Button
                     variant="text"
@@ -148,6 +212,35 @@ export default function InfoRaid() {
 
                         <Box>
                             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Genre
+                            </Typography>
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Homme')}
+                                        onChange={() => handleGenderChange('Homme')}
+                                    />}
+                                    label="Homme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Femme')}
+                                        onChange={() => handleGenderChange('Femme')}
+                                    />}
+                                    label="Femme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Mixte')}
+                                        onChange={() => handleGenderChange('Mixte')}
+                                    />}
+                                    label="Mixte"
+                                />
+                            </FormGroup>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
                                 Age (ans)
                             </Typography>
                             <Box sx={{ px: 1 }}>
@@ -174,9 +267,43 @@ export default function InfoRaid() {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+                            <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 3 }}>
                                 {raid.RAI_NAME}
                             </Typography>
+                            
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
+                                {user && raid && user.USE_ID === raid.user.USE_ID && (
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={() => navigate(`/raids/${id}/create`)}
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                    >
+                                        Créer une course
+                                    </Button>
+                                )}
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
+                                    <Button
+                                        variant="contained"
+                                        color="warning"
+                                        sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
+                                        onClick={() => navigate(`/raids/${id}/edit`)}
+                                    >
+                                        MODIFIER le RAID
+                                    </Button>
+                                )}
+                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
+                                    <Button
+                                        variant="contained"
+                                        color="error"
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                        onClick={handleDeleteClick}
+                                        disabled={isDeleting}
+                                    >
+                                        SUPPRIMER le RAID
+                                    </Button>
+                                )}
+                            </Stack>
 
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -200,6 +327,18 @@ export default function InfoRaid() {
 
                             {/* Info Cards */}
                             <Box sx={{ display: 'flex', gap: 3, mb: 4, flexWrap: 'wrap' }}>
+
+                                <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                                    <Box sx={{ p: 2, backgroundColor: '#e3fde3ff', borderRadius: 2, minWidth: 200 }}>
+                                        <ManageAccountsIcon fontSize="medium" color="primary" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            Informations
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {user?.USE_ID === raid.user?.USE_ID ? 'vous êtes l\'organisateur de ce raid' : raid.user?.USE_NAME + ' ' + raid.user?.USE_LAST_NAME + ' gère ce raid'}
+                                        </Typography>
+                                    </Box>
+                                </Box>
                                 <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <CalendarTodayIcon fontSize="small" color="primary" />
@@ -285,6 +424,24 @@ export default function InfoRaid() {
                     </Box>
                 </Box>
             </Box>
+
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+                <DialogTitle>Confirmer la suppression</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Êtes-vous sûr de vouloir supprimer ce raid ? Cette action est irréversible et supprimera également toutes les courses associées.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeleteConfirmOpen(false)}>Annuler</Button>
+                    <Button onClick={handleConfirmDelete} variant="contained" color="error" disabled={isDeleting}>
+                        Supprimer
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Container>
     );
 }
+
+export default RaidDetails;
