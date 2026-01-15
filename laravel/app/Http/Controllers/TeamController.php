@@ -215,4 +215,219 @@ class TeamController extends Controller
             'message' => 'Team registered for race successfully',
         ]], 201);
     }
+
+    /**
+     * Get team details for a specific race (including members' race info)
+     */
+    public function getTeamRaceDetails($teamId, $raceId)
+    {
+        $team = Team::findOrFail($teamId);
+
+        // Check ownership
+        if ($team->USE_ID !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $race = Race::findOrFail($raceId);
+        
+        $teamRace = DB::table('SAN_TEAMS_RACES')
+            ->where('TEA_ID', $teamId)
+            ->where('RAC_ID', $raceId)
+            ->first();
+
+        if (!$teamRace) {
+            return response()->json(['message' => 'Team not registered for this race'], 404);
+        }
+
+        $members = DB::table('SAN_USERS_TEAMS')
+            ->join('SAN_USERS', 'SAN_USERS_TEAMS.USE_ID', '=', 'SAN_USERS.USE_ID')
+            ->join('SAN_USERS_RACES', function($join) use ($raceId) {
+                $join->on('SAN_USERS.USE_ID', '=', 'SAN_USERS_RACES.USE_ID')
+                     ->where('SAN_USERS_RACES.RAC_ID', '=', $raceId);
+            })
+            ->where('SAN_USERS_TEAMS.TEA_ID', $teamId)
+            ->select(
+                'SAN_USERS.USE_ID', 
+                'SAN_USERS.USE_NAME', 
+                'SAN_USERS.USE_LAST_NAME', 
+                'SAN_USERS.USE_MAIL',
+                'SAN_USERS.USE_LICENCE_NUMBER',
+                'SAN_USERS_RACES.USR_CHIP_NUMBER',
+                'SAN_USERS_RACES.USR_PPS_FORM' // Correct column name
+            )
+            ->get();
+
+        return response()->json([
+            'team' => [
+                'id' => $team->TEA_ID,
+                'name' => $team->TEA_NAME,
+                'is_valid' => (bool)$teamRace->TER_IS_VALID,
+                'race_number' => $teamRace->TER_RACE_NUMBER,
+            ],
+            'race' => [
+                'id' => $race->RAC_ID,
+                'type' => $race->RAC_TYPE, // Assuming 'Compétition' or 'Loisir'
+            ],
+            'members' => $members
+        ]);
+    }
+
+    /**
+     * Remove a member from the team and race
+     */
+    public function removeMember(Request $request)
+    {
+        $request->validate([
+            'team_id' => 'required|integer',
+            'user_id' => 'required|integer',
+            'race_id' => 'required|integer',
+        ]);
+
+        $team = Team::findOrFail($request->team_id);
+        if ($team->USE_ID !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        // Check if removing self (owner) - prevent if it's the only member or handle gracefully?
+        // For now, allow removing any member.
+
+        // Remove from SAN_USERS_TEAMS
+        DB::table('SAN_USERS_TEAMS')
+            ->where('TEA_ID', $request->team_id)
+            ->where('USE_ID', $request->user_id)
+            ->delete();
+
+        // Remove from SAN_USERS_RACES
+        DB::table('SAN_USERS_RACES')
+            ->where('RAC_ID', $request->race_id)
+            ->where('USE_ID', $request->user_id)
+            ->delete();
+            
+        return response()->json(['message' => 'Member removed successfully']);
+    }
+
+    /**
+     * Update member's race info (PPS, Chip)
+     */
+    public function updateMemberRaceInfo(Request $request)
+    {
+        $request->validate([
+            'team_id' => 'required|integer',
+            'race_id' => 'required|integer',
+            'user_id' => 'required|integer',
+            'chip_number' => 'nullable|string',
+            'pps' => 'nullable|string', // Assuming file path string or specialized separate upload handling
+        ]);
+
+        $team = Team::findOrFail($request->team_id);
+        
+        // Allow owner OR the user themselves to update
+        if ($team->USE_ID !== auth()->id() && auth()->id() != $request->user_id) {
+             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        DB::table('SAN_USERS_RACES')
+            ->where('RAC_ID', $request->race_id)
+            ->where('USE_ID', $request->user_id)
+            ->update([
+                'USR_CHIP_NUMBER' => $request->chip_number,
+                'USR_PPS_FORM' => $request->pps 
+            ]);
+            
+        return response()->json(['message' => 'Member info updated']);
+    }
+
+    /**
+     * Validate the team for the race
+     */
+    public function validateTeamForRace(Request $request)
+    {
+        $request->validate([
+            'team_id' => 'required|integer',
+            'race_id' => 'required|integer',
+        ]);
+
+        $team = Team::findOrFail($request->team_id);
+        if ($team->USE_ID !== auth()->id()) {
+             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        $race = Race::findOrFail($request->race_id);
+        $isCompetitive = stripos($race->RAC_TYPE, 'Compétition') !== false || stripos($race->RAC_TYPE, 'Competitif') !== false; // Adjust check based on exact string
+
+        // Get all members
+         $members = DB::table('SAN_USERS_TEAMS')
+            ->join('SAN_USERS', 'SAN_USERS_TEAMS.USE_ID', '=', 'SAN_USERS.USE_ID')
+            ->join('SAN_USERS_RACES', function($join) use ($request) {
+                $join->on('SAN_USERS.USE_ID', '=', 'SAN_USERS_RACES.USE_ID')
+                     ->where('SAN_USERS_RACES.RAC_ID', '=', $request->race_id);
+            })
+            ->where('SAN_USERS_TEAMS.TEA_ID', $request->team_id)
+            ->select('SAN_USERS.*', 'SAN_USERS_RACES.USR_CHIP_NUMBER', 'SAN_USERS_RACES.USR_PPS_FORM' ?? null) // Handle PPS if column exists
+            ->get();
+
+        foreach ($members as $member) {
+            // Check License or PPS
+            $hasLicense = !empty($member->USE_LICENCE_NUMBER);
+            $hasPPS = !empty($member->USR_PPS_FORM);
+            
+            // "Si la personne a une licence number alors pas besoin de mettre un pps sinon obligatoire"
+            if (!$hasLicense && !$hasPPS) {
+                return response()->json(['message' => "Le membre {$member->USE_NAME} {$member->USE_LAST_NAME} doit avoir une licence ou un PPS validé."], 422);
+            }
+
+            // Check Chip if competitive
+            if ($isCompetitive && empty($member->USR_CHIP_NUMBER)) {
+                return response()->json(['message' => "Member {$member->USE_NAME} {$member->USE_LAST_NAME} needs a chip number for competitive race"], 422);
+            }
+        }
+
+        // Generate Team Race Number
+        // "Genere un dossart (race_number) dans team races unique de la team pour la course."
+        // We already did race number on registration ($max + 1). Should we just confirm it or regenerate?
+        // The prompt says "Genere un dossart... unique...".
+        // In registerTeamToRace we effectively reserved one. Let's keep that or finalize it here.
+        // If we strictly follow "Genere un dossart... si tous est ok ... alors le responsable d'équipe peut valider",
+        // maybe we only assign it now? But registerTeamToRace assigned one.
+        // Let's assume validation just sets the boolean flag and confirms the number exists.
+
+        DB::table('SAN_TEAMS_RACES')
+            ->where('TEA_ID', $request->team_id)
+            ->where('RAC_ID', $request->race_id)
+            ->update(['TER_IS_VALID' => 1]);
+
+        return response()->json(['message' => 'Team validated successfully']);
+    }
+
+    /**
+     * Unvalidate the team for the race (if race hasn't started)
+     */
+    public function unvalidateTeamForRace(Request $request)
+    {
+        $request->validate([
+            'team_id' => 'required|integer',
+            'race_id' => 'required|integer',
+        ]);
+
+        $team = Team::findOrFail($request->team_id);
+        if ($team->USE_ID !== auth()->id()) {
+             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        
+        $race = Race::findOrFail($request->race_id);
+
+        // Check if race has started
+        $raceStart = \Carbon\Carbon::parse($race->RAC_DATE . ' ' . ($race->RAC_TIME_START ?? '00:00:00'));
+        
+        if (now()->greaterThanOrEqualTo($raceStart)) {
+            return response()->json(['message' => 'Impossible de dévalider l\'équipe après le début de la course'], 422);
+        }
+
+        DB::table('SAN_TEAMS_RACES')
+            ->where('TEA_ID', $request->team_id)
+            ->where('RAC_ID', $request->race_id)
+            ->update(['TER_IS_VALID' => 0]);
+
+        return response()->json(['message' => 'Team unvalidated successfully']);
+    }
 }

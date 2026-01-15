@@ -4,7 +4,7 @@ import { getRaceDetails } from '../../api/race';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import {
     Container, Box, Typography, Button, LinearProgress, Card, Chip, Paper,
-    TextField, Dialog, DialogTitle, DialogContent, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
+    TextField, Dialog, DialogTitle, DialogContent, DialogActions, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, InputAdornment, Collapse,
     Tooltip
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -380,6 +380,18 @@ export default function RaceDetails() {
                         ))}
                     </List>
                 </DialogContent>
+                {selectedTeam && user && selectedTeam.responsible?.id === user.USE_ID && (
+                    <DialogActions>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            onClick={() => navigate(`/teams/${selectedTeam.id}/races/${race?.RAC_ID}/manage`)}
+                        >
+                            Gérer l'équipe
+                        </Button>
+                    </DialogActions>
+                )}
             </Dialog>
         </Container>
     );
