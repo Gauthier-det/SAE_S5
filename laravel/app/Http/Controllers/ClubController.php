@@ -40,11 +40,23 @@ class ClubController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        // Check if user is already a manager of another club
+        $manager = User::find($request->input('USE_ID'));
+        if ($manager && $manager->CLU_ID !== null) {
+            return response()->json(['errors' => 'This user is already a manager of another club'], 422);
+        }
+
         $club = Club::create($request->only([
             'USE_ID',
             'ADD_ID',
             'CLU_NAME',
         ]));
+
+        // Link manager to the new club
+        if ($manager) {
+            $manager->CLU_ID = $club->CLU_ID;
+            $manager->save();
+        }
 
         return response()->json(['data' => $club], 201);
     }
@@ -82,8 +94,14 @@ class ClubController extends Controller
                 'CLU_NAME' => $request->input('CLU_NAME'),
             ]);
 
-            // Link manager to the new club
+            // Check if user is already a manager of another club
             $manager = User::find($request->input('USE_ID'));
+            if ($manager && $manager->CLU_ID !== null) {
+                DB::rollBack();
+                return response()->json(['errors' => 'This user is already a manager of another club'], 422);
+            }
+
+            // Link manager to the new club
             if ($manager) {
                 $manager->CLU_ID = $club->CLU_ID;
                 $manager->save();
@@ -147,6 +165,9 @@ class ClubController extends Controller
         if ($request->has('USE_ID') && $request->input('USE_ID') !== $club->getOriginal('USE_ID')) {
             $newManagerId = $request->input('USE_ID');
             $newManager = User::find($newManagerId);
+            if ($newManager && $newManager->CLU_ID !== null && $newManager->CLU_ID !== $club->CLU_ID) {
+                return response()->json(['USE_ID' => 'This user is already a manager of another club'], 422);
+            }
             if ($newManager) {
                 $newManager->CLU_ID = $club->CLU_ID;
                 $newManager->save();
@@ -156,6 +177,10 @@ class ClubController extends Controller
             $managerId = $request->input('USE_ID');
             $manager = User::find($managerId);
             if ($manager && $manager->CLU_ID !== $club->CLU_ID) {
+                // Check if manager is already in another club
+                if ($manager->CLU_ID !== null) {
+                    return response()->json(['errors' => 'This user is already a manager of another club'], 422);
+                }
                 $manager->CLU_ID = $club->CLU_ID;
                 $manager->save();
             }

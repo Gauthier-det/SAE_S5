@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Club;
 use App\Models\Raid;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -85,6 +86,13 @@ class RaidController extends Controller
             ], 403);
         }
 
+        $raidManager = User::find($request->USE_ID);
+        if ($raidManager->USE_LICENCE_NUMBER === null) {
+            return response()->json([
+                'message' => 'Unauthorized. The raid manager must have a valid licence number.',
+            ], 403);
+        }
+
         $raidData = $request->only([
             'CLU_ID',
             'ADD_ID',
@@ -117,6 +125,15 @@ class RaidController extends Controller
             return response()->json([
                 'message' => 'Unauthorized. Only the club manager can update raids.',
             ], 404);
+        }
+
+        if ($request->has('USE_ID')) {
+            $raidManager = User::find($request->USE_ID);
+            if ($raidManager->USE_LICENCE_NUMBER === null) {
+                return response()->json([
+                    'message' => 'Unauthorized. The raid manager must have a valid licence number.',
+                ], 403);
+            }
         }
 
         // Merge existing raid data with request for validation context
