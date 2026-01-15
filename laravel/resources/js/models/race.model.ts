@@ -5,6 +5,7 @@ export interface Race {
     RAC_ID: number;
     user: User;
     raid: Raid;
+    RAC_NAME: string;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
@@ -28,6 +29,7 @@ export interface RaceResponse {
 export interface RaceCreation {
     USE_ID: number;
     RAI_ID: number;
+    RAC_NAME: string;
     RAC_TIME_START: string;
     RAC_TIME_END: string;
     RAC_GENDER: 'Homme' | 'Femme' | 'Mixte';
