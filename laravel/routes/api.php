@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RaidController;
@@ -13,6 +14,14 @@ use App\Http\Controllers\TeamController;
 
 
 // Authentication routes
+Route::get('/reset', function () {
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+        '--force' => true
+    ]);
+    return response()->json(['message' => 'Database reset and seeded successfully']);
+});
+
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::post('/register', [AuthController::class, 'register']);
@@ -44,6 +53,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Auth Race routes
     Route::post('/races', [RaceController::class, 'createRace']);
     Route::post('/races/with-prices', [RaceController::class, 'createRaceWithPrices']);
+    Route::post('/races/{raceId}/team-results', [RaceController::class, 'storeTeamRaceResult'])->whereNumber('raceId');
     Route::put('/races/{id}', [RaceController::class, 'updateRace'])->whereNumber('id');
     Route::delete('/races/{id}', [RaceController::class, 'deleteRace'])->whereNumber('id');
     Route::get('/races/{raceId}/teams', [TeamController::class, 'getTeamsByRace'])->whereNumber('raceId');
@@ -57,6 +67,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::put('/users/{id}', [UserController::class, 'updateUser']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
+    Route::post('/users/races/register', [UserController::class, 'registerUserToRace']); //Create an entry in SAN_USERS_RACES
 
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
@@ -71,6 +82,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/teams/validate-race', [TeamController::class, 'validateTeamForRace']);
     Route::post('/teams/unvalidate-race', [TeamController::class, 'unvalidateTeamForRace']);
     Route::get('/teams/{id}', [TeamController::class, 'getTeamById'])->whereNumber('id');
+    Route::get('/teams/{teamId}/users', [UserController::class, 'getUsersByTeam'])->whereNumber('teamId');
 
     // Address routes
     Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
