@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Race;
 use App\Models\Raid;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -153,10 +152,9 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'required|integer|min:0',
             'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS' => 'required|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
-            'RAC_AGE_MIN' => 'required|integer|min:0|lte:RAC_AGE_MIDDLE',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
+            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
+            'RAC_AGE_MIN' => 'required|integer|min:0',
+            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
         ]);
@@ -169,18 +167,6 @@ class RaceController extends Controller
         if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized. Only the raid manager can create races for this raid.',
-            ], 403);
-        }
-
-        $raceManager = User::find($request->USE_ID);
-        if ($raceManager->CLU_ID !== $raid->CLU_ID) {
-            return response()->json([
-                'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
-            ], 403);
-        }
-        if ($raceManager->USE_LICENCE_NUMBER === null) {
-            return response()->json([
-                'message' => 'Unauthorized. The race manager must have a valid licence number.',
             ], 403);
         }
 
@@ -197,7 +183,6 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS',
             'RAC_MIN_TEAMS',
             'RAC_MAX_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS',
             'RAC_MAX_TEAM_MEMBERS',
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
@@ -223,10 +208,9 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'required|integer|min:0',
             'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS' => 'required|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
-            'RAC_AGE_MIN' => 'required|integer|min:0|lte:RAC_AGE_MIDDLE',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
+            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
+            'RAC_AGE_MIN' => 'required|integer|min:0',
+            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
             'CAT_1_PRICE' => 'required|numeric|min:0',
@@ -254,7 +238,6 @@ class RaceController extends Controller
                 'RAC_MAX_PARTICIPANTS',
                 'RAC_MIN_TEAMS',
                 'RAC_MAX_TEAMS',
-                'RAC_MIN_TEAM_MEMBERS',
                 'RAC_MAX_TEAM_MEMBERS',
                 'RAC_AGE_MIN',
                 'RAC_AGE_MIDDLE',
@@ -283,21 +266,23 @@ class RaceController extends Controller
 
     public function updateRace(Request $request, $id)
     {
-        $race = Race::with('raid')->find($id);
+        $race = Race::find($id);
         if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
+        // Check authorization: admin or raid manager
+        $raid = Raid::find($race->RAI_ID);
+        $isAdmin = auth()->user()->isAdmin();
+        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
+
+        if (!$isAdmin && !$isRaidManager) {
             return response()->json([
-                'message' => 'Unauthorized. Only the raid Manager can update races.',
+                'message' => 'Unauthorized. Only admins or raid managers can update this race.',
             ], 403);
         }
 
-        $dataForValidation = array_merge($race->toArray(), $request->all());
-
-        $validator = Validator::make($dataForValidation, [
-            'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
+        $validator = Validator::make($request->all(), [
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
             'RAC_NAME' => 'sometimes|string|max:255',
             'RAC_TIME_START' => 'sometimes|date_format:Y-m-d H:i:s',
@@ -309,10 +294,9 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'sometimes|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'sometimes|integer|min:0',
             'RAC_MAX_TEAMS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS' => 'sometimes|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
-            'RAC_AGE_MIN' => 'sometimes|integer|min:0|lte:RAC_AGE_MIDDLE',
-            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
+            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0',
+            'RAC_AGE_MIN' => 'sometimes|integer|min:0',
+            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
             'CAT_1_PRICE' => 'sometimes|numeric|min:0',
@@ -324,41 +308,27 @@ class RaceController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        if ($request->has('USE_ID')) {
-            $raid = Raid::find($race->RAI_ID);
-            $raceManager = User::find($request->USE_ID);
-            if ($raceManager->CLU_ID !== $raid->CLU_ID) {
-                return response()->json([
-                    'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
-                ], 403);
-            }
-            if ($raceManager->USE_LICENCE_NUMBER === null) {
-                return response()->json([
-                    'message' => 'Unauthorized. The race manager must have a valid licence number.',
-                ], 403);
-            }
-        }
+        try {
+            DB::beginTransaction();
 
-        $race->update($request->only([
-            'USE_ID',
-            'RAI_ID',
-            'RAC_NAME',
-            'RAC_TIME_START',
-            'RAC_TIME_END',
-            'RAC_GENDER',
-            'RAC_TYPE',
-            'RAC_DIFFICULTY',
-            'RAC_MIN_PARTICIPANTS',
-            'RAC_MAX_PARTICIPANTS',
-            'RAC_MIN_TEAMS',
-            'RAC_MAX_TEAMS',
-            'RAC_MIN_TEAM_MEMBERS',
-            'RAC_MAX_TEAM_MEMBERS',
-            'RAC_AGE_MIN',
-            'RAC_AGE_MIDDLE',
-            'RAC_AGE_MAX',
-            'RAC_CHIP_MANDATORY',
-        ]));
+            $race->update($request->only([
+                'RAI_ID',
+                'RAC_NAME',
+                'RAC_TIME_START',
+                'RAC_TIME_END',
+                'RAC_GENDER',
+                'RAC_TYPE',
+                'RAC_DIFFICULTY',
+                'RAC_MIN_PARTICIPANTS',
+                'RAC_MAX_PARTICIPANTS',
+                'RAC_MIN_TEAMS',
+                'RAC_MAX_TEAMS',
+                'RAC_MAX_TEAM_MEMBERS',
+                'RAC_AGE_MIN',
+                'RAC_AGE_MIDDLE',
+                'RAC_AGE_MAX',
+                'RAC_CHIP_MANDATORY',
+            ]));
 
             // Update prices if provided
             if ($request->has('CAT_1_PRICE') || $request->has('CAT_2_PRICE') || $request->has('CAT_3_PRICE')) {
@@ -393,14 +363,19 @@ class RaceController extends Controller
 
     public function deleteRace($id)
     {
-        $race = Race::with('raid')->find($id);
+        $race = Race::find($id);
         if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
+        // Check authorization: admin, race creator, or raid manager
+        $raid = Raid::find($race->RAI_ID);
+        $isAdmin = auth()->user()->isAdmin();
+        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
+
+        if (!$isAdmin && !$isRaidManager) {
             return response()->json([
-                'message' => 'Unauthorized. Only the raid Manager can update races.',
+                'message' => 'Unauthorized. Only admins, race creators, or raid managers can delete this race.',
             ], 403);
         }
 

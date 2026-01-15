@@ -41,7 +41,7 @@ return new class extends Migration
             $table->string('USE_LAST_NAME', 255);
             $table->string('USE_GENDER', 16); 
             $table->date('USE_BIRTHDATE')->nullable();
-            $table->string('USE_PHONE_NUMBER', 255)->nullable();
+            $table->integer('USE_PHONE_NUMBER')->nullable();
             $table->integer('USE_LICENCE_NUMBER')->nullable();
             $table->date('USE_MEMBERSHIP_DATE')->nullable();
             $table->date('USE_VALIDITY')->nullable();
@@ -59,7 +59,6 @@ return new class extends Migration
             $table->unsignedInteger('USE_ID');
             $table->unsignedBigInteger('ADD_ID');
             $table->string('CLU_NAME', 255);
-            $table->string('CLU_PHONE_NUMBER', 255)->nullable();
 
             $table->index('USE_ID', 'I_FK_SAN_CLUBS_SAN_USERS');
             $table->index('ADD_ID', 'I_FK_SAN_CLUBS_SAN_ADDRESSES');
@@ -132,7 +131,6 @@ return new class extends Migration
             $table->bigInteger('RAC_MAX_PARTICIPANTS');
             $table->bigInteger('RAC_MIN_TEAMS');
             $table->bigInteger('RAC_MAX_TEAMS');
-            $table->bigInteger('RAC_MIN_TEAM_MEMBERS');
             $table->bigInteger('RAC_MAX_TEAM_MEMBERS');
             $table->bigInteger('RAC_AGE_MIN');
             $table->bigInteger('RAC_AGE_MIDDLE');
