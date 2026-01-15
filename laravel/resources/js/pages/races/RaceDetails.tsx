@@ -99,7 +99,8 @@ export default function RaceDetails() {
     }, [race, searchTerm, user, isAuthenticated]);
 
     // Check if registration deadline has passed
-    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_END)) : false;
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
+    console.log("journee passe:", dayjs(race?.raid.RAI_REGISTRATION_START), "journnee now:", dayjs(), "disableEditing:", disableEditing);
 
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;
@@ -437,7 +438,7 @@ export default function RaceDetails() {
                 <Box sx={{ bgcolor: '#f8f9fa', p: 2, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <GroupsIcon />
                     <Box>
-                        <Typography variant="subtitle2">Membres max par équipe</Typography>
+                        <Typography variant="subtitle2">Membres min et max par équipe</Typography>
                         <Typography variant="h6">{race.RAC_MIN_TEAM_MEMBERS+" - "+race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
                     </Box>
                 </Box>
