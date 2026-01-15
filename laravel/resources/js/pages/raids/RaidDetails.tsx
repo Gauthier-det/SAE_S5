@@ -14,12 +14,15 @@ import EventIcon from '@mui/icons-material/Event';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LanguageIcon from '@mui/icons-material/Language';
+import { useUser } from '../../contexts/userContext';
 
 export default function InfoRaid() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [raid, setRaid] = useState<Raid | null>(null);
     const [allRaces, setAllRaces] = useState<Race[]>([]);
+    const { user,isRaidManager } = useUser();
+    
 
     useEffect(() => {
         if (!id) navigate('/raids');
@@ -174,9 +177,21 @@ export default function InfoRaid() {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
-                                {raid.RAI_NAME}
-                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                                <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a' }}>
+                                    {raid.RAI_NAME}
+                                </Typography>
+                                {user && raid && user.USE_ID === raid.USE_ID && isRaidManager && (
+                                    <Button
+                                        variant="contained"
+                                        color="success"
+                                        onClick={() => navigate(`/raids/${id}/create`)}
+                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                    >
+                                        Créer une course
+                                    </Button>
+                                )}
+                            </Box>
 
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>

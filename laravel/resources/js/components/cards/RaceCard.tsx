@@ -58,7 +58,7 @@ function RaceCard({ race, onDetailsClick }: RaceCardProps) {
                     <br />
                     <strong>Équipes:</strong> {race.RAC_MIN_TEAMS} - {race.RAC_MAX_TEAMS} équipes
                     <br />
-                    <strong>Participants max/équipe:</strong> {race.RAC_TEAM_MEMBERS}
+                    <strong>Participants max/équipe:</strong> {race.RAC_MAX_TEAM_MEMBERS}
                     <br />
                     <strong>Age:</strong> {race.RAC_AGE_MIN} - {race.RAC_AGE_MAX} ans
                 </Typography>

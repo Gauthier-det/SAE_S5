@@ -91,7 +91,7 @@ export default function RaceDetails() {
                     {team.isMember && !team.isResponsible && <Chip label="Membre" size="small" color="primary" />}
                 </Box>
                 <Typography variant="caption" color="text.secondary">
-                    Resp: {team.responsible?.name || 'N/A'} • {team.members_count} / {race.RAC_TEAM_MEMBERS} membres
+                    Resp: {team.responsible?.name || 'N/A'} • {team.members_count} / {race.RAC_MAX_TEAM_MEMBERS} membres
                 </Typography>
             </Box>
             <Tooltip title={isAuthenticated ? "Voir les membres" : "Connectez-vous pour voir les détails"}>
@@ -213,7 +213,7 @@ export default function RaceDetails() {
                     <GroupsIcon />
                     <Box>
                         <Typography variant="subtitle2">Membres max par équipe</Typography>
-                        <Typography variant="h6">{race.RAC_TEAM_MEMBERS} personnes</Typography>
+                        <Typography variant="h6">{race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
                     </Box>
                 </Box>
             </Paper>
