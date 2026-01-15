@@ -25,13 +25,14 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { useUser } from '../../contexts/userContext';
 import { useAlert } from '../../contexts/AlertContext';
-import { getClubUsers } from '../../api/club';
+import { getClubUsers, getListOfClubs } from '../../api/club';
 import type { User } from '../../models/user.model';
+import type { Club } from '../../models/club.model';
 import { createAddress } from '../../api/address';
 import type { AddressCreation } from '../../models/address.model';
 
 const CreateRaid = () => {
-    const { user, refreshUser } = useUser();
+    const { user, refreshUser, isAdmin } = useUser();
     const navigate = useNavigate();
     const { showAlert } = useAlert();
 
@@ -60,6 +61,7 @@ const CreateRaid = () => {
     });
 
     // Extra state
+    const [clubs, setClubs] = useState<Club[]>([]);
     const [clubName, setClubName] = useState<string>('');
     const [clubUsers, setClubUsers] = useState<User[]>([]);
     const [selectedResponsible, setSelectedResponsible] = useState<number | ''>('');
@@ -71,26 +73,45 @@ const CreateRaid = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (user && user.club) {
-                setLoading(true);
-                setFormData(prev => ({ ...prev, CLU_ID: user.club?.CLU_ID! }));
-                try {
-                    // Fetch Club info
+            setLoading(true);
+            try {
+                if (isAdmin) {
+                    // For admins, fetch list of all clubs
+                    const allClubs = await getListOfClubs();
+                    setClubs(allClubs || []);
+                } else if (user && user.club) {
+                    // For club managers, set their club
+                    setFormData(prev => ({ ...prev, CLU_ID: user.club?.CLU_ID! }));
                     setClubName(user.club.CLU_NAME);
-
                     // Fetch Club Users for Responsible selection
                     const users = await getClubUsers(user.club.CLU_ID);
                     setClubUsers(users || []);
-                } catch (e) {
-                    console.error("Failed to load club info", e);
-                    showAlert("Impossible de charger les informations du club", "error");
-                } finally {
-                    setLoading(false);
                 }
+            } catch (e) {
+                console.error("Failed to load club info", e);
+                showAlert("Impossible de charger les informations du club", "error");
+            } finally {
+                setLoading(false);
             }
         };
         init();
-    }, [user]);
+    }, [user, isAdmin, showAlert]);
+
+    const handleClubChange = async (clubId: number) => {
+        setFormData(prev => ({ ...prev, CLU_ID: clubId }));
+        try {
+            const selectedClub = clubs.find(c => c.CLU_ID === clubId);
+            if (selectedClub) {
+                setClubName(selectedClub.CLU_NAME);
+                // Fetch Club Users for Responsible selection
+                const users = await getClubUsers(clubId);
+                setClubUsers(users || []);
+            }
+        } catch (e) {
+            console.error("Failed to load club users", e);
+            showAlert("Impossible de charger les membres du club", "error");
+        }
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
         const { name, value } = e.target;
@@ -206,6 +227,28 @@ const CreateRaid = () => {
                     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
                         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
                             <Grid container spacing={6}>
+                                {/* Admin Club Selection */}
+                                {isAdmin && (
+                                    <Grid size={{ xs: 12 }}>
+                                        <FormControl fullWidth variant="standard" required>
+                                            <InputLabel shrink>Sélectionner un club</InputLabel>
+                                            <Select
+                                                value={formData.CLU_ID}
+                                                onChange={(e) => handleClubChange(e.target.value as number)}
+                                                displayEmpty
+                                            >
+                                                <MenuItem value="" disabled>Choisir un club</MenuItem>
+                                                {clubs.map(club => (
+                                                    <MenuItem key={club.CLU_ID} value={club.CLU_ID}>
+                                                        {club.CLU_NAME}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            <FormHelperText>Le club pour lequel créer le raid</FormHelperText>
+                                        </FormControl>
+                                    </Grid>
+                                )}
+
                                 {/* Left Column */}
                                 <Grid size={{ xs: 12, md: 6 }}>
                                     <Stack spacing={3}>
