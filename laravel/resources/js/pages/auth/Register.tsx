@@ -6,18 +6,31 @@ import {
     TextField,
     Typography,
     Paper,
-    Stack
+    Stack,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    type SelectChangeEvent
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import LogoColor from '../../assets/logo-color.png';
 import { useUser } from '../../contexts/userContext';
+import type { Gender } from '../../models/user.model';
 
 const Register = () => {
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        name: string;
+        last_name: string;
+        mail: string;
+        password: string;
+        gender: Gender | '';
+    }>({
         name: '',
         last_name: '',
         mail: '',
-        password: ''
+        password: '',
+        gender: ''
     });
 
     const [error, setError] = useState('');
@@ -32,6 +45,13 @@ const Register = () => {
         }));
     };
 
+    const handleGenderChange = (event: SelectChangeEvent) => {
+        setFormData(prev => ({
+            ...prev,
+            gender: event.target.value as Gender
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -41,10 +61,15 @@ const Register = () => {
             return;
         }
 
+        if (formData.gender === '') {
+            setError('Veuillez sélectionner un genre.');
+            return;
+        }
+
         try {
-            await register(formData);
+            await register(formData as any); // Cast to any because we know gender is valid now
             navigate('/dashboard');
-        } catch (err: any) { 
+        } catch (err: any) {
             console.error(err);
             if (err.name === 'ApiError' && err.data && err.data.errors) {
                 const messages = Object.values(err.data.errors).flat().join(' ');
@@ -97,7 +122,7 @@ const Register = () => {
                             fullWidth
                             id="email"
                             label="e-mail"
-                            name="email"
+                            name="mail"
                             autoComplete="email"
                             variant="standard"
                             value={formData.mail}
@@ -120,6 +145,20 @@ const Register = () => {
                         />
 
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
+                            <FormControl fullWidth variant="standard" required>
+                                <InputLabel id="gender-select-label">Genre</InputLabel>
+                                <Select
+                                    labelId="gender-select-label"
+                                    id="gender-select"
+                                    value={formData.gender}
+                                    onChange={handleGenderChange}
+                                    label="Genre"
+                                >
+                                    <MenuItem value="Homme">Homme</MenuItem>
+                                    <MenuItem value="Femme">Femme</MenuItem>
+                                    <MenuItem value="Autre">Autre</MenuItem>
+                                </Select>
+                            </FormControl>
                             <TextField
                                 required
                                 fullWidth
@@ -164,7 +203,7 @@ const Register = () => {
                             <Button
                                 variant="contained"
                                 color="warning"
-                                sx={{color: 'white', borderRadius: '10px', fontSize: '12px'}}
+                                sx={{ color: 'white', borderRadius: '10px', fontSize: '12px' }}
                                 onClick={() => navigate('/login')}
                             >
                                 Se connecter

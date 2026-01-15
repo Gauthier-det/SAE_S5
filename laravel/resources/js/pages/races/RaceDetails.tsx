@@ -309,15 +309,33 @@ export default function RaceDetails() {
                 </Paper>
             </Collapse>
 
-            <Button
-                variant="contained"
-                fullWidth
-                size="large"
-                startIcon={<CheckCircleIcon />}
-                sx={{ bgcolor: '#00c853', '&:hover': { bgcolor: '#00a844' } }}
-            >
-                S'INSCRIRE EN ÉQUIPE
-            </Button>
+            {isAuthenticated ? (
+                <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    startIcon={<CheckCircleIcon />}
+                    onClick={() => navigate(`/races/${race.RAC_ID}/register`)}
+                    sx={{ bgcolor: '#00c853', '&:hover': { bgcolor: '#00a844' } }}
+                >
+                    S'INSCRIRE EN ÉQUIPE
+                </Button>
+            ) : (
+                <Tooltip title="Vous devez être connecté pour vous inscrire à une course.">
+                    <span>
+                        <Button
+                            variant="contained"
+                            fullWidth
+                            size="large"
+                            disabled
+                            startIcon={<LockIcon />}
+                            sx={{ bgcolor: '#9e9e9e', '&:hover': { bgcolor: '#9e9e9e' } }}
+                        >
+                            S'INSCRIRE EN ÉQUIPE (Connexion requise)
+                        </Button>
+                    </span>
+                </Tooltip>
+            )}
 
             {/* Team Members Modal */}
             <Dialog open={modalOpen} onClose={handleCloseModal} fullWidth maxWidth="sm">

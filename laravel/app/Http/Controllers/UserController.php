@@ -17,7 +17,7 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request)
     {
-        return $request->user()->load('address')->load('club');
+        return $request->user()->load('address')->load('club')->load('races');
     }
 
     public function getUserById($id)

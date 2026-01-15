@@ -31,6 +31,7 @@ export default function InfoRaid() {
         getListOfRacesByRaidId(raidId).then(setAllRaces).catch(console.error);
     }, [id]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
+    const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
 
     // Calculate global min/max for the slider bounds
     const limits = React.useMemo(() => {
@@ -62,6 +63,16 @@ export default function InfoRaid() {
         setRaceType(newFilter);
     };
 
+    const handleGenderChange = (gender: string) => {
+        const newFilter = new Set(raceGender);
+        if (newFilter.has(gender)) {
+            newFilter.delete(gender);
+        } else {
+            newFilter.add(gender);
+        }
+        setRaceGender(newFilter);
+    };
+
     const handleAgeChange = (_event: Event, newValue: number | number[]) => {
         setAgeRange(newValue as number[]);
     };
@@ -72,11 +83,13 @@ export default function InfoRaid() {
                 (raceType.has('Compétitif') && race.RAC_TYPE === RaceType.Competitive) ||
                 (raceType.has('Loisir') && race.RAC_TYPE === RaceType.Hobby);
 
+            const matchesGender = raceGender.size === 0 || raceGender.has(race.RAC_GENDER);
+
             const matchesAge = race.RAC_AGE_MIN >= ageRange[0] && race.RAC_AGE_MAX <= ageRange[1];
 
-            return matchesType && matchesAge;
+            return matchesType && matchesGender && matchesAge;
         });
-    }, [allRaces, raceType, ageRange]);
+    }, [allRaces, raceType, raceGender, ageRange]);
 
 
     if (!raid) {
@@ -145,6 +158,35 @@ export default function InfoRaid() {
                                         onChange={() => handleTypeChange('Loisir')}
                                     />}
                                     label="Loisir"
+                                />
+                            </FormGroup>
+                        </Box>
+
+                        <Box>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                Genre
+                            </Typography>
+                            <FormGroup>
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Homme')}
+                                        onChange={() => handleGenderChange('Homme')}
+                                    />}
+                                    label="Homme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Femme')}
+                                        onChange={() => handleGenderChange('Femme')}
+                                    />}
+                                    label="Femme"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox
+                                        checked={raceGender.has('Mixte')}
+                                        onChange={() => handleGenderChange('Mixte')}
+                                    />}
+                                    label="Mixte"
                                 />
                             </FormGroup>
                         </Box>

@@ -1,4 +1,4 @@
-import type { Address } from "./user.model";
+import type { Address, Gender } from "./user.model";
 import type { Club } from "./club.model";
 
 export interface Login {
@@ -11,6 +11,7 @@ export interface Register {
     last_name: string;
     mail: string;
     password: string;
+    gender: Gender;
 }
 
 export interface AuthAPIResponse {
@@ -19,6 +20,7 @@ export interface AuthAPIResponse {
         user_name: string;
         user_last_name: string;
         user_mail: string;
+        user_gender: Gender;
         user_phone: string | null;
         user_birthdate: string | null;
         user_address: Address | null;

@@ -24,5 +24,12 @@ export const isRaceManager = async (userId: number) => {
     const listManager = await getListOfRaceManagers()
     return listManager.includes(userId);
 }
-    
+
+export const updateUser = async (userId: number, data: Partial<User>) => {
+    return await apiClient<User>(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    });
+}
+
 

@@ -45,4 +45,5 @@ export interface RaidCreation {
     RAI_TIME_END: string | null;
     RAI_REGISTRATION_START: string | null;
     RAI_REGISTRATION_END: string | null;
+    RAI_NB_RACES: number;
 }
