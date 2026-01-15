@@ -98,7 +98,7 @@ class AuthController extends Controller
                 'user_last_name' => $user->USE_LAST_NAME,
                 'user_mail' => $user->USE_MAIL,
                 'user_gender' => $user->USE_GENDER,
-                'user_phone' => null,
+                'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
                 'user_licence' => null,
                 'user_membership_date' => null,
