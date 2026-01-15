@@ -5,22 +5,25 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import Navbar from './components/common/Navbar';
 import Profile from './pages/user/Profile';
 import { UserProvider, useUser } from './contexts/userContext';
+import { AlertProvider } from './contexts/AlertContext';
 import ProtectedRoute from './components/router/ProtectedRoute';
 import GuestRoute from './components/router/GuestRoute';
 import RaidsList from './pages/raids/RaidsList';
 import RaidDetails from './pages/raids/RaidDetails';
 import About from './pages/About';
 import Register from './pages/auth/Register';
+import RaceDetails from './pages/races/RaceDetails';
 import CreateRace from './pages/raids/CreateRace';
 import CreateRaid from './pages/raids/CreateRaid';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
+import AdminDashboard from './pages/AdminDashboard';
 
 
 const MainLayout = () => {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh'}}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <Navbar />
       <Outlet />
     </Box>
@@ -28,7 +31,7 @@ const MainLayout = () => {
 };
 
 const AppRoutes = () => {
-  const { isClubManager, isRaidManager } = useUser();
+  const { isClubManager, isRaidManager, isAdmin } = useUser();
 
   return (
     <Routes>
@@ -37,6 +40,7 @@ const AppRoutes = () => {
 
         <Route path="/raids" element={<RaidsList />} />
         <Route path="/raids/:id" element={<RaidDetails />} />
+        <Route path="/races/:id" element={<RaceDetails />} />
         <Route path="/about" element={<About />} />
 
         {/* non auth Routes */}
@@ -55,7 +59,12 @@ const AppRoutes = () => {
           <Route path="/raid/create" element={<CreateRaid />} />
         </Route>
         <Route element={<ProtectedRoute condition={isRaidManager} />}>
-          <Route path="/race/create" element={<CreateRace />} />
+          <Route path="/raids/:id/create" element={<CreateRace />} />
+        </Route>
+
+        {/* Admin Routes */}
+        <Route element={<ProtectedRoute condition={isAdmin} />}>
+          <Route path="/admin" element={<AdminDashboard />} />
         </Route>
       </Route>
     </Routes>
@@ -64,14 +73,16 @@ const AppRoutes = () => {
 
 function App() {
   return (
-    <UserProvider>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Router>
-          <CssBaseline />
-          <AppRoutes />
-        </Router>
-      </LocalizationProvider>
-    </UserProvider>
+    <AlertProvider>
+      <UserProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <Router>
+            <CssBaseline />
+            <AppRoutes />
+          </Router>
+        </LocalizationProvider>
+      </UserProvider>
+    </AlertProvider>
   );
 }
 

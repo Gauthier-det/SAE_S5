@@ -58,10 +58,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->tokens()->delete(); // Revokes ALL tokens for this user
 
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
+
 
     public function register(Request $request)
     {
@@ -85,7 +86,7 @@ class AuthController extends Controller
             'USE_PASSWORD' => Hash::make($request->password),
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
-            'USE_GENDER' => $request->gender
+            'USE_GENDER' => $request->gender,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

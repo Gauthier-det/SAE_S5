@@ -11,13 +11,13 @@ class RaidController extends Controller
 {
     public function getAllRaids()
     {
-        $raids = Raid::all();
+        $raids = Raid::with(['club', 'address', 'user'])->get();
         return response()->json(['data' => $raids]);
     }
 
     public function getRaidById($id)
     {
-        $raid = Raid::with(['club', 'address'])->find($id);
+        $raid = Raid::with(['club', 'address', 'user'])->find($id);
         if (!$raid) {
             return response()->json([
                 'message' => 'Raid not found',
@@ -29,6 +29,35 @@ class RaidController extends Controller
     public function createRaid(Request $request)
     {
         
+        $messages = [
+            'required' => 'Le champ :attribute est obligatoire.',
+            'email' => 'Le champ :attribute doit être une adresse email valide.',
+            'url' => 'Le champ :attribute doit être une URL valide.',
+            'date' => 'Le champ :attribute doit être une date valide.',
+            'after' => 'La date :attribute doit être postérieure à :date.',
+            'before' => 'La date :attribute doit être antérieure à :date.',
+            'integer' => 'Le champ :attribute doit être un entier.',
+            'exists' => 'Le champ :attribute sélectionné est invalide.',
+            'required_without' => 'Le champ :attribute est obligatoire si :values n\'est pas renseigné.',
+            'min' => 'Le champ :attribute doit être d\'au moins :min.',
+        ];
+
+        $attributes = [
+            'CLU_ID' => 'Club',
+            'ADD_ID' => 'Adresse',
+            'USE_ID' => 'Responsable',
+            'RAI_NAME' => 'Nom du raid',
+            'RAI_MAIL' => 'Email du contact',
+            'RAI_PHONE_NUMBER' => 'Téléphone',
+            'RAI_WEB_SITE' => 'Site Web',
+            'RAI_IMAGE' => 'Lien image',
+            'RAI_TIME_START' => 'Date de début du raid',
+            'RAI_TIME_END' => 'Date de fin du raid',
+            'RAI_REGISTRATION_START' => 'Début inscriptions',
+            'RAI_REGISTRATION_END' => 'Fin inscriptions',
+            'RAI_NB_RACES' => 'Nombre de courses',
+        ];
+
         $validator = Validator::make($request->all(), [
             'CLU_ID' => 'required|integer|exists:SAN_CLUBS,CLU_ID',
             'ADD_ID' => 'required|integer|exists:SAN_ADDRESSES,ADD_ID',
@@ -42,7 +71,8 @@ class RaidController extends Controller
             'RAI_TIME_END' => 'required|date|after:RAI_TIME_START',
             'RAI_REGISTRATION_START' => 'required|date|before:RAI_TIME_START',
             'RAI_REGISTRATION_END' => 'required|date|before:RAI_TIME_START|after:RAI_REGISTRATION_START',
-        ]);
+            'RAI_NB_RACES' => 'required|integer|min:1',
+        ], $messages, $attributes);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
@@ -55,7 +85,7 @@ class RaidController extends Controller
             ], 403);
         }
 
-        $raid = Raid::create($request->only([
+        $raidData = $request->only([
             'CLU_ID',
             'ADD_ID',
             'USE_ID',
@@ -68,7 +98,10 @@ class RaidController extends Controller
             'RAI_TIME_END',
             'RAI_REGISTRATION_START',
             'RAI_REGISTRATION_END',
-        ]));
+            'RAI_NB_RACES',
+        ]);
+        
+        $raid = Raid::create($raidData);
 
         return response()->json(['data' => $raid], 201);
     }

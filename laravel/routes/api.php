@@ -25,6 +25,7 @@ Route::get('/raids/{raidId}/races', [RaceController::class, 'getRacesByRaid'])->
 // Race routes
 Route::get('/races', [RaceController::class, 'getAllRaces']);
 Route::get('/races/{id}', [RaceController::class, 'getRaceById'])->whereNumber('id');
+Route::get('/races/{id}/details', [RaceController::class, 'getRaceDetails'])->whereNumber('id');
 Route::get('/races/{raceId}/results', [RaceController::class, 'getRaceResults'])->whereNumber('raceId');
 Route::get('/races/{raceId}/prices', [RaceController::class, 'getRacePrices'])->whereNumber('raceId');
 
@@ -47,14 +48,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     // Auth User routes
     Route::get('/user', [UserController::class, 'getUserInfo']);
+    Route::get('/user/is-admin', [UserController::class, 'checkIsAdmin']);
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById']);
     Route::put('/users/{id}', [UserController::class, 'updateUser']);
     Route::delete('/users/{id}', [UserController::class, 'deleteUser']);
-  
+
     // Team routes
     Route::post('/teams', [TeamController::class, 'createTeam']);
     Route::post('/teams/addMember', [TeamController::class, 'addMember']);
+
+    // Address routes
+    Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
+    Route::post('/addresses', [AddressController::class, 'createAddress']);
+    Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
@@ -73,13 +80,14 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
 
     // Admin Addresse routes
     Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
-    Route::get('/addresses/{id}', [AddressController::class, 'getAddressById'])->whereNumber('id');
-    Route::post('/addresses', [AddressController::class, 'createAddress']);
-    Route::put('/addresses/{id}', [AddressController::class, 'updateAddress'])->whereNumber('id');
     Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
-  
+
     // Admin User routes
     Route::get('/users', [UserController::class, 'getAllUsers']);
     Route::get('/users/{id}', [UserController::class, 'getUserById'])->whereNumber('id');
     Route::post('/users/{id}', [UserController::class, 'createUser'])->whereNumber('id');
+    
+    // Admin Address routes (Delete/GetAll remain admin only)
+    Route::get('/addresses', [AddressController::class, 'getAllAddresses']);
+    Route::delete('/addresses/{id}', [AddressController::class, 'deleteAddress'])->whereNumber('id');
 });

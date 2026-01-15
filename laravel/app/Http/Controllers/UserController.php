@@ -17,7 +17,7 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request)
     {
-        return $request->user()->load('address')->load('club');
+        return $request->user()->load('address')->load('club')->load('races');
     }
 
     public function getUserById($id)
@@ -75,14 +75,14 @@ class UserController extends Controller
     public function updateUser(Request $request, $id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'message' => 'User not found',
             ], 404);
         }
 
-        if (auth()->user()->USE_ID !== (int)$id && !auth()->user()->isAdmin()) {
+        if (auth()->user()->USE_ID !== (int) $id && !auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized. You can only update your own profile.',
             ], 403);
@@ -111,7 +111,7 @@ class UserController extends Controller
         }
 
         $data = $request->all();
-        
+
         if (isset($data['USE_PASSWORD'])) {
             $data['USE_PASSWORD'] = Hash::make($data['USE_PASSWORD']);
         }
@@ -127,14 +127,14 @@ class UserController extends Controller
     public function deleteUser($id)
     {
         $user = User::find($id);
-        
+
         if (!$user) {
             return response()->json([
                 'message' => 'User not found',
             ], 404);
         }
 
-        if (auth()->user()->USE_ID !== (int)$id && !auth()->user()->isAdmin()) {
+        if (auth()->user()->USE_ID !== (int) $id && !auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized. You can only delete your own profile.',
             ], 403);
@@ -145,5 +145,10 @@ class UserController extends Controller
         return response()->json([
             'message' => 'User deleted successfully',
         ], 200);
+    }
+
+    public function checkIsAdmin(Request $request)
+    {
+        return response()->json(['is_admin' => $request->user()->isAdmin()]);
     }
 }
