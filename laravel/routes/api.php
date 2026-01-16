@@ -134,16 +134,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->whereNumber('teamId');
 });
 
-// Authentication routes
-Route::get('/reset', function () {
-    Artisan::call('migrate:fresh', [
-        '--seed' => true,
-        '--force' => true
-    ]);
-    return response()->json(['message' => 'Database reset and seeded successfully']);
-});
-
-
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Admin Role routes
     Route::get('/roles', [RoleController::class, 'getAllRoles']);
