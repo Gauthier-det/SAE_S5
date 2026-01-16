@@ -13,14 +13,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\TeamController;
 
 
-// Authentication routes
-Route::get('/reset', function () {
-    Artisan::call('migrate:fresh', [
-        '--seed' => true,
-        '--force' => true
-    ]);
-    return response()->json(['message' => 'Database reset and seeded successfully']);
-});
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -97,6 +89,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/clubs/{id}/members/add', [ClubController::class, 'addMember'])->whereNumber('id');
     Route::post('/clubs/{id}/members/remove', [ClubController::class, 'removeMember'])->whereNumber('id');
 });
+
+// Authentication routes
+Route::get('/reset', function () {
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+        '--force' => true
+    ]);
+    return response()->json(['message' => 'Database reset and seeded successfully']);
+});
+
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     // Admin Role routes
