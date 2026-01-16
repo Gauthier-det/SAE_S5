@@ -170,6 +170,8 @@ return new class extends Migration
             $table->integer('TER_POINTS')->nullable();
             $table->integer('TER_IS_VALID')->nullable();
             $table->integer('TER_RACE_NUMBER');
+            $table->integer('TER_RANK')->nullable();
+            $table->integer('TER_BONUS_POINTS')->nullable();
             $table->primary(['TEA_ID', 'RAC_ID']);
 
             $table->index('TEA_ID', 'I_FK_SAN_TEAMS_RACES_SAN_TEAMS');
