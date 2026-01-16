@@ -15,14 +15,6 @@ use App\Http\Controllers\TeamController;
 use App\Models\User;
 
 
-// Authentication routes
-Route::get('/reset', function () {
-    Artisan::call('migrate:fresh', [
-        '--seed' => true,
-        '--force' => true
-    ]);
-    return response()->json(['message' => 'Database reset and seeded successfully']);
-});
 
 Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -142,6 +134,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->whereNumber('teamId');
 });
 
+// Authentication routes
+Route::get('/reset', function () {
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+        '--force' => true
+    ]);
+    return response()->json(['message' => 'Database reset and seeded successfully']);
+});
 
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
