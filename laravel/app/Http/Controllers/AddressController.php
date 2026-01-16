@@ -73,8 +73,8 @@ class AddressController extends Controller{
         $validator = Validator::make($request->all(), [
             'ADD_POSTAL_CODE' => 'sometimes|integer|max:99999',
             'ADD_CITY' => 'sometimes|string|max:100',
-            'ADD_STREET_NAME' => 'sometimes|string|max:255',
-            'ADD_STREET_NUMBER' => 'sometimes|string|max:20'
+            'ADD_STREET_NAME' => 'sometimes|nullable|string|max:255',
+            'ADD_STREET_NUMBER' => 'sometimes|nullable|string|max:20'
         ]);
 
         if ($validator->fails()) {

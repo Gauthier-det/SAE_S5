@@ -79,6 +79,7 @@ const CreateRace = () => {
     RAC_MAX_PARTICIPANTS: 0,
     RAC_MIN_TEAMS: 0,
     RAC_MAX_TEAMS: 0,
+    RAC_MIN_TEAM_MEMBERS: 0,
     RAC_MAX_TEAM_MEMBERS: 0,
     RAC_AGE_MIN: 0,
     RAC_AGE_MIDDLE: 0,
@@ -86,7 +87,8 @@ const CreateRace = () => {
     CAT_1_PRICE: 0,
     CAT_2_PRICE: 0,
     CAT_3_PRICE: 0,
-    RAC_CHIP_MANDATORY: 0
+    RAC_CHIP_MANDATORY: 1,
+    RAC_MEAL_PRICE: 0
   });
 
   /**
@@ -166,6 +168,12 @@ const CreateRace = () => {
     }
 
     // Validation Membres par équipe
+    if (data.RAC_MIN_TEAM_MEMBERS > data.RAC_MAX_TEAM_MEMBERS) {
+      newErrors.RAC_MIN_TEAM_MEMBERS = "Le nombre minimum de membres ne peut pas dépasser le maximum";
+    }
+    if (data.RAC_MIN_TEAM_MEMBERS === 0) {
+      newErrors.RAC_MIN_TEAM_MEMBERS = "Le nombre minimum de membres par équipe doit être au moins 1";
+    }
     if (data.RAC_MAX_TEAM_MEMBERS > data.RAC_MAX_PARTICIPANTS) {
       newErrors.RAC_MAX_TEAM_MEMBERS = "Les membres par équipe ne peuvent pas dépasser le nombre maximum de participants";
     }
@@ -193,9 +201,12 @@ const CreateRace = () => {
       const raceStart = dayjs(data.RAC_TIME_START, "YYYY-MM-DD HH:mm:ss");
       const raceEnd = dayjs(data.RAC_TIME_END, "YYYY-MM-DD HH:mm:ss");
       const raidStart = dayjs(raid.RAI_TIME_START);
-
+      const raidEnd = dayjs(raid.RAI_TIME_END);
       if (data.RAC_TIME_START && raceStart.isBefore(raidStart)) {
         newErrors.RAC_TIME_START = "L'heure de début ne peut pas être avant le début du raid";
+      }
+      if (data.RAC_TIME_END && raceEnd.isAfter(raidEnd)) {
+        newErrors.RAC_TIME_END = "L'heure de fin ne peut pas être après la fin du raid";
       }
       if (data.RAC_TIME_START && data.RAC_TIME_END && raceEnd.isBefore(raceStart)) {
         newErrors.RAC_TIME_END = "L'heure de fin doit être après l'heure de début";
@@ -213,7 +224,7 @@ const CreateRace = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
     const { name, value } = e.target;
     // Check if checks for RAC_NAME
-    const numValue = ['RAC_MIN_PARTICIPANTS', 'RAC_MAX_PARTICIPANTS', 'RAC_MIN_TEAMS', 'RAC_MAX_TEAMS', 'RAC_MAX_TEAM_MEMBERS', 'RAC_AGE_MIN', 'RAC_AGE_MIDDLE', 'RAC_AGE_MAX', 'CAT_1_PRICE', 'CAT_2_PRICE', 'CAT_3_PRICE'].includes(name as string)
+    const numValue = ['RAC_MIN_PARTICIPANTS', 'RAC_MAX_PARTICIPANTS', 'RAC_MIN_TEAMS', 'RAC_MAX_TEAMS', 'RAC_MIN_TEAM_MEMBERS', 'RAC_MAX_TEAM_MEMBERS', 'RAC_AGE_MIN', 'RAC_AGE_MIDDLE', 'RAC_AGE_MAX', 'CAT_1_PRICE', 'CAT_2_PRICE', 'CAT_3_PRICE'].includes(name as string)
       ? (value === '' ? 0 : parseFloat(value as string))
       : value;
     const newFormData = {
@@ -283,7 +294,7 @@ const CreateRace = () => {
       await refreshUser();
       setErrors({});
       showAlert("Course créée avec succès !", "success");
-      navigate('/raids');
+      navigate(`/raids/${id}`);
     } catch (error: any) {
       console.error('Error creating race:', error);
       setErrors({ submit: error.message || 'Error creating race' });
@@ -448,7 +459,17 @@ const CreateRace = () => {
                     <InputLabel shrink>Type de course</InputLabel>
                     <Select
                       value={formData.RAC_TYPE}
-                      onChange={handleSelectChange}
+                      onChange={(e) => {
+                        const newFormData = {
+                          ...formData,
+                          RAC_TYPE: e.target.value as string,
+                          // Automatically set chip mandatory based on race type
+                          RAC_CHIP_MANDATORY: e.target.value === 'Compétitif' ? 1 : 0
+                        };
+                        setFormData(newFormData);
+                        const newErrors = validateForm(newFormData);
+                        setErrors(newErrors);
+                      }}
                       name="RAC_TYPE"
                       label="Type de course"
                       displayEmpty
@@ -461,21 +482,20 @@ const CreateRace = () => {
                   </FormControl>
                 </Box>
 
-                {/* Chip Requirement - Only visible for Competitive races */}
-                {formData.RAC_TYPE === 'Compétitif' && (
-                  <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={formData.RAC_CHIP_MANDATORY === 1}
-                          onChange={(e) => setFormData({ ...formData, RAC_CHIP_MANDATORY: e.target.checked ? 1 : 0 })}
-                          name="RAC_CHIP_MANDATORY"
-                        />
-                      }
-                      label="Puce requise"
-                    />
-                  </Box>
-                )}
+                {/* Chip Requirement - Mandatory for Competitive, optional for Leisure */}
+                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.RAC_CHIP_MANDATORY === 1}
+                        onChange={(e) => setFormData({ ...formData, RAC_CHIP_MANDATORY: e.target.checked ? 1 : 0 })}
+                        name="RAC_CHIP_MANDATORY"
+                        disabled={formData.RAC_TYPE === 'Compétitif'}
+                      />
+                    }
+                    label={formData.RAC_TYPE === 'Compétitif' ? 'Puce requise (obligatoire)' : 'Puce requise'}
+                  />
+                </Box>
               </Stack>
 
               {/* Gender + Difficulty */}
@@ -601,7 +621,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_MIN_PARTICIPANTS && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -620,7 +639,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                     error={!!errors.RAC_MAX_PARTICIPANTS}
                   />
                   {errors.RAC_MAX_PARTICIPANTS && (
@@ -645,7 +663,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_MIN_TEAMS && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -665,7 +682,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_MAX_TEAMS && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -675,27 +691,47 @@ const CreateRace = () => {
                 </Box>
               </Stack>
 
-              {/* Team Members Configuration */}
-              <Box sx={{ mt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="Membres maximum par équipe"
-                  name="RAC_MAX_TEAM_MEMBERS"
-                  type="number"
-                  variant="standard"
-                  error={!!errors.RAC_MAX_TEAM_MEMBERS}
-                  value={formData.RAC_MAX_TEAM_MEMBERS}
-                  onChange={handleChange}
-                  margin="normal"
-                  required
-                  inputProps={{ min: 0 }}
-                />
-                {errors.RAC_MAX_TEAM_MEMBERS && (
-                  <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
-                    {errors.RAC_MAX_TEAM_MEMBERS}
-                  </Typography>
-                )}
-              </Box>
+              {/* Team Members Configuration - Min and Max members */}
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 1 }}>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Membres minimum par équipe"
+                    name="RAC_MIN_TEAM_MEMBERS"
+                    type="number"
+                    variant="standard"
+                    error={!!errors.RAC_MIN_TEAM_MEMBERS}
+                    value={formData.RAC_MIN_TEAM_MEMBERS}
+                    onChange={handleChange}
+                    margin="normal"
+                    required
+                  />
+                  {errors.RAC_MIN_TEAM_MEMBERS && (
+                    <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
+                      {errors.RAC_MIN_TEAM_MEMBERS}
+                    </Typography>
+                  )}
+                </Box>
+                <Box sx={{ flex: 1 }}>
+                  <TextField
+                    fullWidth
+                    label="Membres maximum par équipe"
+                    name="RAC_MAX_TEAM_MEMBERS"
+                    type="number"
+                    variant="standard"
+                    error={!!errors.RAC_MAX_TEAM_MEMBERS}
+                    value={formData.RAC_MAX_TEAM_MEMBERS}
+                    onChange={handleChange}
+                    margin="normal"
+                    required
+                  />
+                  {errors.RAC_MAX_TEAM_MEMBERS && (
+                    <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
+                      {errors.RAC_MAX_TEAM_MEMBERS}
+                    </Typography>
+                  )}
+                </Box>
+              </Stack>
 
               {/* Age Group Configuration - Min, Middle, Max ages */}
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ mt: 1 }}>
@@ -711,7 +747,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_AGE_MIN && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -731,7 +766,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_AGE_MIDDLE && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -751,7 +785,6 @@ const CreateRace = () => {
                     onChange={handleChange}
                     margin="normal"
                     required
-                    inputProps={{ min: 0 }}
                   />
                   {errors.RAC_AGE_MAX && (
                     <Typography sx={{ color: '#d32f2f', fontSize: '0.75rem', mt: 0.5 }}>
@@ -776,7 +809,6 @@ const CreateRace = () => {
                   onChange={handleChange}
                   margin="normal"
                   required
-                  inputProps={{ step: '0.01', min: 0 }}
                 />
                 <TextField
                   fullWidth
@@ -788,7 +820,6 @@ const CreateRace = () => {
                   onChange={handleChange}
                   margin="normal"
                   required
-                  inputProps={{ step: '0.01', min: 0 }}
                 />
                 <TextField
                   fullWidth
@@ -800,9 +831,25 @@ const CreateRace = () => {
                   onChange={handleChange}
                   margin="normal"
                   required
-                  inputProps={{ step: '0.01', min: 0 }}
                 />
               </Stack>
+
+              {/* Prix du repas */}
+              <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold' }}>
+                Prix du repas (optionnel)
+              </Typography>
+              <TextField
+                fullWidth
+                label="Prix du repas"
+                name="RAC_MEAL_PRICE"
+                type="number"
+                variant="standard"
+                value={formData.RAC_MEAL_PRICE || ''}
+                onChange={handleChange}
+                margin="normal"
+                placeholder="Laisser vide si pas de repas"
+                inputProps={{ step: "0.01", min: "0" }}
+              />
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                 <Button

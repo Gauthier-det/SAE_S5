@@ -25,12 +25,14 @@ const Register = () => {
         last_name: string;
         mail: string;
         password: string;
+        password_confirmation: string;
         gender: Gender | '';
     }>({
         name: '',
         last_name: '',
         mail: '',
         password: '',
+        password_confirmation: '',
         gender: ''
     });
 
@@ -65,13 +67,20 @@ const Register = () => {
             return;
         }
 
+        if (formData.password !== formData.password_confirmation) {
+            const errorMessage = 'Les mots de passe ne correspondent pas.';
+            setError(errorMessage);
+            showAlert(errorMessage, 'error');
+            return;
+        }
+
         if (formData.gender === '') {
             setError('Veuillez sélectionner un genre.');
             return;
         }
 
         try {
-            await register(formData as any); 
+            await register(formData as any);
             showAlert('Inscription réussie !', 'success');
             navigate('/dashboard');
         } catch (err: any) {
@@ -150,6 +159,20 @@ const Register = () => {
                             value={formData.password}
                             onChange={handleChange}
                             sx={{ mt: 3, mb: 3 }}
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            name="password_confirmation"
+                            label="confirmer mot de passe"
+                            type="password"
+                            id="password_confirmation"
+                            autoComplete="new-password"
+                            variant="standard"
+                            value={formData.password_confirmation}
+                            onChange={handleChange}
+                            sx={{ mt: 1, mb: 3 }}
                         />
 
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
