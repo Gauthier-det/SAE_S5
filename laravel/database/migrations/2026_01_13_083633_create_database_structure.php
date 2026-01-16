@@ -233,6 +233,8 @@ return new class extends Migration
 
     public function down(): void
     {
+        DB::statement('PRAGMA foreign_keys = OFF');
+
         Schema::dropIfExists('SAN_USERS_RACES');
         Schema::dropIfExists('SAN_CATEGORIES_RACES');
         Schema::dropIfExists('SAN_ROLES_USERS');
@@ -246,6 +248,8 @@ return new class extends Migration
         Schema::dropIfExists('SAN_ROLES');
         Schema::dropIfExists('SAN_CATEGORIES');
         Schema::dropIfExists('SAN_ADDRESSES');
+
+        DB::statement('PRAGMA foreign_keys = ON');
     }
 
 };
