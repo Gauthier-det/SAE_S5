@@ -94,6 +94,7 @@ class AuthController extends Controller
             'USE_VALIDITY' => now(),
         ]);
 
+        /*
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             Carbon::now()->addMinutes(60),
@@ -107,7 +108,7 @@ class AuthController extends Controller
         Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function ($message) use ($user) {
             $message->to($user->USE_MAIL)
                 ->subject('Vérification de votre adresse e-mail');
-        });
+        });*/
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
