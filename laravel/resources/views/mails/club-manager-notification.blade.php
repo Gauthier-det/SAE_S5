@@ -11,9 +11,6 @@
         .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
         .content { padding: 40px 30px; text-align: center; }
         .greeting { font-size: 20px; font-weight: 500; color: #2d3748; margin-bottom: 10px; }
-        .button { display: inline-block; background: #48bb78; color: white; padding: 16px 40px; font-size: 16px; font-weight: 600; text-decoration: none; border-radius: 8px; margin: 30px 0; box-shadow: 0 4px 15px rgba(72,187,120,0.3); transition: all 0.2s; }
-        .button:hover { background: #38a169; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(72,187,120,0.4); }
-        .url-text { font-family: 'Courier New', monospace; word-break: break-all; color: #666; font-size: 14px; padding: 15px; background: #f7fafc; border-radius: 6px; margin: 20px 0; }
         .footer { background: #f8f9fa; padding: 30px; text-align: center; font-size: 14px; color: #718096; border-top: 1px solid #e2e8f0; }
         .footer a { color: #48bb78; text-decoration: none; }
         @media (max-width: 600px) { .container { margin: 10px; } .header, .content { padding-left: 20px; padding-right: 20px; } }

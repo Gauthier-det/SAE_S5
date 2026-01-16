@@ -236,16 +236,6 @@ class ClubController extends Controller
 
         // Check if the authenticated user is the manager of this club or admin
         $user = auth()->user();
-        if (!$user->isAdmin() && $user->CLU_ID !== $club->CLU_ID) {
-             // Wait, logic check: A Club Manager manages the club they are assigned to.
-             // If user->CLU_ID == $id (target club) AND user->roles has 'Club Manager' (which is checked by middleware ideally, but here we double check or assume middleware)
-             // Actually, usually the manager IS a member of the club.
-             // But let's assume standard policy: caller must be authorized.
-             // For now, I'll rely on route middleware or simple check.
-             // Let's allow if user->CLU_ID == $club->CLU_ID (User belongs to this club, and presumably is manager if they can access this, but better to be safe if they are just a member).
-             // Actually, the route will be protected by `isClubManager` check in frontend/middleware.
-             // Let's just implement the logic.
-        }
 
         $validator = Validator::make($request->all(), [
             'userId' => 'required|integer|exists:SAN_USERS,USE_ID',
