@@ -202,10 +202,6 @@ const EditRaid = () => {
         }
     };
 
-    const handleDeleteClick = () => {
-        setDeleteDialogOpen(true);
-    };
-
     const handleDeleteConfirm = async () => {
         try {
             await deleteRaid(parseInt(id || '0'));

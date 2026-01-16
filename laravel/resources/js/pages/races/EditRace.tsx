@@ -94,7 +94,8 @@ const EditRace = () => {
     CAT_1_PRICE: 0,
     CAT_2_PRICE: 0,
     CAT_3_PRICE: 0,
-    RAC_CHIP_MANDATORY: 0
+    RAC_CHIP_MANDATORY: 0,
+    RAC_MEAL_PRICE: 0
   });
 
   /**
@@ -164,7 +165,8 @@ const EditRace = () => {
           CAT_1_PRICE: raceData.CAT_1_PRICE || 0,
           CAT_2_PRICE: raceData.CAT_2_PRICE || 0,
           CAT_3_PRICE: raceData.CAT_3_PRICE || 0,
-          RAC_CHIP_MANDATORY: (raceData.RAC_CHIP_MANDATORY as any) === 1 ? 1 : 0
+          RAC_CHIP_MANDATORY: (raceData.RAC_CHIP_MANDATORY as any) === 1 ? 1 : 0,
+          RAC_MEAL_PRICE: raceData.RAC_MEAL_PRICE || 0
         });
         setLoading(false);
       } catch (error) {
@@ -223,6 +225,9 @@ const EditRace = () => {
     }
     if (data.RAC_MAX_TEAM_MEMBERS === 0) {
       newErrors.RAC_MAX_TEAM_MEMBERS = "Le nombre de membres par équipe doit être au moins 1";
+    }
+    if (data.RAC_MEAL_PRICE && data.RAC_MEAL_PRICE < 0) {
+      newErrors.RAC_MEAL_PRICE = "Le prix du repas ne peut pas être négatif";
     }
 
     // Validation Âges
@@ -331,6 +336,7 @@ const EditRace = () => {
         USE_ID: selectedResponsible ? (selectedResponsible as number) : (user?.USE_ID || 0),
         RAC_TYPE: formData.RAC_TYPE === 'Loisirs' ? 'Loisir' : formData.RAC_TYPE,
         RAC_CHIP_MANDATORY: formData.RAC_CHIP_MANDATORY ? 1 : 0,
+        RAC_MEAL_PRICE: formData.RAC_MEAL_PRICE || 0
       };
       console.log('Sending race payload:', racePayload);
       await updateRaceWithPrices(parseInt(id || '0'), racePayload as any);
@@ -896,6 +902,23 @@ const EditRace = () => {
                 required
               />
             </Stack>
+
+            {/* Prix du repas */}
+            <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold' }}>
+              Prix du repas (optionnel)
+            </Typography>
+            <TextField
+              fullWidth
+              label="Prix du repas"
+              name="RAC_MEAL_PRICE"
+              type="number"
+              variant="standard"
+              value={formData.RAC_MEAL_PRICE || ''}
+              onChange={handleChange}
+              margin="normal"
+              placeholder="Laisser vide si pas de repas"
+              inputProps={{ step: "0.01", min: "0" }}
+            />
 
             {/* Form Actions */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, gap: 2 }}>

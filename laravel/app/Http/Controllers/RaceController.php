@@ -159,6 +159,7 @@ class RaceController extends Controller
             'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -229,6 +230,7 @@ class RaceController extends Controller
             'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'nullable|numeric|min:0',
             'CAT_1_PRICE' => 'required|numeric|min:0',
             'CAT_2_PRICE' => 'required|numeric|min:0',
             'CAT_3_PRICE' => 'required|numeric|min:0',
@@ -260,6 +262,7 @@ class RaceController extends Controller
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
                 'RAC_CHIP_MANDATORY',
+                'RAC_MEAL_PRICE',
             ]));
 
             for ($catId = 1; $catId <= 3; $catId++) {
@@ -315,6 +318,7 @@ class RaceController extends Controller
             'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'sometimes|numeric|min:0',
             'CAT_1_PRICE' => 'sometimes|numeric|min:0',
             'CAT_2_PRICE' => 'sometimes|numeric|min:0',
             'CAT_3_PRICE' => 'sometimes|numeric|min:0',
@@ -361,6 +365,7 @@ class RaceController extends Controller
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
                 'RAC_CHIP_MANDATORY',
+                'RAC_MEAL_PRICE',
             ]));
 
             // Update prices if provided

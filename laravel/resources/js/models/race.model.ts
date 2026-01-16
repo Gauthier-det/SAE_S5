@@ -24,6 +24,7 @@ export interface Race {
     CAT_2_PRICE?: number;
     CAT_3_PRICE?: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE: number;
 }
 
 export interface RaceResponse {
@@ -52,6 +53,7 @@ export interface RaceCreation {
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE?: number;
 }
 
 export interface RaceUpdate {
@@ -76,6 +78,7 @@ export interface RaceUpdate {
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE?: number;
 }
 
 

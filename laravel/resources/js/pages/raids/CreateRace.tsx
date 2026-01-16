@@ -87,7 +87,8 @@ const CreateRace = () => {
     CAT_1_PRICE: 0,
     CAT_2_PRICE: 0,
     CAT_3_PRICE: 0,
-    RAC_CHIP_MANDATORY: 1
+    RAC_CHIP_MANDATORY: 1,
+    RAC_MEAL_PRICE: 0
   });
 
   /**
@@ -832,6 +833,23 @@ const CreateRace = () => {
                   required
                 />
               </Stack>
+
+              {/* Prix du repas */}
+              <Typography variant="h6" sx={{ mt: 2, fontWeight: 'bold' }}>
+                Prix du repas (optionnel)
+              </Typography>
+              <TextField
+                fullWidth
+                label="Prix du repas"
+                name="RAC_MEAL_PRICE"
+                type="number"
+                variant="standard"
+                value={formData.RAC_MEAL_PRICE || ''}
+                onChange={handleChange}
+                margin="normal"
+                placeholder="Laisser vide si pas de repas"
+                inputProps={{ step: "0.01", min: "0" }}
+              />
 
               <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                 <Button
