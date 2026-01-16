@@ -74,7 +74,7 @@ class InitialDatabaseSeeder extends Seeder
             ['USE_ID' => 13, 'ADD_ID' => 17, 'CLU_ID' => null, 'USE_MAIL' => 'lea.caron@test.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Léa', 'USE_LAST_NAME' => 'CARON', 'USE_GENDER' => 'Femme', 'USE_BIRTHDATE' => '1990-04-27', 'USE_PHONE_NUMBER' => '0614253647', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => null],
             ['USE_ID' => 14, 'ADD_ID' => 18, 'CLU_ID' => null, 'USE_MAIL' => 'emma.petit@test.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Emma', 'USE_LAST_NAME' => 'PETIT', 'USE_GENDER' => 'Femme', 'USE_BIRTHDATE' => '2005-12-08', 'USE_PHONE_NUMBER' => '0621436587', 'USE_LICENCE_NUMBER' => 77009, 'USE_MEMBERSHIP_DATE' => '2024-01-01', 'USE_VALIDITY' => '2025-12-31'],
             ['USE_ID' => 15, 'ADD_ID' => 19, 'CLU_ID' => null, 'USE_MAIL' => 'paul.dorbec@unicaen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Paul', 'USE_LAST_NAME' => 'DORBEC', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '1980-04-02', 'USE_PHONE_NUMBER' => '0743672311', 'USE_LICENCE_NUMBER' => 23456, 'USE_MEMBERSHIP_DATE' => '2020-01-01', 'USE_VALIDITY' => '2025-12-31'],
-            ['USE_ID' => 16, 'ADD_ID' => 20, 'CLU_ID' => null, 'USE_MAIL' => 'yohann.jacquier@unicaen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Yohann', 'USE_LAST_NAME' => 'JACQUIER', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '2013-06-03', 'USE_PHONE_NUMBER' => '0642864628', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => null],
+            ['USE_ID' => 16, 'ADD_ID' => 20, 'CLU_ID' => null, 'USE_MAIL' => 'yohann.jacquier@unicaen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Yohann', 'USE_LAST_NAME' => 'JACQUIER', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '2016-06-03', 'USE_PHONE_NUMBER' => '0642864628', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => null],
             ['USE_ID' => 17, 'ADD_ID' => 21, 'CLU_ID' => null, 'USE_MAIL' => 'sylvian.delhoumi@unicaen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Sylvian', 'USE_LAST_NAME' => 'DELHOUMI', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '1985-06-02', 'USE_PHONE_NUMBER' => '0705324567', 'USE_LICENCE_NUMBER' => null, 'USE_MEMBERSHIP_DATE' => null, 'USE_VALIDITY' => '2025-02-02'],
             ['USE_ID' => 18, 'ADD_ID' => 22, 'CLU_ID' => null, 'USE_MAIL' => 'jeanfrancois.anne@unicaen.fr', 'USE_PASSWORD' => $hashedPassword, 'USE_NAME' => 'Jean-François', 'USE_LAST_NAME' => 'ANNE', 'USE_GENDER' => 'Homme', 'USE_BIRTHDATE' => '1964-11-05', 'USE_PHONE_NUMBER' => '0645389485', 'USE_LICENCE_NUMBER' => 56723, 'USE_MEMBERSHIP_DATE' => '2020-01-01', 'USE_VALIDITY' => '2025-12-31'],
         ]);
@@ -100,8 +100,8 @@ class InitialDatabaseSeeder extends Seeder
 
         // Raids
         DB::table('SAN_RAIDS')->insert([
-            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 25, 'USE_ID' => 15, 'RAI_NB_RACES' => 2, 'RAI_NAME' => 'RAID CHAMPETRE', 'RAI_MAIL' => "example@raidchampetre.fr", 'RAI_PHONE_NUMBER' => '0613245698', 'RAI_WEB_SITE' => 'https://raidchampetre.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2025-11-13 08:00:00', 'RAI_TIME_END' => '2025-11-14 18:00:00', 'RAI_REGISTRATION_START' => '2025-08-10 00:00:00', 'RAI_REGISTRATION_END' => '2025-10-30 00:00:00'],
-            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => "example@raidobivwak.fr", 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => null, 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-18 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'],
+            ['RAI_ID' => 1, 'CLU_ID' => 1, 'ADD_ID' => 25, 'USE_ID' => 15, 'RAI_NB_RACES' => 2, 'RAI_NAME' => 'RAID CHAMPETRE', 'RAI_MAIL' => "example@raidchampetre.fr", 'RAI_PHONE_NUMBER' => '0613245698', 'RAI_WEB_SITE' => 'https://raidchampetre.fr', 'RAI_IMAGE' => 'https://i.etsystatic.com/42843947/r/il/e47ebf/5040991793/il_570xN.5040991793_oj3z.jpg', 'RAI_TIME_START' => '2025-11-13 08:00:00', 'RAI_TIME_END' => '2025-11-14 18:00:00', 'RAI_REGISTRATION_START' => '2025-08-10 00:00:00', 'RAI_REGISTRATION_END' => '2025-10-30 00:00:00'],
+            ['RAI_ID' => 2, 'CLU_ID' => 1, 'ADD_ID' => 24, 'USE_ID' => 6, 'RAI_NB_RACES' => 3, 'RAI_NAME' => "RAID O'Bivwak", 'RAI_MAIL' => "example@raidobivwak.fr", 'RAI_PHONE_NUMBER' => '0613245699', 'RAI_WEB_SITE' => 'https://raidobivwak.fr', 'RAI_IMAGE' => 'https://i.etsystatic.com/21635101/r/il/c9f7ce/2718908178/il_570xN.2718908178_k5iq.jpg', 'RAI_TIME_START' => '2026-05-23 10:00:00', 'RAI_TIME_END' => '2026-05-24 18:00:00', 'RAI_REGISTRATION_START' => '2026-01-18 00:00:00', 'RAI_REGISTRATION_END' => '2026-04-30 00:00:00'],
         ]);
 
         // Races
@@ -164,14 +164,14 @@ class InitialDatabaseSeeder extends Seeder
 
         // Team race
         DB::table('SAN_TEAMS_RACES')->insert([
-            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
-            ['TEA_ID' => 2, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],
-            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => true, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 3],
+            ['TEA_ID' => 1, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 1],
+            ['TEA_ID' => 2, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 2],
+            ['TEA_ID' => 3, 'RAC_ID' => 1, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 3],
 
-            ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
-            ['TEA_ID' => 5, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],
-            ['TEA_ID' => 6, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 3],
-            ['TEA_ID' => 7, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 4],
+            ['TEA_ID' => 4, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 1],
+            ['TEA_ID' => 5, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 2],
+            ['TEA_ID' => 6, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 3],
+            ['TEA_ID' => 7, 'RAC_ID' => 2, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => 1, 'TER_RACE_NUMBER' => 4],
 
             ['TEA_ID' => 8, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 1],
             ['TEA_ID' => 9, 'RAC_ID' => 4, 'TER_TIME' => null, 'TER_POINTS' => null, 'TER_IS_VALID' => null, 'TER_RACE_NUMBER' => 2],
@@ -194,6 +194,53 @@ class InitialDatabaseSeeder extends Seeder
             ['RAC_ID' => 4, 'CAT_ID' => 1, 'CAR_PRICE' => 7.00],
             ['RAC_ID' => 4, 'CAT_ID' => 2, 'CAR_PRICE' => 12.00],
             ['RAC_ID' => 4, 'CAT_ID' => 3, 'CAR_PRICE' => 5.00],
+        ]);
+
+        // SAN_USERS_RACES - link users to races through their teams
+        DB::table('SAN_USERS_RACES')->insert([
+            // Team 1 (TEA_ID 1) in Race 1 - Resp: Jean-François ANNE (18)
+            ['USE_ID' => 18, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 4, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 17, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 2 (TEA_ID 2) in Race 1 - Resp: Lucas BERNARD (5)
+            ['USE_ID' => 5, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 8, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 3 (TEA_ID 3) in Race 1 - Resp: Paul DORBEC (15)
+            ['USE_ID' => 15, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 10, 'RAC_ID' => 1, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 4 (TEA_ID 4) in Race 2 - Resp: Claire DUPONT (6)
+            ['USE_ID' => 6, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 9, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 5 (TEA_ID 5) in Race 2 - Resp: Sylvian DELHOUMI (17)
+            ['USE_ID' => 17, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 4, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 5, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 6 (TEA_ID 6) in Race 2 - Resp: Hugo FONTAINE (12)
+            ['USE_ID' => 12, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 3, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 7 (TEA_ID 7) in Race 2 - Resp: Emma PETIT (14)
+            ['USE_ID' => 14, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 7, 'RAC_ID' => 2, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 8 (TEA_ID 8) in Race 4 - Resp: Thomas LEFEBVRE (7)
+            ['USE_ID' => 7, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 14, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 9 (TEA_ID 9) in Race 4 - Resp: Hugo FONTAINE (12)
+            ['USE_ID' => 12, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 18, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 13, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+
+            // Team 10 (TEA_ID 10) in Race 4 - Resp: Hugo FONTAINE (12)
+            // USE_ID 12 already registered in Race 4 via Team 9, no duplicate
+            ['USE_ID' => 10, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
+            ['USE_ID' => 11, 'RAC_ID' => 4, 'USR_TIME' => null, 'USR_CHIP_NUMBER' => null, 'USR_PPS_FORM' => null],
         ]);
 
         DB::statement('PRAGMA foreign_keys = ON');
