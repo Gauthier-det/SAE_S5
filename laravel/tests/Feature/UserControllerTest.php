@@ -21,7 +21,7 @@ class UserControllerTest extends TestCase
     {
         parent::setUp();
         $this->seed(InitialDatabaseSeeder::class);
-        $this->admin = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $this->admin = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
         $this->user = User::factory()->create();
     }
 
@@ -136,7 +136,7 @@ class UserControllerTest extends TestCase
         $address = Address::first();
 
         $response = $this->postJson('/api/users/1', [
-            'USE_MAIL' => 'newuser@example.com',
+            'USE_MAIL' => 'newuser@orient.action.fr',
             'USE_PASSWORD' => 'password123',
             'USE_NAME' => 'New',
             'USE_LAST_NAME' => 'User',
@@ -149,7 +149,7 @@ class UserControllerTest extends TestCase
                  ->assertJsonStructure(['data']);
 
         $this->assertDatabaseHas('SAN_USERS', [
-            'USE_MAIL' => 'newuser@example.com',
+            'USE_MAIL' => 'newuser@orient.action.fr',
         ]);
     }
 

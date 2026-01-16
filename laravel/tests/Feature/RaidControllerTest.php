@@ -26,7 +26,7 @@ class RaidControllerTest extends TestCase
         $this->seed(InitialDatabaseSeeder::class);
 
         // Utiliser l'utilisateur admin du seeder
-        $this->user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $this->user = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
 
         // Créer une adresse supplémentaire pour les tests
         $this->address = Address::create([
@@ -147,7 +147,7 @@ class RaidControllerTest extends TestCase
             'CLU_ID' => $raid->CLU_ID,
             'ADD_ID' => $raid->ADD_ID,
             'USE_ID' => $raid->USE_ID,
-            'RAI_MAIL' => 'test@example.com',
+            'RAI_MAIL' => 'test@orient.action.fr',
             'RAI_PHONE_NUMBER' => $raid->RAI_PHONE_NUMBER,
             'RAI_WEB_SITE' => $raid->RAI_WEB_SITE,
             'RAI_IMAGE' => $raid->RAI_IMAGE,

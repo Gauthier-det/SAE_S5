@@ -24,7 +24,7 @@ class ClubControllerTest extends TestCase
         $this->seed(InitialDatabaseSeeder::class);
 
         // Use the admin user from seeder
-        $this->user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $this->user = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
 
         // Create an additional address for tests
         $this->address = Address::create([

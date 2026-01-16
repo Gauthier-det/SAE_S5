@@ -20,7 +20,7 @@ class AddressControllerTest extends TestCase
     {
         parent::setUp();
         $this->seed(InitialDatabaseSeeder::class);
-        $this->admin = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $this->admin = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
         $this->user = User::factory()->create();
     }
 
