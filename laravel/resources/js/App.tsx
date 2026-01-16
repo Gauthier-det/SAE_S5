@@ -61,12 +61,12 @@ const AppRoutes = () => {
           <Route path="/races/:id/register" element={<TeamRegistration />} />
           <Route path="/teams/:teamId/races/:raceId/manage" element={<TeamRaceManagement />} />
         </Route>
-        {/* Protected Routes for Club Managers */}
-        <Route element={<ProtectedRoute condition={isClubManager} />}>
+        {/* Protected Routes for Club Managers and Admins */}
+        <Route element={<ProtectedRoute condition={isClubManager || isAdmin} />}>
           <Route path="/raid/create" element={<CreateRaid />} />
           <Route path="/raids/:id/edit" element={<EditRaid />} />
         </Route>
-        <Route element={<ProtectedRoute condition={isRaidManager} />}>
+        <Route element={<ProtectedRoute condition={isRaidManager || isAdmin} />}>
           <Route path="/raids/:id/create" element={<CreateRace />} />
           <Route path="/races/:id/edit" element={<EditRace />} />
         </Route>
@@ -75,7 +75,7 @@ const AppRoutes = () => {
         <Route element={<ProtectedRoute condition={isAdmin} />}>
           <Route path="/admin" element={<AdminDashboard />} />
         </Route>
-        <Route element={<ProtectedRoute condition={isClubManager} />}>
+        <Route element={<ProtectedRoute condition={isClubManager || isAdmin} />}>
           <Route path="/club/:id" element={<Club />} />
         </Route>
       </Route>

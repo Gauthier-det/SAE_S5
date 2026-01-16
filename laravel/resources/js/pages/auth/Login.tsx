@@ -26,7 +26,7 @@ const Login = () => {
         try {
             await login({ mail, password });
             showAlert('Connexion réussie', 'success');
-            navigate('/');
+            navigate('/dashboard');
         } catch (err) {
             console.error(err);
             showAlert('Erreur de connexion. Vérifiez vos identifiants.', 'error');

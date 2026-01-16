@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function getAllUsers()
     {
-        $users = User::all();
+        $users = User::with('club')->get();
         return response()->json(['data' => $users]);
     }
 
@@ -46,7 +46,7 @@ class UserController extends Controller
             'USE_LAST_NAME' => 'required|string|max:255',
             'USE_GENDER' => 'required|string|in:Homme,Femme,Autre',
             'USE_BIRTHDATE' => 'nullable|date',
-            'USE_PHONE_NUMBER' => 'nullable|integer',
+            'USE_PHONE_NUMBER' => 'nullable|string|max:20',
             'USE_LICENCE_NUMBER' => 'nullable|integer',
             'USE_MEMBERSHIP_DATE' => 'required|date',
             'USE_VALIDITY' => 'nullable|date',
@@ -95,7 +95,7 @@ class UserController extends Controller
             'USE_LAST_NAME' => 'sometimes|string|max:255',
             'USE_GENDER' => 'sometimes|string|in:Homme,Femme,Autre',
             'USE_BIRTHDATE' => 'sometimes|nullable|date',
-            'USE_PHONE_NUMBER' => 'sometimes|nullable|integer',
+            'USE_PHONE_NUMBER' => 'sometimes|nullable|string|max:20',
             'USE_LICENCE_NUMBER' => 'sometimes|nullable|integer',
             'USE_MEMBERSHIP_DATE' => 'sometimes|nullable|date',
             'USE_VALIDITY' => 'sometimes|nullable|date',
@@ -169,7 +169,7 @@ class UserController extends Controller
             ->get();
 
         $racesRun = $races->count();
-        
+
         // Count podiums (top 3 in each race)
         $podiums = 0;
         foreach ($races as $race) {
@@ -180,7 +180,7 @@ class UserController extends Controller
                 ->orderBy('USR_TIME', 'asc')
                 ->pluck('USE_ID')
                 ->search($id);
-            
+
             if ($rank !== false && $rank < 3) {
                 $podiums++;
             }
@@ -282,16 +282,16 @@ class UserController extends Controller
     public function registerUserToRace(Request $request)
     {
         $validator = \Validator::make($request->all(), [
-            'USE_ID'      => 'required|integer|exists:SAN_USERS,USE_ID',
-            'RAC_ID'      => 'required|integer|exists:SAN_RACES,RAC_ID',
+            'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
+            'RAC_ID' => 'required|integer|exists:SAN_RACES,RAC_ID',
             'USR_CHIP_NUMBER' => 'nullable|string|max:255',
-            'USR_TIME'    => 'nullable|integer',
+            'USR_TIME' => 'nullable|integer',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors'  => $validator->errors(),
+                'errors' => $validator->errors(),
             ], 422);
         }
 
@@ -307,19 +307,19 @@ class UserController extends Controller
         }
 
         \DB::table('SAN_USERS_RACES')->insert([
-            'USE_ID'         => $request->USE_ID,
-            'RAC_ID'         => $request->RAC_ID,
-            'USR_CHIP_NUMBER'=> $request->USR_CHIP_NUMBER,
-            'USR_TIME'       => $request->USR_TIME,
+            'USE_ID' => $request->USE_ID,
+            'RAC_ID' => $request->RAC_ID,
+            'USR_CHIP_NUMBER' => $request->USR_CHIP_NUMBER,
+            'USR_TIME' => $request->USR_TIME,
         ]);
 
         return response()->json([
             'message' => 'User registered to race successfully',
             'data' => [
-                'USE_ID'         => $request->USE_ID,
-                'RAC_ID'         => $request->RAC_ID,
-                'USR_CHIP_NUMBER'=> $request->USR_CHIP_NUMBER,
-                'USR_TIME'       => $request->USR_TIME,
+                'USE_ID' => $request->USE_ID,
+                'RAC_ID' => $request->RAC_ID,
+                'USR_CHIP_NUMBER' => $request->USR_CHIP_NUMBER,
+                'USR_TIME' => $request->USR_TIME,
             ],
         ], 201);
     }
@@ -329,10 +329,14 @@ class UserController extends Controller
         $users = User::whereHas('teams', function ($query) use ($teamId) {
             $query->where('SAN_USERS_TEAMS.TEA_ID', $teamId);
         })
-        ->with(['teams' => function ($query) use ($teamId) {
-            $query->where('SAN_USERS_TEAMS.TEA_ID', $teamId);
-        }, 'address', 'club'])
-        ->get();
+            ->with([
+                'teams' => function ($query) use ($teamId) {
+                    $query->where('SAN_USERS_TEAMS.TEA_ID', $teamId);
+                },
+                'address',
+                'club'
+            ])
+            ->get();
 
         return response()->json(['data' => $users], 200);
     }

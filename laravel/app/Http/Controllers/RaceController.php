@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Race;
 use App\Models\Raid;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -31,27 +32,27 @@ class RaceController extends Controller
     {
         $race = Race::with('categories')
             ->find($id);
-            
+
         if (!$race) {
             return response()->json([
                 'message' => 'Race not found',
             ], 404);
         }
-        
+
         // Map prices from categories relationship
         $priceMap = [
             1 => 'CAT_1_PRICE',
             2 => 'CAT_2_PRICE',
             3 => 'CAT_3_PRICE',
         ];
-        
+
         foreach ($race->categories as $category) {
             $catId = $category->CAT_ID;
             if (isset($priceMap[$catId])) {
                 $race[$priceMap[$catId]] = $category->pivot->CAR_PRICE ?? 0;
             }
         }
-        
+
         return response()->json(['data' => $race], 200);
     }
 
@@ -100,7 +101,7 @@ class RaceController extends Controller
 
         return response()->json(['data' => $prices], 200);
     }
-    
+
 
     public function storeTeamRaceResult(Request $request, $raceId)
     {
@@ -152,11 +153,13 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'required|integer|min:0',
             'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
-            'RAC_AGE_MIN' => 'required|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
+            'RAC_MIN_TEAM_MEMBERS' => 'required|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
+            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
+            'RAC_AGE_MIN' => 'required|integer|min:0|lte:RAC_AGE_MIDDLE',
+            'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -167,6 +170,18 @@ class RaceController extends Controller
         if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
                 'message' => 'Unauthorized. Only the raid manager can create races for this raid.',
+            ], 403);
+        }
+
+        $raceManager = User::find($request->USE_ID);
+        if ($raceManager->CLU_ID !== $raid->CLU_ID) {
+            return response()->json([
+                'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
+            ], 403);
+        }
+        if ($raceManager->USE_LICENCE_NUMBER === null) {
+            return response()->json([
+                'message' => 'Unauthorized. The race manager must have a valid licence number.',
             ], 403);
         }
 
@@ -183,6 +198,7 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS',
             'RAC_MIN_TEAMS',
             'RAC_MAX_TEAMS',
+            'RAC_MIN_TEAM_MEMBERS',
             'RAC_MAX_TEAM_MEMBERS',
             'RAC_AGE_MIN',
             'RAC_AGE_MIDDLE',
@@ -208,11 +224,13 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'required|integer|min:0',
             'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
-            'RAC_AGE_MIN' => 'required|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
+            'RAC_MIN_TEAM_MEMBERS' => 'required|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
+            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
+            'RAC_AGE_MIN' => 'required|integer|min:0|lte:RAC_AGE_MIDDLE',
+            'RAC_AGE_MIDDLE' => 'required|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'required|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'nullable|numeric|min:0',
             'CAT_1_PRICE' => 'required|numeric|min:0',
             'CAT_2_PRICE' => 'required|numeric|min:0',
             'CAT_3_PRICE' => 'required|numeric|min:0',
@@ -238,11 +256,13 @@ class RaceController extends Controller
                 'RAC_MAX_PARTICIPANTS',
                 'RAC_MIN_TEAMS',
                 'RAC_MAX_TEAMS',
+                'RAC_MIN_TEAM_MEMBERS',
                 'RAC_MAX_TEAM_MEMBERS',
                 'RAC_AGE_MIN',
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
                 'RAC_CHIP_MANDATORY',
+                'RAC_MEAL_PRICE',
             ]));
 
             for ($catId = 1; $catId <= 3; $catId++) {
@@ -266,23 +286,21 @@ class RaceController extends Controller
 
     public function updateRace(Request $request, $id)
     {
-        $race = Race::find($id);
+        $race = Race::with('raid')->find($id);
         if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        // Check authorization: admin or raid manager
-        $raid = Raid::find($race->RAI_ID);
-        $isAdmin = auth()->user()->isAdmin();
-        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
-
-        if (!$isAdmin && !$isRaidManager) {
+        if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. Only admins or raid managers can update this race.',
+                'message' => 'Unauthorized. Only the raid Manager can update races.',
             ], 403);
         }
 
-        $validator = Validator::make($request->all(), [
+        $dataForValidation = array_merge($race->toArray(), $request->all());
+
+        $validator = Validator::make($dataForValidation, [
+            'USE_ID' => 'sometimes|integer|exists:SAN_USERS,USE_ID',
             'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
             'RAC_NAME' => 'sometimes|string|max:255',
             'RAC_TIME_START' => 'sometimes|date_format:Y-m-d H:i:s',
@@ -294,11 +312,13 @@ class RaceController extends Controller
             'RAC_MAX_PARTICIPANTS' => 'sometimes|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
             'RAC_MIN_TEAMS' => 'sometimes|integer|min:0',
             'RAC_MAX_TEAMS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0',
-            'RAC_AGE_MIN' => 'sometimes|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
+            'RAC_MIN_TEAM_MEMBERS' => 'sometimes|integer|min:0|lte:RAC_MAX_TEAM_MEMBERS',
+            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAM_MEMBERS',
+            'RAC_AGE_MIN' => 'sometimes|integer|min:0|lte:RAC_AGE_MIDDLE',
+            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0|gte:RAC_AGE_MIN|lte:RAC_AGE_MAX',
             'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
             'RAC_CHIP_MANDATORY' => 'sometimes|integer|in:0,1',
+            'RAC_MEAL_PRICE' => 'sometimes|numeric|min:0',
             'CAT_1_PRICE' => 'sometimes|numeric|min:0',
             'CAT_2_PRICE' => 'sometimes|numeric|min:0',
             'CAT_3_PRICE' => 'sometimes|numeric|min:0',
@@ -308,10 +328,26 @@ class RaceController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
+        if ($request->has('USE_ID')) {
+            $raid = Raid::find($race->RAI_ID);
+            $raceManager = User::find($request->USE_ID);
+            if ($raceManager->CLU_ID !== $raid->CLU_ID) {
+                return response()->json([
+                    'message' => 'Unauthorized. The race manager must be a member of the club hosting the raid.',
+                ], 403);
+            }
+            if ($raceManager->USE_LICENCE_NUMBER === null) {
+                return response()->json([
+                    'message' => 'Unauthorized. The race manager must have a valid licence number.',
+                ], 403);
+            }
+        }
+
         try {
             DB::beginTransaction();
 
             $race->update($request->only([
+                'USE_ID',
                 'RAI_ID',
                 'RAC_NAME',
                 'RAC_TIME_START',
@@ -323,11 +359,13 @@ class RaceController extends Controller
                 'RAC_MAX_PARTICIPANTS',
                 'RAC_MIN_TEAMS',
                 'RAC_MAX_TEAMS',
+                'RAC_MIN_TEAM_MEMBERS',
                 'RAC_MAX_TEAM_MEMBERS',
                 'RAC_AGE_MIN',
                 'RAC_AGE_MIDDLE',
                 'RAC_AGE_MAX',
                 'RAC_CHIP_MANDATORY',
+                'RAC_MEAL_PRICE',
             ]));
 
             // Update prices if provided
@@ -363,19 +401,14 @@ class RaceController extends Controller
 
     public function deleteRace($id)
     {
-        $race = Race::find($id);
+        $race = Race::with('raid')->find($id);
         if (!$race) {
             return response()->json(['message' => 'Race not found'], 404);
         }
 
-        // Check authorization: admin, race creator, or raid manager
-        $raid = Raid::find($race->RAI_ID);
-        $isAdmin = auth()->user()->isAdmin();
-        $isRaidManager = $raid && auth()->user()->USE_ID === $raid->USE_ID;
-
-        if (!$isAdmin && !$isRaidManager) {
+        if (auth()->user()->USE_ID !== $race->raid->USE_ID && !auth()->user()->isAdmin()) {
             return response()->json([
-                'message' => 'Unauthorized. Only admins, race creators, or raid managers can delete this race.',
+                'message' => 'Unauthorized. Only the raid Manager can update races.',
             ], 403);
         }
 
@@ -388,6 +421,7 @@ class RaceController extends Controller
         $race = Race::with([
             'user',
             'raid',
+            'raid.user',
             'categories' => function ($query) {
                 $query->withPivot('CAR_PRICE');
             },
@@ -463,7 +497,7 @@ class RaceController extends Controller
                     'time' => $team->pivot->TER_TIME,
                     'bonus' => $team->pivot->TER_BONUS_POINTS,
                 ],
-                'is_valid' => (bool)$team->pivot->TER_IS_VALID,
+                'is_valid' => (bool) $team->pivot->TER_IS_VALID,
             ];
         });
 
@@ -491,10 +525,10 @@ class RaceController extends Controller
         DB::table('SAN_TEAMS_RACES')
             ->where('RAC_ID', $raceId)
             ->update([
-                    'TER_RANK' => null,
-                    'TER_TIME' => null,
-                    'TER_BONUS_POINTS' => null,
-                ]);
+                'TER_RANK' => null,
+                'TER_TIME' => null,
+                'TER_BONUS_POINTS' => null,
+            ]);
 
         return response()->json(['message' => 'Results deleted successfully'], 200);
     }
@@ -538,49 +572,16 @@ class RaceController extends Controller
                 rewind($handle);
             }
 
-            $header = fgetcsv($handle, 0, $separator);
-
-            if (!$header) {
-                fclose($handle);
-                return response()->json(['message' => 'Fichier CSV vide ou invalide'], 422);
-            }
-
-            // Normalize header
-            $header = array_map(function ($h) {
-                return mb_strtolower(trim($h), 'UTF-8');
-            }, $header);
-
-            // Find column indices
-            $rankIndex = false;
-            $teamNameIndex = false;
-            $bonusIndex = false;
-            $timeIndex = false;
-
-            foreach ($header as $index => $col) {
-                if ($col === 'clt' || $col === 'classement')
-                    $rankIndex = $index;
-                if (strpos($col, 'quipe') !== false)
-                    $teamNameIndex = $index;
-                if (strpos($col, 'pts bonus') !== false || strpos($col, 'points bonus') !== false)
-                    $bonusIndex = $index;
-                if ($col === 'temps' || $col === 'temp' || $col === 'chrono')
-                    $timeIndex = $index;
-            }
-
-            if ($teamNameIndex === false) {
-                fclose($handle);
-                return response()->json(['message' => 'Colonne "équipe" introuvable dans le CSV'], 422);
-            }
+            // Skip header line
+            fgetcsv($handle, 0, $separator);
 
             $rowsToProcess = [];
             $missingTeams = [];
             $notRegisteredTeams = [];
 
             while (($row = fgetcsv($handle, 0, $separator)) !== false) {
-                if (count($row) < count($header))
-                    continue;
-
-                $teamName = isset($row[$teamNameIndex]) ? trim($row[$teamNameIndex]) : '';
+                // Column D = Index 3 = Team Name
+                $teamName = isset($row[3]) ? trim($row[3]) : '';
                 if (empty($teamName))
                     continue;
 
@@ -591,7 +592,7 @@ class RaceController extends Controller
                     if (!in_array($teamName, $missingTeams)) {
                         $missingTeams[] = $teamName;
                     }
-                    continue; // Skip further checks for this row
+                    continue;
                 }
 
                 // Check if team is registered for this race
@@ -607,7 +608,6 @@ class RaceController extends Controller
                     continue;
                 }
 
-                // Prepare data for update if valid
                 $rowsToProcess[] = [
                     'team_id' => $team->TEA_ID,
                     'row' => $row
@@ -616,7 +616,6 @@ class RaceController extends Controller
 
             fclose($handle);
 
-            // If there are errors, rollback (implicit since we haven't written yet) and return error
             if (!empty($missingTeams)) {
                 DB::rollBack();
                 return response()->json([
@@ -638,21 +637,26 @@ class RaceController extends Controller
                 $row = $item['row'];
                 $updateData = [];
 
-                if ($rankIndex !== false && isset($row[$rankIndex])) {
-                    $val = trim($row[$rankIndex]);
+                // A = 0 = Rank
+                if (isset($row[0])) {
+                    $val = trim($row[0]);
                     if ($val !== '')
                         $updateData['TER_RANK'] = intval($val);
                 }
-                if ($bonusIndex !== false && isset($row[$bonusIndex])) {
-                    $val = trim($row[$bonusIndex]);
+
+                // F = 5 = Time
+                if (isset($row[5])) {
+                    $timeStr = trim($row[5]);
+                    // Basic validation/cleaning could be added here
+                    if (!empty($timeStr))
+                        $updateData['TER_TIME'] = $timeStr;
+                }
+
+                // P = 15 = Points
+                if (isset($row[15])) {
+                    $val = trim($row[15]);
                     if ($val !== '')
                         $updateData['TER_BONUS_POINTS'] = intval($val);
-                }
-                if ($timeIndex !== false && isset($row[$timeIndex])) {
-                    $timeStr = trim($row[$timeIndex]);
-                    if (!empty($timeStr)) {
-                        $updateData['TER_TIME'] = $timeStr;
-                    }
                 }
 
                 if (!empty($updateData)) {
@@ -669,7 +673,7 @@ class RaceController extends Controller
 
             return response()->json([
                 'message' => 'Résultats importés avec succès',
-                'details' => $results // Optional, frontend doesn't use it much yet
+                'details' => $results
             ], 200);
 
         } catch (\Exception $e) {

@@ -14,7 +14,6 @@ import { parseDateToTs, getRaidStatus, getRegistrationStatus } from '../../utils
 import { useUser } from '../../contexts/userContext';
 
 
-
 export default function Raids() {
     const [startDate, setStartDate] = React.useState<Dayjs | null>(null);
     const [endDate, setEndDate] = React.useState<Dayjs | null>(null);
@@ -26,7 +25,7 @@ export default function Raids() {
     const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc');
     const [raids, setRaids] = useState<Raid[]>([]);
     const [loading, setLoading] = useState(true);
-    const { user, isClubManager } = useUser();
+    const { user, isClubManager, isAdmin} = useUser();
     const { showAlert } = useAlert();
     const navigate = useNavigate();
 
@@ -234,7 +233,7 @@ export default function Raids() {
                                     {filteredRaids.length} raids trouvés
                                 </Typography>
                             </Stack>
-                            {user && isClubManager && <Button
+                            {user && (isClubManager || isAdmin) && <Button
                                 variant="contained"
                                 color="warning"
                                 onClick={() => navigate('/raid/create')}

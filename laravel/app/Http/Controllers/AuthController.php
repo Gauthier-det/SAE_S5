@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class AuthController extends Controller
 {
@@ -45,8 +48,8 @@ class AuthController extends Controller
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => $user->USE_BIRTHDATE ? $user->USE_BIRTHDATE->format('Y-m-d') : null,
                 'user_licence' => $user->USE_LICENCE_NUMBER ? $user->USE_LICENCE_NUMBER : null,
-                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : null,
-                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : null,
+                'user_membership_date' => $user->USE_MEMBERSHIP_DATE ? $user->USE_MEMBERSHIP_DATE->format('Y-m-d') : now()->format('Y-m-d'),
+                'user_validity' => $user->USE_VALIDITY ? $user->USE_VALIDITY->format('Y-m-d') : now()->format('Y-m-d'),
                 'user_address' => $user->address,
                 'user_club' => $user->club,
                 'access_token' => $token,
@@ -69,7 +72,7 @@ class AuthController extends Controller
         try {
             $request->validate([
                 'mail' => 'required|email|unique:SAN_USERS,USE_MAIL',
-                'password' => 'required|min:8',
+                'password' => 'required|min:8|confirmed',
                 'name' => 'required|string',
                 'last_name' => 'required|string',
                 'gender' => 'required|string|in:Homme,Femme,Autre',
@@ -87,9 +90,24 @@ class AuthController extends Controller
             'USE_NAME' => $request->name,
             'USE_LAST_NAME' => $request->last_name,
             'USE_GENDER' => $request->gender,
-            'USE_VALIDITY' => \Carbon\Carbon::now()->addYear(),
-            'USE_MEMBERSHIP_DATE' => \Carbon\Carbon::now(),
+            'USE_MEMBERSHIP_DATE' => now(),
+            'USE_VALIDITY' => now(),
         ]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(60),
+            [
+                'id' => $user->USE_ID,
+                'hash' => sha1($user->USE_MAIL)
+            ]
+        );
+
+        // send verification email
+        Mail::send('mails.verify', ['url' => $verificationUrl, 'user' => $user, 'fullName' => $user->USE_NAME . ' ' . $user->USE_LAST_NAME], function ($message) use ($user) {
+            $message->to($user->USE_MAIL)
+                ->subject('Vérification de votre adresse e-mail');
+        });
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -103,8 +121,8 @@ class AuthController extends Controller
                 'user_phone' => $user->USE_PHONE_NUMBER,
                 'user_birthdate' => null,
                 'user_licence' => null,
-                'user_membership_date' => null,
-                'user_validity' => null,
+                'user_membership_date' => now()->format('Y-m-d'),
+                'user_validity' => now()->format('Y-m-d'),
                 'user_address' => null,
                 'user_club' => null,
                 'access_token' => $token,

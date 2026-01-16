@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaceDetails, importRaceResults, deleteRaceResults, deleteRace } from '../../api/race';
-import { validateTeamForRace, unvalidateTeamForRace } from '../../api/team';
+import { validateTeamForRace, unvalidateTeamForRace, deleteTeamFromRace } from '../../api/team';
 import type { RaceDetail, TeamDetail } from '../../models/race.model';
 import dayjs from 'dayjs';
 import {
@@ -33,7 +33,7 @@ import { formatDateWithHour } from '../../utils/dateUtils';
 export default function RaceDetails() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { user, isAuthenticated, isRaidManager, isAdmin } = useUser();
+    const { user, isAuthenticated, isAdmin } = useUser();
     const { showAlert } = useAlert();
     const [race, setRace] = useState<RaceDetail | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -99,7 +99,8 @@ export default function RaceDetails() {
     }, [race, searchTerm, user, isAuthenticated]);
 
     // Check if registration deadline has passed
-    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_START)) : false;
+    const disableEditing = race?.raid ? dayjs().isAfter(dayjs(race.raid.RAI_REGISTRATION_END)) : false;
+    console.log("journee passe:", dayjs(race?.raid.RAI_REGISTRATION_END), "journnee now:", dayjs(), "disableEditing:", disableEditing);
 
     const handleOpenTeamModal = (team: TeamDetail) => {
         if (!isAuthenticated) return;
@@ -120,31 +121,43 @@ export default function RaceDetails() {
     };
 
     const getButton = (race: RaceDetail) => {
-        if (new Date() < new Date(race.RAC_TIME_START)) {
-            return null;
+        const now = new Date();
+        const start = new Date(race.RAC_TIME_START);
+        const end = new Date(race.RAC_TIME_END);
+
+        if (now < start) {
+            return <Typography variant="body2" color="text.secondary">En attente du départ</Typography>;
         }
-        if (race.user.USE_ID === user?.USE_ID) {
-            if (new Date(race.RAC_TIME_START) < new Date() && new Date() < new Date(race.RAC_TIME_END)) {
+
+        if (Number(race.user.USE_ID) === Number(user?.USE_ID)) {
+            if (now >= start && now <= end) {
                 return (
-                    <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => navigate('/')}>
-                        pointer les participants
+                    <Button variant="contained" color="info" sx={{ borderRadius: 2 }} onClick={() => navigate(`/races/${race.RAC_ID}/participants`)}>
+                        Gérer le direct
                     </Button>
                 );
             }
+
             if (race.has_results) {
                 return (
                     <Button variant="contained" color="error" sx={{ borderRadius: 2 }} onClick={() => setDeleteModalOpen(true)}>
-                        supprimer les resultats
+                        Supprimer les résultats
                     </Button>
                 );
             } else {
                 return (
                     <Button variant="contained" color="warning" sx={{ borderRadius: 2 }} onClick={() => setResultsModalOpen(true)}>
-                        ajouter les resultats
+                        Ajouter les résultats
                     </Button>
                 );
             }
         }
+
+        if (now > end && !race.has_results) {
+            return <Typography variant="body2" color="text.secondary">Résultats en attente de publication</Typography>;
+        }
+
+        return null;
     };
 
     const handleImportResults = async () => {
@@ -194,7 +207,6 @@ export default function RaceDetails() {
         if (!race) return;
         try {
             await validateTeamForRace(teamId, race.RAC_ID);
-            // Refresh logic - ideally reload race details or update local state
             const updatedRace = await getRaceDetails(race.RAC_ID);
             setRace(updatedRace);
         } catch (err) {
@@ -203,18 +215,17 @@ export default function RaceDetails() {
         }
     };
 
-    const handleUnvalidateTeam = async (e: React.MouseEvent, teamId: number) => {
+    const handleDeleteTeam = async (e: React.MouseEvent, teamId: number) => {
         e.stopPropagation();
         if (!race) return;
-        if (!confirm("Voulez-vous vraiment dévalider cette équipe ?")) return;
+        if (!confirm("Voulez-vous vraiment supprimer cette équipe de la course ?")) return;
         try {
-            await unvalidateTeamForRace(teamId, race.RAC_ID);
-            // Refresh
+            await deleteTeamFromRace(race.RAC_ID, teamId);
             const updatedRace = await getRaceDetails(race.RAC_ID);
             setRace(updatedRace);
         } catch (err) {
             console.error(err);
-            alert("Erreur lors de la dévalidation");
+            alert("Erreur lors de la suppression");
         }
     };
 
@@ -225,8 +236,6 @@ export default function RaceDetails() {
     const { stats, formatted_categories } = race;
     const isBelowMinParticipants = stats.participants_count < race.RAC_MIN_PARTICIPANTS;
 
-    // Check if current user is the Race Manager (using race.user linked in RaceController)
-    // In RaceController: 'user' relation is loaded. So race.user.USE_ID is the manager.
     const isRaceManager = isAuthenticated && user && race && user.USE_ID === race.user.USE_ID;
 
     const renderTeamCard = (team: TeamDetail & { isResponsible?: boolean, isMember?: boolean }) => (
@@ -262,9 +271,9 @@ export default function RaceDetails() {
                                 </IconButton>
                             </Tooltip>
                         ) : (
-                            <Tooltip title="Invalider l'équipe">
-                                <IconButton onClick={(e) => handleUnvalidateTeam(e, team.id)} color="warning">
-                                    <CancelIcon />
+                            <Tooltip title="Supprimer l'équipe">
+                                <IconButton onClick={(e) => handleDeleteTeam(e, team.id)} color="error">
+                                    <CloseIcon />
                                 </IconButton>
                             </Tooltip>
                         )}
@@ -289,7 +298,7 @@ export default function RaceDetails() {
                 <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(`/raids/${race.raid?.RAI_ID}`)} sx={{ borderRadius: '8px' }}>
                     Retour au raid
                 </Button>
-                {user && (isAdmin || isRaidManager) && !disableEditing && (
+                {user && (isAdmin || race.raid?.user.USE_ID === user.USE_ID) && !disableEditing && (
                     <Stack direction="row" spacing={1}>
                         <Button
                             variant="contained"
@@ -327,8 +336,14 @@ export default function RaceDetails() {
                 <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
                     <Chip label={race.RAC_TYPE} color="success" size="small" />
                     <Chip label={race.RAC_DIFFICULTY} color="success" size="small" variant="outlined" />
-                    {race.user.USE_ID === user?.USE_ID && <Chip label="vous êtes l'organisateur" color="warning" size="small" variant="outlined" />}
+                    <Chip label={race.user.USE_ID === user?.USE_ID ? "vous êtes l'organisateur" : race.user.USE_NAME + " " + race.user.USE_LAST_NAME + " organise cette course"} color="warning" size="small" variant="outlined" />
                     <Chip label={race.RAC_GENDER || 'Mixte'} color="info" size="small" />
+                    <Chip
+                        label={new Date() < new Date(race.RAC_TIME_START) ? 'En attente' : new Date() < new Date(race.RAC_TIME_END) ? 'En cours' : 'Terminée'}
+                        color={new Date() < new Date(race.RAC_TIME_START) ? 'warning' : new Date() < new Date(race.RAC_TIME_END) ? 'success' : 'error'}
+                        size="small"
+                        sx={{ fontWeight: 600, fontSize: '0.7rem' }}
+                    />
                 </Box>
             </Box>
 
@@ -423,8 +438,8 @@ export default function RaceDetails() {
                 <Box sx={{ bgcolor: '#f8f9fa', p: 2, borderRadius: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
                     <GroupsIcon />
                     <Box>
-                        <Typography variant="subtitle2">Membres max par équipe</Typography>
-                        <Typography variant="h6">{race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
+                        <Typography variant="subtitle2">Membres min et max par équipe</Typography>
+                        <Typography variant="h6">{race.RAC_MIN_TEAM_MEMBERS + " - " + race.RAC_MAX_TEAM_MEMBERS} personnes</Typography>
                     </Box>
                 </Box>
             </Paper>

@@ -31,11 +31,13 @@ class Race extends Model
         'RAC_MAX_PARTICIPANTS', 
         'RAC_MIN_TEAMS', 
         'RAC_MAX_TEAMS', 
+        'RAC_MIN_TEAM_MEMBERS',
         'RAC_MAX_TEAM_MEMBERS', 
         'RAC_AGE_MIN', 
         'RAC_AGE_MIDDLE', 
         'RAC_AGE_MAX',
         'RAC_CHIP_MANDATORY',
+        'RAC_MEAL_PRICE',
     ];
 
     public function races(): HasMany

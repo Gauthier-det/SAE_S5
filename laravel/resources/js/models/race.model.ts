@@ -15,6 +15,7 @@ export interface Race {
     RAC_MAX_PARTICIPANTS: number;
     RAC_MIN_TEAMS: number;
     RAC_MAX_TEAMS: number;
+    RAC_MIN_TEAM_MEMBERS: number;
     RAC_MAX_TEAM_MEMBERS: number;
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
@@ -23,6 +24,7 @@ export interface Race {
     CAT_2_PRICE?: number;
     CAT_3_PRICE?: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE: number;
 }
 
 export interface RaceResponse {
@@ -42,6 +44,7 @@ export interface RaceCreation {
     RAC_MAX_PARTICIPANTS: number;
     RAC_MIN_TEAMS: number;
     RAC_MAX_TEAMS: number;
+    RAC_MIN_TEAM_MEMBERS: number;
     RAC_MAX_TEAM_MEMBERS: number;
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
@@ -50,6 +53,7 @@ export interface RaceCreation {
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE?: number;
 }
 
 export interface RaceUpdate {
@@ -65,6 +69,7 @@ export interface RaceUpdate {
     RAC_MAX_PARTICIPANTS: number;
     RAC_MIN_TEAMS: number;
     RAC_MAX_TEAMS: number;
+    RAC_MIN_TEAM_MEMBERS: number;
     RAC_MAX_TEAM_MEMBERS: number;
     RAC_AGE_MIN: number;
     RAC_AGE_MIDDLE: number;
@@ -73,6 +78,7 @@ export interface RaceUpdate {
     CAT_2_PRICE: number;
     CAT_3_PRICE: number;
     RAC_CHIP_MANDATORY?: number;
+    RAC_MEAL_PRICE?: number;
 }
 
 

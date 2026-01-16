@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider,CircularProgress,Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
+import { Container, Typography, Box, Button, Checkbox, FormControlLabel, FormGroup, Slider, CircularProgress, Stack, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRaidById, deleteRaid } from '../../api/raid';
 import { getListOfRacesByRaidId } from '../../api/race';
@@ -50,6 +50,8 @@ const RaidDetails = () => {
     }, [id, showAlert]);
     const [raceType, setRaceType] = React.useState<Set<string>>(new Set());
     const [raceGender, setRaceGender] = React.useState<Set<string>>(new Set());
+
+    const raceIsFull = raid && allRaces.length >= raid.RAI_NB_RACES;
 
     // Calculate global min/max for the slider bounds
     const limits = React.useMemo(() => {
@@ -267,12 +269,13 @@ const RaidDetails = () => {
                     </Box>
                     <Box sx={{ flex: 1 }}>
                         <Box sx={{ mb: 4 }}>
+                            <Stack direction="row" spacing={2} sx={{ mb: 3,justifyContent: 'Space-between' }}>
                             <Typography variant="h3" component="h1" sx={{ fontWeight: 'bold', color: '#1a1a1a', mb: 3 }}>
                                 {raid.RAI_NAME}
                             </Typography>
-                            
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }}>
-                                {user && raid && user.USE_ID === raid.user.USE_ID && (
+
+                            <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+                                {user && raid && !raceIsFull && (user.USE_ID === raid.user.USE_ID || isAdmin) && (
                                     <Button
                                         variant="contained"
                                         color="success"
@@ -282,29 +285,29 @@ const RaidDetails = () => {
                                         Créer une course
                                     </Button>
                                 )}
-                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
-                                    <Button
-                                        variant="contained"
-                                        color="warning"
-                                        sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
-                                        onClick={() => navigate(`/raids/${id}/edit`)}
-                                    >
-                                        MODIFIER le RAID
-                                    </Button>
-                                )}
-                                {user && raid && raid.club && user.USE_ID === raid.club.USE_ID && (isAdmin || isClubManager) && (
-                                    <Button
-                                        variant="contained"
-                                        color="error"
-                                        sx={{ borderRadius: '8px', fontSize: '1rem' }}
-                                        onClick={handleDeleteClick}
-                                        disabled={isDeleting}
-                                    >
-                                        SUPPRIMER le RAID
-                                    </Button>
-                                )}
+                                {user && raid && raid.club && ((user.USE_ID === raid.club.USE_ID && isClubManager) || isAdmin) &&
+                                    <>
+                                        <Button
+                                            variant="contained"
+                                            color="warning"
+                                            sx={{ color: 'white', borderRadius: '8px', fontSize: '1rem' }}
+                                            onClick={() => navigate(`/raids/${id}/edit`)}
+                                        >
+                                            MODIFIER le RAID
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            sx={{ borderRadius: '8px', fontSize: '1rem' }}
+                                            onClick={handleDeleteClick}
+                                            disabled={isDeleting}
+                                        >
+                                            SUPPRIMER le RAID
+                                        </Button>
+                                    </>
+                                }
                             </Stack>
-
+                            </Stack>
                             {/* Club and Location Row */}
                             <Box sx={{ display: 'flex', gap: 4, mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
                                 {raid.club && (
@@ -339,17 +342,6 @@ const RaidDetails = () => {
                                         </Typography>
                                     </Box>
                                 </Box>
-                                <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                                        <CalendarTodayIcon fontSize="small" color="primary" />
-                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                                            DATES DU RAID
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                        Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
-                                    </Typography>
-                                </Box>
                                 <Box sx={{ p: 2, backgroundColor: '#fff3e0', borderRadius: 2, minWidth: 200 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                                         <EventIcon fontSize="small" color="warning" />
@@ -359,6 +351,17 @@ const RaidDetails = () => {
                                     </Box>
                                     <Typography variant="body1" sx={{ fontWeight: 600 }}>
                                         Du {formatDate(raid.RAI_REGISTRATION_START)} au {formatDate(raid.RAI_REGISTRATION_END)}
+                                    </Typography>
+                                </Box>
+                                <Box sx={{ p: 2, backgroundColor: '#e3f2fd', borderRadius: 2, minWidth: 200 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                                        <CalendarTodayIcon fontSize="small" color="primary" />
+                                        <Typography variant="caption" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                                            DATES DU RAID
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                        Du {formatDate(raid.RAI_TIME_START)} au {formatDate(raid.RAI_TIME_END)}
                                     </Typography>
                                 </Box>
                             </Box>
