@@ -1,375 +1,443 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Tests\Feature;
 
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Race;
 use App\Models\Raid;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\DB;
+use App\Models\User;
+use App\Models\Club;
+use App\Models\Address;
+use App\Models\Team;
+use App\Models\Category;
+use Laravel\Sanctum\Sanctum;
+use Database\Seeders\InitialDatabaseSeeder;
+use Illuminate\Support\Facades\Hash;
 
-class RaceController extends Controller
+class RaceControllerTest extends TestCase
 {
-    public function getAllRaces()
+    use RefreshDatabase;
+
+    private $adminUser;
+    private $raceManager;
+    private $otherUser;
+    private $club;
+    private $address;
+    private $raid;
+
+    public function setUp(): void
     {
-        $races = Race::with(['user', 'raid'])->get();
-        return response()->json(['data' => $races]);
-    }
+        parent::setUp();
 
-    public function getRaceById($id)
-    {
-        $race = Race::find($id);
-        if (!$race) {
-            return response()->json([
-                'message' => 'Race not found',
-            ], 404);
-        }
-        return response()->json(['data' => $race], 200);
-    }
+        $this->seed(InitialDatabaseSeeder::class);
 
-    public function getRacesByRaid($raidId)
-    {
-        $races = Race::where('RAI_ID', $raidId)->get()->load('user');
-        return response()->json(['data' => $races], 200);
-    }
+        // Utiliser l'utilisateur admin du seeder
+        $this->adminUser = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
 
-    public function getRaceResults($raceId)
-    {
-        $race = Race::find($raceId);
-        if (!$race) {
-            return response()->json([
-                'message' => 'Race not found',
-            ], 404);
-        }
-
-        $results = $race->teams()
-            ->orderBy('SAN_TEAMS_RACES.TER_TIME', 'asc')
-            ->get();
-
-        return response()->json(['data' => $results], 200);
-    }
-
-    public function getRacePrices($raceId)
-    {
-        $race = Race::find($raceId);
-        if (!$race) {
-            return response()->json([
-                'message' => 'Race not found',
-            ], 404);
-        }
-
-        $prices = $race->categories()
-            ->select('SAN_CATEGORIES.CAT_ID', 'SAN_CATEGORIES.CAT_LABEL', 'SAN_CATEGORIES_RACES.CAR_PRICE')
-            ->orderBy('SAN_CATEGORIES.CAT_ID', 'asc')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'CAT_ID' => $category->CAT_ID,
-                    'CAT_LABEL' => $category->CAT_LABEL,
-                    'CAR_PRICE' => $category->CAR_PRICE,
-                ];
-            });
-
-        return response()->json(['data' => $prices], 200);
-    }
-
-    public function storeTeamRaceResult(Request $request, $raceId)
-    {
-        $race = Race::find($raceId);
-        if (!$race) {
-            return response()->json([
-                'message' => 'Race not found',
-            ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'TEA_ID' => 'required|integer|exists:SAN_TEAMS,TEA_ID',
-            'TER_TIME' => 'nullable|date_format:H:i:s',
-            'TER_IS_VALID' => 'nullable|integer|in:0,1',
-            'TER_RACE_NUMBER' => 'required|integer|min:1',
+        // Créer une adresse pour les tests
+        $this->address = Address::create([
+            'ADD_POSTAL_CODE' => 75001,
+            'ADD_CITY' => 'Paris',
+            'ADD_STREET_NAME' => 'Rue de Test',
+            'ADD_STREET_NUMBER' => '42',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            DB::table('SAN_TEAMS_RACES')->updateOrInsert(
-                [
-                    'RAC_ID' => $raceId,
-                    'TEA_ID' => $request->input('TEA_ID'),
-                ],
-                [
-                    'TER_TIME' => $request->input('TER_TIME'),
-                    'TER_IS_VALID' => $request->input('TER_IS_VALID'),
-                    'TER_RACE_NUMBER' => $request->input('TER_RACE_NUMBER'),
-                ]
-            );
-
-            return response()->json(['message' => 'Team race result created or updated successfully'], 201);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Error creating team race result', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function createRace(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
-            'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
-            'RAC_TIME_START' => 'required|date',
-            'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
-            'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
-            'RAC_TYPE' => 'required|string|max:255',
-            'RAC_DIFFICULTY' => 'required|string|max:255',
-            'RAC_MIN_PARTICIPANTS' => 'required|integer|min:0',
-            'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
-            'RAC_MIN_TEAMS' => 'required|integer|min:0',
-            'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
-            'RAC_AGE_MIN' => 'required|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
-            'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
+        // Créer un club pour les tests
+        $this->club = Club::create([
+            'USE_ID' => $this->adminUser->USE_ID,
+            'ADD_ID' => $this->address->ADD_ID,
+            'CLU_NAME' => 'Club Test',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $raid = Raid::find($request->RAI_ID);
-        if (auth()->user()->USE_ID !== $raid->USE_ID && !auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Unauthorized. Only the raid manager can create races for this raid.',
-            ], 403);
-        }
-
-        $race = Race::create($request->only([
-            'USE_ID',
-            'RAI_ID',
-            'RAC_TIME_START',
-            'RAC_TIME_END',
-            'RAC_GENDER',
-            'RAC_TYPE',
-            'RAC_DIFFICULTY',
-            'RAC_MIN_PARTICIPANTS',
-            'RAC_MAX_PARTICIPANTS',
-            'RAC_MIN_TEAMS',
-            'RAC_MAX_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS',
-            'RAC_AGE_MIN',
-            'RAC_AGE_MIDDLE',
-            'RAC_AGE_MAX',
-        ]));
-
-        return response()->json(['data' => $race], 201);
-    }
-
-    public function createRaceWithPrices(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'USE_ID' => 'required|integer|exists:SAN_USERS,USE_ID',
-            'RAI_ID' => 'required|integer|exists:SAN_RAIDS,RAI_ID',
-            'RAC_TIME_START' => 'required|date',
-            'RAC_TIME_END' => 'required|date|after_or_equal:RAC_TIME_START',
-            'RAC_GENDER' => 'required|string|in:Homme,Femme,Mixte',
-            'RAC_TYPE' => 'required|string|max:255',
-            'RAC_DIFFICULTY' => 'required|string|max:255',
-            'RAC_MIN_PARTICIPANTS' => 'required|integer|min:0',
-            'RAC_MAX_PARTICIPANTS' => 'required|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
-            'RAC_MIN_TEAMS' => 'required|integer|min:0',
-            'RAC_MAX_TEAMS' => 'required|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'required|integer|min:0',
-            'RAC_AGE_MIN' => 'required|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'required|integer|min:0',
-            'RAC_AGE_MAX' => 'required|integer|min:0|gte:RAC_AGE_MIDDLE',
-            'CAT_1_PRICE' => 'required|numeric|min:0',
-            'CAT_2_PRICE' => 'required|numeric|min:0',
-            'CAT_3_PRICE' => 'required|numeric|min:0',
+        // Créer un race manager avec licence et membre du club
+        $this->raceManager = User::create([
+            'USE_MAIL' => 'race.manager@test.fr',
+            'USE_PASSWORD' => Hash::make('password'),
+            'USE_NAME' => 'Manager',
+            'USE_LAST_NAME' => 'Race',
+            'USE_GENDER' => 'Homme',
+            'USE_BIRTHDATE' => '1990-01-01',
+            'USE_PHONE_NUMBER' => '0612345678',
+            'USE_LICENCE_NUMBER' => 12345,
+            'USE_MEMBERSHIP_DATE' => now(),
+            'USE_VALIDITY' => now()->addYear(),
+            'CLU_ID' => $this->club->CLU_ID,
+            'ADD_ID' => $this->address->ADD_ID,
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $race = Race::create($request->only([
-                'USE_ID',
-                'RAI_ID',
-                'RAC_TIME_START',
-                'RAC_TIME_END',
-                'RAC_GENDER',
-                'RAC_TYPE',
-                'RAC_DIFFICULTY',
-                'RAC_MIN_PARTICIPANTS',
-                'RAC_MAX_PARTICIPANTS',
-                'RAC_MIN_TEAMS',
-                'RAC_MAX_TEAMS',
-                'RAC_MAX_TEAM_MEMBERS',
-                'RAC_AGE_MIN',
-                'RAC_AGE_MIDDLE',
-                'RAC_AGE_MAX',
-            ]));
-
-            for ($catId = 1; $catId <= 3; $catId++) {
-                DB::table('SAN_CATEGORIES_RACES')->insert([
-                    'RAC_ID' => $race->RAC_ID,
-                    'CAT_ID' => $catId,
-                    'CAR_PRICE' => $request->input('CAT_' . $catId . '_PRICE'),
-                ]);
-            }
-
-            DB::commit();
-
-            $race->load('categories');
-
-            return response()->json(['data' => $race], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Error creating race with prices', 'error' => $e->getMessage()], 500);
-        }
-    }
-
-    public function updateRace(Request $request, $id)
-    {
-        $race = Race::find($id);
-        if (!$race) {
-            return response()->json(['message' => 'Race not found'], 404);
-        }
-
-        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Unauthorized. You can only update races you created.',
-            ], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'RAI_ID' => 'sometimes|integer|exists:SAN_RAIDS,RAI_ID',
-            'RAC_TIME_START' => 'sometimes|date',
-            'RAC_TIME_END' => 'sometimes|date|after_or_equal:RAC_TIME_START',
-            'RAC_GENDER' => 'sometimes|string|in:Homme,Femme,Mixte',
-            'RAC_TYPE' => 'sometimes|string|max:255',
-            'RAC_DIFFICULTY' => 'sometimes|string|max:255',
-            'RAC_MIN_PARTICIPANTS' => 'sometimes|integer|min:0',
-            'RAC_MAX_PARTICIPANTS' => 'sometimes|integer|min:0|gte:RAC_MIN_PARTICIPANTS',
-            'RAC_MIN_TEAMS' => 'sometimes|integer|min:0',
-            'RAC_MAX_TEAMS' => 'sometimes|integer|min:0|gte:RAC_MIN_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS' => 'sometimes|integer|min:0',
-            'RAC_AGE_MIN' => 'sometimes|integer|min:0',
-            'RAC_AGE_MIDDLE' => 'sometimes|integer|min:0',
-            'RAC_AGE_MAX' => 'sometimes|integer|min:0|gte:RAC_AGE_MIDDLE',
+        // Créer un autre utilisateur sans licence
+        $this->otherUser = User::create([
+            'USE_MAIL' => 'other.user@test.fr',
+            'USE_PASSWORD' => Hash::make('password'),
+            'USE_NAME' => 'Other',
+            'USE_LAST_NAME' => 'User',
+            'USE_GENDER' => 'Femme',
+            'USE_BIRTHDATE' => '1995-01-01',
+            'USE_PHONE_NUMBER' => '0698765432',
+            'USE_VALIDITY' => now()->addYear(),
+            'ADD_ID' => $this->address->ADD_ID,
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $race->update($request->only([
-            'RAI_ID',
-            'RAC_TIME_START',
-            'RAC_TIME_END',
-            'RAC_GENDER',
-            'RAC_TYPE',
-            'RAC_DIFFICULTY',
-            'RAC_MIN_PARTICIPANTS',
-            'RAC_MAX_PARTICIPANTS',
-            'RAC_MIN_TEAMS',
-            'RAC_MAX_TEAMS',
-            'RAC_MAX_TEAM_MEMBERS',
-            'RAC_AGE_MIN',
-            'RAC_AGE_MIDDLE',
-            'RAC_AGE_MAX',
-        ]));
-
-        return response()->json(['data' => $race], 200);
+        // Créer un raid pour les tests
+        $this->raid = Raid::create([
+            'CLU_ID' => $this->club->CLU_ID,
+            'ADD_ID' => $this->address->ADD_ID,
+            'USE_ID' => $this->adminUser->USE_ID,
+            'RAI_NAME' => 'Raid Test',
+            'RAI_TIME_START' => now()->addDays(30),
+            'RAI_TIME_END' => now()->addDays(31),
+            'RAI_REGISTRATION_START' => now()->addDays(1),
+            'RAI_REGISTRATION_END' => now()->addDays(29),
+            'RAI_NB_RACES' => 5,
+        ]);
     }
 
-    public function deleteRace($id)
+    /**
+     * Helper method to create a valid race
+     */
+    private function createValidRace($overrides = [])
     {
-        $race = Race::find($id);
-        if (!$race) {
-            return response()->json(['message' => 'Race not found'], 404);
-        }
-
-        if (auth()->user()->USE_ID !== $race->USE_ID && !auth()->user()->isAdmin()) {
-            return response()->json([
-                'message' => 'Unauthorized. You can only delete races you created.',
-            ], 403);
-        }
-
-        $race->delete();
-        return response()->json(['message' => 'Race deleted successfully'], 200);
+        return Race::create(array_merge([
+            'USE_ID' => $this->raceManager->USE_ID,
+            'RAI_ID' => $this->raid->RAI_ID,
+            'RAC_NAME' => 'Course Test',
+            'RAC_TIME_START' => now()->addDays(30),
+            'RAC_TIME_END' => now()->addDays(31),
+            'RAC_GENDER' => 'Mixte',
+            'RAC_TYPE' => 'Trail',
+            'RAC_DIFFICULTY' => 'Difficile',
+            'RAC_MIN_PARTICIPANTS' => 10,
+            'RAC_MAX_PARTICIPANTS' => 100,
+            'RAC_MIN_TEAMS' => 5,
+            'RAC_MAX_TEAMS' => 50,
+            'RAC_MIN_TEAM_MEMBERS' => 2,
+            'RAC_MAX_TEAM_MEMBERS' => 4,
+            'RAC_AGE_MIN' => 18,
+            'RAC_AGE_MIDDLE' => 40,
+            'RAC_AGE_MAX' => 70,
+            'RAC_CHIP_MANDATORY' => 0,
+        ], $overrides));
     }
 
-    public function getRaceDetails($id)
+    /**
+     * Helper method to get valid race data
+     */
+    private function getValidRaceData($overrides = [])
     {
-        $race = Race::with([
-            'categories' => function($query) {
-                $query->withPivot('CAR_PRICE');
-            },
-            'teams.owner',
-            'teams.members'
-        ])->find($id);
+        return array_merge([
+            'USE_ID' => $this->raceManager->USE_ID,
+            'RAI_ID' => $this->raid->RAI_ID,
+            'RAC_NAME' => 'Nouvelle Course',
+            'RAC_TIME_START' => now()->addDays(30)->toDateTimeString(),
+            'RAC_TIME_END' => now()->addDays(31)->toDateTimeString(),
+            'RAC_GENDER' => 'Mixte',
+            'RAC_TYPE' => 'Trail',
+            'RAC_DIFFICULTY' => 'Difficile',
+            'RAC_MIN_PARTICIPANTS' => 10,
+            'RAC_MAX_PARTICIPANTS' => 100,
+            'RAC_MIN_TEAMS' => 5,
+            'RAC_MAX_TEAMS' => 50,
+            'RAC_MIN_TEAM_MEMBERS' => 2,
+            'RAC_MAX_TEAM_MEMBERS' => 4,
+            'RAC_AGE_MIN' => 18,
+            'RAC_AGE_MIDDLE' => 40,
+            'RAC_AGE_MAX' => 70,
+            'RAC_CHIP_MANDATORY' => 0,
+        ], $overrides);
+    }
 
-        if (!$race) {
-            return response()->json(['message' => 'Race not found'], 404);
-        }
+    public function test_get_all_races()
+    {
+        $response = $this->getJson('/api/races');
 
-        // Calculate stats based on participants
-        $participantsCount = 0;
-        foreach ($race->teams as $team) {
-            $participantsCount += $team->members->count();
-        }
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data']);
+    }
 
-        $maxParticipants = $race->RAC_MAX_PARTICIPANTS;
-        $placesRemaining = max(0, $maxParticipants - $participantsCount);
-        $fillingRate = $maxParticipants > 0 ? round(($participantsCount / $maxParticipants) * 100) : 0;
+    public function test_get_race_by_id_not_found()
+    {
+        $response = $this->getJson('/api/races/999');
 
-        $raceData = $race->toArray();
-        $raceData['stats'] = [
-            'teams_count' => $race->teams->count(),
-            'participants_count' => $participantsCount,
-            'places_remaining' => $placesRemaining, // Now based on participants
-            'filling_rate' => $fillingRate, // Now based on participants
-            'participants_expected_min' => $race->RAC_MIN_PARTICIPANTS,
-            'participants_expected_max' => $race->RAC_MAX_PARTICIPANTS,
-        ];
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
 
-        // Format categories
-        $raceData['formatted_categories'] = $race->categories->map(function ($cat) {
-            return [
-                'id' => $cat->CAT_ID,
-                'label' => $cat->CAT_LABEL,
-                'price' => $cat->pivot->CAR_PRICE,
-            ];
-        });
+    public function test_get_race_by_id_success()
+    {
+        $race = $this->createValidRace();
 
-        // Format teams list
-        $raceData['teams_list'] = $race->teams->map(function ($team) {
-            return [
-                'id' => $team->TEA_ID,
-                'name' => $team->TEA_NAME,
-                'image' => $team->TEA_IMAGE,
-                'members_count' => $team->members->count(),
-                'responsible' => $team->owner ? [
-                    'id' => $team->owner->USE_ID,
-                    'name' => $team->owner->USE_NAME . ' ' . $team->owner->USE_LAST_NAME,
-                ] : null,
-                'members' => $team->members->map(function ($member) {
-                    return [
-                        'id' => $member->USE_ID,
-                        'name' => $member->USE_NAME . ' ' . $member->USE_LAST_NAME,
-                        'email' => $member->USE_MAIL,
-                    ];
-                }),
-            ];
-        });
+        $response = $this->getJson("/api/races/{$race->RAC_ID}");
 
-        // Remove raw relationships to clean up response size if needed, 
-        // but 'toArray()' already included them. We can overwrite 'teams' or just keep 'teams_list'.
-        unset($raceData['teams']); 
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data' => ['RAC_ID', 'USE_ID', 'RAI_ID', 'RAC_NAME', 'RAC_TYPE']])
+                 ->assertJson(['data' => ['RAC_ID' => $race->RAC_ID, 'RAC_NAME' => 'Course Test']]);
+    }
 
-        return response()->json(['data' => $raceData], 200);
+    public function test_get_races_by_raid()
+    {
+        $this->createValidRace();
+
+        $response = $this->getJson("/api/raids/{$this->raid->RAI_ID}/races");
+
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data'])
+                 ->assertJsonCount(1, 'data');
+    }
+
+    public function test_get_race_results_not_found()
+    {
+        $response = $this->getJson('/api/races/999/results');
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
+
+    public function test_get_race_results_success()
+    {
+        $race = $this->createValidRace();
+
+        $response = $this->getJson("/api/races/{$race->RAC_ID}/results");
+
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data']);
+    }
+
+    public function test_get_race_prices_not_found()
+    {
+        $response = $this->getJson('/api/races/999/prices');
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
+
+    public function test_get_race_prices_success()
+    {
+        $race = $this->createValidRace();
+
+        $response = $this->getJson("/api/races/{$race->RAC_ID}/prices");
+
+        $response->assertStatus(200)
+                 ->assertJsonStructure(['data']);
+    }
+
+    public function test_get_race_details_not_found()
+    {
+        $response = $this->getJson('/api/races/999/details');
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
+
+    public function test_get_race_details_success()
+    {
+        $race = $this->createValidRace();
+
+        $response = $this->getJson("/api/races/{$race->RAC_ID}/details");
+
+        $response->assertStatus(200)
+                 ->assertJsonStructure([
+                     'data' => [
+                         'RAC_ID',
+                         'stats',
+                         'formatted_categories',
+                         'teams_list'
+                     ]
+                 ]);
+    }
+
+    public function test_create_race_requires_authentication()
+    {
+        $response = $this->postJson('/api/races', $this->getValidRaceData());
+
+        $response->assertStatus(401);
+    }
+
+    public function test_create_race_success()
+    {
+        Sanctum::actingAs($this->adminUser);
+
+        $response = $this->postJson('/api/races', $this->getValidRaceData());
+
+        $response->assertStatus(201)
+                 ->assertJsonStructure(['data' => ['RAC_ID', 'RAC_NAME', 'RAC_TYPE']])
+                 ->assertJson(['data' => ['RAC_NAME' => 'Nouvelle Course']]);
+
+        $this->assertDatabaseHas('SAN_RACES', [
+            'RAI_ID' => $this->raid->RAI_ID,
+            'RAC_NAME' => 'Nouvelle Course',
+        ]);
+    }
+
+    public function test_create_race_with_invalid_data()
+    {
+        Sanctum::actingAs($this->adminUser);
+
+        $response = $this->postJson('/api/races', [
+            'USE_ID' => $this->raceManager->USE_ID,
+            'RAI_ID' => 999, // Invalide
+            'RAC_NAME' => 'Course Invalide',
+        ]);
+
+        $response->assertStatus(422)
+                 ->assertJsonStructure(['errors']);
+    }
+
+    public function test_create_race_unauthorized_user()
+    {
+        Sanctum::actingAs($this->otherUser);
+
+        $response = $this->postJson('/api/races', $this->getValidRaceData());
+
+        $response->assertStatus(403)
+                 ->assertJson(['message' => 'Unauthorized. Only the raid manager can create races for this raid.']);
+    }
+
+    public function test_create_race_with_prices_success()
+    {
+        Sanctum::actingAs($this->adminUser);
+
+        $data = $this->getValidRaceData([
+            'CAT_1_PRICE' => 50.00,
+            'CAT_2_PRICE' => 35.00,
+            'CAT_3_PRICE' => 25.00,
+        ]);
+
+        $response = $this->postJson('/api/races/with-prices', $data);
+
+        $response->assertStatus(201)
+                 ->assertJsonStructure(['data' => ['RAC_ID', 'RAC_NAME', 'categories']]);
+
+        $this->assertDatabaseHas('SAN_RACES', [
+            'RAI_ID' => $this->raid->RAI_ID,
+            'RAC_NAME' => 'Nouvelle Course',
+        ]);
+
+        $raceId = $response->json('data.RAC_ID');
+        $this->assertDatabaseHas('SAN_CATEGORIES_RACES', [
+            'RAC_ID' => $raceId,
+            'CAT_ID' => 1,
+            'CAR_PRICE' => 50.00,
+        ]);
+    }
+
+    public function test_update_race_success()
+    {
+        $race = $this->createValidRace();
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->putJson("/api/races/{$race->RAC_ID}", [
+            'RAC_NAME' => 'Course Modifiée',
+            'RAC_DIFFICULTY' => 'Facile',
+        ]);
+
+        $response->assertStatus(200)
+                 ->assertJson(['data' => ['RAC_NAME' => 'Course Modifiée', 'RAC_DIFFICULTY' => 'Facile']]);
+
+        $this->assertDatabaseHas('SAN_RACES', [
+            'RAC_ID' => $race->RAC_ID,
+            'RAC_NAME' => 'Course Modifiée',
+        ]);
+    }
+
+    public function test_update_race_not_found()
+    {
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->putJson('/api/races/999', [
+            'RAC_NAME' => 'Course Inexistante',
+        ]);
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
+
+    public function test_update_race_unauthorized_user()
+    {
+        $race = $this->createValidRace();
+        Sanctum::actingAs($this->otherUser);
+
+        $response = $this->putJson("/api/races/{$race->RAC_ID}", [
+            'RAC_NAME' => 'Tentative Modification',
+        ]);
+
+        $response->assertStatus(403)
+                 ->assertJson(['message' => 'Unauthorized. You can only update races you created.']);
+    }
+
+    public function test_delete_race_success()
+    {
+        $race = $this->createValidRace();
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->deleteJson("/api/races/{$race->RAC_ID}");
+
+        $response->assertStatus(200)
+                 ->assertJson(['message' => 'Race deleted successfully']);
+
+        $this->assertDatabaseMissing('SAN_RACES', ['RAC_ID' => $race->RAC_ID]);
+    }
+
+    public function test_delete_race_not_found()
+    {
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->deleteJson('/api/races/999');
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
+    }
+
+    public function test_delete_race_unauthorized_user()
+    {
+        $race = $this->createValidRace();
+        Sanctum::actingAs($this->otherUser);
+
+        $response = $this->deleteJson("/api/races/{$race->RAC_ID}");
+
+        $response->assertStatus(403)
+                 ->assertJson(['message' => 'Unauthorized. You can only delete races you created.']);
+    }
+
+    public function test_store_team_race_result_success()
+    {
+        $race = $this->createValidRace();
+        $team = Team::create([
+            'USE_ID' => $this->raceManager->USE_ID,
+            'TEA_NAME' => 'Team Test',
+        ]);
+
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->postJson("/api/races/{$race->RAC_ID}/team-results", [
+            'TEA_ID' => $team->TEA_ID,
+            'TER_TIME' => '02:30:45',
+            'TER_IS_VALID' => 1,
+            'TER_RACE_NUMBER' => 42,
+        ]);
+
+        $response->assertStatus(201)
+                 ->assertJson(['message' => 'Team race result created successfully']);
+
+        $this->assertDatabaseHas('SAN_TEAMS_RACES', [
+            'RAC_ID' => $race->RAC_ID,
+            'TEA_ID' => $team->TEA_ID,
+            'TER_RACE_NUMBER' => 42,
+        ]);
+    }
+
+    public function test_store_team_race_result_race_not_found()
+    {
+        Sanctum::actingAs($this->raceManager);
+
+        $response = $this->postJson('/api/races/999/team-results', [
+            'TEA_ID' => 1,
+            'TER_TIME' => '02:30:45',
+            'TER_IS_VALID' => 1,
+            'TER_RACE_NUMBER' => 42,
+        ]);
+
+        $response->assertStatus(404)
+                 ->assertJson(['message' => 'Race not found']);
     }
 }

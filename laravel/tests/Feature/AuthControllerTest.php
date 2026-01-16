@@ -24,13 +24,13 @@ class AuthControllerTest extends TestCase
     {
         // Arrange: Create a user with hashed password
         $user = User::factory()->create([
-            'USE_MAIL' => 'test@example.com',
+            'USE_MAIL' => 'test@orient.action.fr',
             'USE_PASSWORD' => Hash::make('password123'),
         ]);
 
         // Act & Assert: Wrong credentials
         $response = $this->postJson('/api/login', [
-            'mail' => 'test@example.com',
+            'mail' => 'test@orient.action.fr',
             'password' => 'wrongpassword',
         ]);
 
@@ -55,11 +55,11 @@ class AuthControllerTest extends TestCase
     public function test_login_succeeds_with_valid_credentials()
     {
         // Arrange
-        $user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $user = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
 
         // Act
         $response = $this->postJson('/api/login', [
-            'mail' => 'admin.site@example.com',
+            'mail' => 'admin.site@orient.action.fr',
             'password' => 'pwd123',
         ]);
 
@@ -84,7 +84,7 @@ class AuthControllerTest extends TestCase
                 'data' => [
                     'user_name' => 'Admin',
                     'user_last_name' => 'Site',
-                    'user_mail' => 'admin.site@example.com',
+                    'user_mail' => 'admin.site@orient.action.fr',
                 ]
             ]);
     }
@@ -98,10 +98,10 @@ class AuthControllerTest extends TestCase
 
     public function test_logout_succeeds_with_valid_token()
     {
-        $user = User::where('USE_MAIL', 'admin.site@example.com')->first();
+        $user = User::where('USE_MAIL', 'admin.site@orient.action.fr')->first();
 
         $loginResponse = $this->postJson('/api/login', [
-            'mail' => 'admin.site@example.com',
+            'mail' => 'admin.site@orient.action.fr',
             'password' => 'pwd123',
         ]);
         $token = $loginResponse['data']['access_token'];
@@ -123,12 +123,12 @@ class AuthControllerTest extends TestCase
     {
         // Arrange: Create existing user
         User::factory()->create([
-            'USE_MAIL' => 'test@example.com',
+            'USE_MAIL' => 'test@orient.action.fr',
         ]);
 
         // Act & Assert
         $response = $this->postJson('/api/register', [
-            'mail' => 'test@example.com',
+            'mail' => 'test@orient.action.fr',
             'password' => 'password123',
             'name' => 'John',
             'last_name' => 'Doe',
@@ -158,7 +158,7 @@ class AuthControllerTest extends TestCase
     {
         // Act
         $response = $this->postJson('/api/register', [
-            'mail' => 'newuser@example.com',
+            'mail' => 'newuser@orient.action.fr',
             'password' => 'password12345678',
             'name' => 'Jane',
             'last_name' => 'Smith',
@@ -180,17 +180,17 @@ class AuthControllerTest extends TestCase
 
         // Verify user was created with hashed password
         $this->assertDatabaseHas('SAN_USERS', [
-            'USE_MAIL' => 'newuser@example.com',
+            'USE_MAIL' => 'newuser@orient.action.fr',
         ]);
 
-        $user = User::where('USE_MAIL', 'newuser@example.com')->first();
+        $user = User::where('USE_MAIL', 'newuser@orient.action.fr')->first();
         $this->assertTrue(Hash::check('password12345678', $user->USE_PASSWORD));
     }
 
     public function test_register_password_must_be_min_8_characters()
     {
         $response = $this->postJson('/api/register', [
-            'mail' => 'test@example.com',
+            'mail' => 'test@orient.action.fr',
             'password' => 'short', // Less than 8 chars
             'name' => 'John',
             'last_name' => 'Doe',
