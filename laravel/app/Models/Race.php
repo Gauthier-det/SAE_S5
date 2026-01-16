@@ -37,6 +37,7 @@ class Race extends Model
         'RAC_AGE_MIDDLE', 
         'RAC_AGE_MAX',
         'RAC_CHIP_MANDATORY',
+        'RAC_MEAL_PRICE',
     ];
 
     public function races(): HasMany
