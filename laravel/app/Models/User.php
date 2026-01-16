@@ -78,7 +78,7 @@ class User extends Authenticatable implements MustVerifyEmail
         );
     }
 
-    public function isValid()
+    public function isValid(): bool
     {
         return $this->USE_VALIDITY !== null;
     }
@@ -130,12 +130,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->USE_MAIL;
     }
 
-    public function hasVerifiedEmail()
+    public function hasVerifiedEmail(): bool
     {
         return !is_null($this->email_verified_at);
     }
 
-    public function markEmailAsVerified()
+    public function markEmailAsVerified(): void
     {
         $this->forceFill(['email_verified_at' => $this->freshTimestamp()]);
         $this->save();

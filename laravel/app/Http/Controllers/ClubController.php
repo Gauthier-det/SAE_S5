@@ -8,6 +8,9 @@ use App\Models\Address;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Carbon;
 
 class ClubController extends Controller
 {
@@ -57,6 +60,18 @@ class ClubController extends Controller
             $manager->CLU_ID = $club->CLU_ID;
             $manager->save();
         }
+
+
+        // Send notification
+        Mail::send('mails.club-manager-notification', [
+            'manager' => $manager,
+            'clubName' => $club->CLU_NAME,
+            'fullName' => $manager->USE_NAME . ' ' . $manager->USE_LAST_NAME
+        ], function($message) use ($manager, $club) {
+            $message->to($manager->USE_MAIL)
+                ->subject('Assignation au rôle de responsable de club');
+        });
+
 
         return response()->json(['data' => $club], 201);
     }
@@ -108,6 +123,16 @@ class ClubController extends Controller
             }
 
             DB::commit();
+
+            // Send notification
+            Mail::send('mails.club-manager-notification', [
+                'manager' => $manager,
+                'clubName' => $club->CLU_NAME,
+                'fullName' => $manager->USE_NAME . ' ' . $manager->USE_LAST_NAME
+            ], function($message) use ($manager, $club) {
+                $message->to($manager->USE_MAIL)
+                    ->subject('Assignation au rôle de responsable de club');
+            });
 
             return response()->json(['data' => $club], 201);
         } catch (\Exception $e) {
@@ -231,7 +256,7 @@ class ClubController extends Controller
         }
 
         $member = User::find($request->input('userId'));
-        
+
         if ($member->CLU_ID !== null) {
             return response()->json(['message' => 'User already belongs to a club'], 400);
         }
