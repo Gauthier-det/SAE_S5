@@ -63,6 +63,7 @@ class ClubController extends Controller
 
 
         // Send notification
+        /*
         Mail::send('mails.club-manager-notification', [
             'manager' => $manager,
             'clubName' => $club->CLU_NAME,
@@ -70,7 +71,7 @@ class ClubController extends Controller
         ], function($message) use ($manager, $club) {
             $message->to($manager->USE_MAIL)
                 ->subject('Assignation au rôle de responsable de club');
-        });
+        });*/
 
 
         return response()->json(['data' => $club], 201);
@@ -125,6 +126,7 @@ class ClubController extends Controller
             DB::commit();
 
             // Send notification
+            /*
             Mail::send('mails.club-manager-notification', [
                 'manager' => $manager,
                 'clubName' => $club->CLU_NAME,
@@ -133,6 +135,7 @@ class ClubController extends Controller
                 $message->to($manager->USE_MAIL)
                     ->subject('Assignation au rôle de responsable de club');
             });
+            */
 
             return response()->json(['data' => $club], 201);
         } catch (\Exception $e) {
